@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   }
 
   const hostName = request.headers.get("host") || "";
-  const root = "localhost";
+  const root = "localhost:3000";
 
   const sub = hostName.endsWith(root)
     ? hostName.replace(`.${root}`, "")
@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
 
   console.log("Subdomain", sub);
 
-  if (sub && sub !== "www" && sub !== "localhost") {
+  if (sub && sub !== "www" && sub !== "localhost:3000") {
     url.pathname = `/clubs/${sub}${url.pathname}`;
     return NextResponse.rewrite(url);
   }
@@ -33,7 +33,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|sign-in|sign-up|signin|signup).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|sign-in|sign-up).*)"],
 };
