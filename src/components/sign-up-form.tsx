@@ -1,14 +1,45 @@
+'use client'
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signUp } from "@/lib/auth-client";
 export default function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [firstName, setFirstName] = useState("");
+	const [lastName, setLastName] = useState("");
+  const router = useRouter();
+
+  async function submitForm(e: React.FormEvent){
+    e.preventDefault();
+    setLoading(true);
+    try{
+      const res = signUp.email({
+        email,
+        password,
+        name: `${firstName} ${lastName}`,
+         callbackURL: "/",
+         fetchOptions: {
+          onSuccess: async () => router.push("/"),
+        },
+
+      })
+    }catch(err){
+      console.error(err);
+    }finally{
+      setLoading(false);
+    }
+  }
+  
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={submitForm} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Sign up for an account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -16,9 +47,19 @@ export default function SignUpForm({
         </p>
       </div>
       <div className="grid gap-6">
+        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-3">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input id="firstName" type="text" placeholder="John"  value ={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+        </div>
+        <div className="grid gap-3">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input id="lastName" type="text" placeholder="Appleseed" value ={lastName} onChange={(e) => setLastName(e.target.value)} required />
+        </div>
+        </div>
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input id="email" type="email" placeholder="m@example.com" value ={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
@@ -30,10 +71,10 @@ export default function SignUpForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input id="password" type="password" required  value={password} onChange={(e) => setPassword(e.target.value)}/>
         </div>
-        <Button type="submit" className="w-full">
-          Sign up
+        <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Creating account..." : "Sign up"}
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">

@@ -4,6 +4,7 @@ import { getSessionCookie } from "better-auth/cookies";
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
+  //if path starts w api
   const url = request.nextUrl;
 
   const sessionCookie = getSessionCookie(request);
