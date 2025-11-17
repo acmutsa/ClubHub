@@ -29,7 +29,7 @@ export default function SignUpForm({
   const router = useRouter();
   const form = useForm<z.infer<typeof signUpSchema>>({
       resolver:zodResolver(signUpSchema),
-      mode: "onChange",
+      mode: "onTouched",
       defaultValues:{
         email: "",
         password: "",
