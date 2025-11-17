@@ -3,39 +3,46 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import * as z from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod"
+
+const signInSchema = z.object({
+  email: z.email("Invalid email"),
+  password: z.string().min(1, "Invalid password"),
+});
+
 export default function SignInForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+
+
   const router = useRouter();
-  
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-  
-    try{
-      const res = await authClient.signIn.email({ email, password });
-      if (res.error) {
-        
-      } else {
-        router.push("/");
-      }
-    }catch(error){
-      console.error(error);
-
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver:zodResolver(signInSchema),
+    mode: "onChange",
+    defaultValues:{
+      email: "",
+      password: "",
     }
+  });
 
-    setLoading(false);
+
+  async function onSubmit(values: z.infer<typeof signInSchema>) {
+    const res = await authClient.signIn.email(values);
+    if(res.error){
+      let message = res.error.message || "Something went wrong";
+      form.setError("root", { message });
+      return;
+    }
+    router.push("/");
+    
   }
   return (
-    <form onSubmit={onSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Sign in to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -45,7 +52,10 @@ export default function SignInForm({
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required onChange={(e) =>{ setEmail(e.target.value)}} value={email}/>
+          <Input id="email" type="email" placeholder="m@example.com" required {...form.register("email")} className={cn(form.formState.errors.email && "border-red-500 focus-visible:ring-red-500")} />
+          {form.formState.errors.email && (
+            <p className="text-red-500 text-sm">{form.formState.errors.email.message}</p>
+          )}
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
@@ -57,8 +67,14 @@ export default function SignInForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required onChange={(e) =>{ setPassword(e.target.value)}} value={password}/>
+          <Input id="password" type="password" required {...form.register("password")} className={cn(form.formState.errors.password && "border-red-500 focus-visible:ring-red-500")}/>
+          {form.formState.errors.password && (
+            <p className="text-red-500 text-sm">{form.formState.errors.password.message}</p>
+          )}
         </div>
+        {form.formState.errors.root && (
+        <p className="text-red-500 text-sm">{form.formState.errors.root.message}</p>
+      )}
         <Button type="submit" className="w-full">
           Sign in
         </Button>
@@ -79,7 +95,7 @@ export default function SignInForm({
       </div>
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
-        <a href="/sign-up" className="underline underline-offset-4" onClick={onSubmit}>
+        <a href="/sign-up" className="underline underline-offset-4">
           Sign up
         </a>
       </div>
