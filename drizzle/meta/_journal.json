@@ -15,6 +15,13 @@
       "when": 1758671360766,
       "tag": "0001_redundant_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1764380183087,
+      "tag": "0002_common_glorian",
+      "breakpoints": true
     }
   ]
 }
