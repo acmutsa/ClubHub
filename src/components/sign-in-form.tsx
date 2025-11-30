@@ -1,14 +1,48 @@
+'use client'
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from 'next/navigation';
+import * as z from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod"
+
+const signInSchema = z.object({
+  email: z.email("Invalid email"),
+  password: z.string().min(1, "Invalid password"),
+});
 
 export default function SignInForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+
+
+  const router = useRouter();
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver:zodResolver(signInSchema),
+    mode: "onTouched",
+    defaultValues:{
+      email: "",
+      password: "",
+    }
+  });
+
+
+  async function onSubmit(values: z.infer<typeof signInSchema>) {
+    const res = await authClient.signIn.email(values);
+    if(res.error){
+      let message = res.error.message || "Something went wrong";
+      form.setError("root", { message });
+      return;
+    }
+    router.push("/");
+    
+  }
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Sign in to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -18,7 +52,10 @@ export default function SignInForm({
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input id="email" type="email" placeholder="m@example.com" required {...form.register("email")} className={cn(form.formState.errors.email && "border-red-500 focus-visible:ring-red-500")} />
+          {form.formState.errors.email && (
+            <p className="text-red-500 text-sm">{form.formState.errors.email.message}</p>
+          )}
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
@@ -30,8 +67,14 @@ export default function SignInForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input id="password" type="password" required {...form.register("password")} className={cn(form.formState.errors.password && "border-red-500 focus-visible:ring-red-500")}/>
+          {form.formState.errors.password && (
+            <p className="text-red-500 text-sm">{form.formState.errors.password.message}</p>
+          )}
         </div>
+        {form.formState.errors.root && (
+        <p className="text-red-500 text-sm">{form.formState.errors.root.message}</p>
+      )}
         <Button type="submit" className="w-full">
           Sign in
         </Button>

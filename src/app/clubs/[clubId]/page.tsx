@@ -1,3 +1,8 @@
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import SignOutButton from "@/components/sign-out-button";
+
 import { db } from "@/db/index";
 import { membership,user,clubs } from "@/db/schema";
 import { eq, inArray} from "drizzle-orm";
@@ -15,24 +20,5 @@ async function fetchClubMembers(clubId: string) {
 
 export default async function Page({ params }: { params: { clubId: string } }) {
   const { clubId } = await params;
-  const clubData = await db
-    .select()
-    .from(clubs)
-    .where(eq(clubs.id, Number(clubId)))
-    .then(r => r[0]);
-
-  const members = await fetchClubMembers(clubId);
-  return (
-      <>
-        <div>Club {clubData.name}</div>
-        <ul>
-          {members.map((member) => (
-            <li key={member.id}>
-              {member.name}
-              <RemoveMemberButton userId={member.id} clubId={Number(clubId)} />
-            </li>
-          ))}
-        </ul>
-      </>
-  );
+  return <div>Club {clubId}</div>;
 }
