@@ -1,4 +1,4 @@
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.schema";
 
 export const clubs = sqliteTable("clubs", {
@@ -7,10 +7,16 @@ export const clubs = sqliteTable("clubs", {
   description: text().notNull(),
 });
 
-export const membership = sqliteTable("membership", {
-  id: int().primaryKey({ autoIncrement: true }),
-  userId: int().references(() => user.id),
-  clubId: int().references(() => clubs.id),
-});
-
+export const membership = sqliteTable(
+  "membership",
+  {
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    clubId: int()
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.clubId] })]
+);
 export * from "./auth.schema";
