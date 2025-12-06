@@ -16,11 +16,13 @@ import {
 import { db } from "@/db/index";
 import { membership, clubs } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { joinClub, leaveClub } from "@/db/actions/clubs";
 import { redirect } from "next/navigation";
+import {
+  JoinClubButton,
+  LeaveClubButton,
+} from "@/lib/shared/membership/buttons";
 
-export default async function Page({ params }: { params: { clubId: string } }) {
-  const { clubId } = await params;
+export default async function Page() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -28,13 +30,14 @@ export default async function Page({ params }: { params: { clubId: string } }) {
   if (!session) {
     return redirect("/sign-in");
   }
-  const user = session.user.id;
+  const user = session.user;
   const allClubs = await db.select().from(clubs);
   const memberships = await db
     .select()
     .from(membership)
-    .where(eq(membership.userId, user));
+    .where(eq(membership.userId, user.id));
   const memberClubIds = new Set(memberships.map((m) => m.clubId));
+
   return (
     <>
       <div className="flex flex-row justify-between">
@@ -60,13 +63,9 @@ export default async function Page({ params }: { params: { clubId: string } }) {
                   <TableCell>{club.description}</TableCell>
                   <TableCell className="whitespace-nowrap w-0">
                     {memberClubIds.has(club.id) ? (
-                      <form action={leaveClub.bind(null, user, club.id)}>
-                        <Button variant="destructive">Leave Club</Button>
-                      </form>
+                      <LeaveClubButton userId={user.id} clubId={club.id} />
                     ) : (
-                      <form action={joinClub.bind(null, user, club.id)}>
-                        <Button variant="outline">Join Club</Button>
-                      </form>
+                      <JoinClubButton userId={user.id} clubId={club.id} />
                     )}
                   </TableCell>
                 </TableRow>
