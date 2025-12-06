@@ -1,10 +1,10 @@
-'use client'
+"use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
-import * as z from 'zod';
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
@@ -18,48 +18,51 @@ const signUpSchema = z.object({
     .string()
     .min(1, "Last name is required")
     .regex(/^[A-Za-z\s'-]+$/, "Invalid last name"),
-  email: z.email("Invalid email"),
+  email: z
+    .string()
+    .email("Invalid email.")
+    .regex(/^(?!.*@my\.utsa\.edu$).+$/, "UTSA emails are not allowed"),
   password: z.string().min(8, "Invalid password"),
 });
 export default function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-
   const router = useRouter();
   const form = useForm<z.infer<typeof signUpSchema>>({
-      resolver:zodResolver(signUpSchema),
-      mode: "onTouched",
-      defaultValues:{
-        email: "",
-        password: "",
-        firstName: "",
-        lastName: "",
-      }
+    resolver: zodResolver(signUpSchema),
+    mode: "onTouched",
+    defaultValues: {
+      email: "",
+      password: "",
+      firstName: "",
+      lastName: "",
+    },
+  });
+  async function submitForm(values: z.infer<typeof signUpSchema>) {
+    const res = await signUp.email({
+      email: values.email,
+      password: values.password,
+      name: `${values.firstName} ${values.lastName}`,
+      callbackURL: "/",
+      fetchOptions: {
+        onSuccess: async () => router.push("/"),
+      },
     });
-  async function submitForm(values: z.infer<typeof signUpSchema>){
-  
-  
-      const res = await signUp.email({
-        email: values.email,
-        password: values.password,
-        name: `${values.firstName} ${values.lastName}`,
-         callbackURL: "/",
-         fetchOptions: {
-          onSuccess: async () => router.push("/"),
-        },
-
-      })
-      if (res.error) {
-        form.setError("root", {
-          message: res.error.message || "Failed to create account",
-        });
-        return;
-      }
+    if (res.error) {
+      form.setError("root", {
+        message: res.error.message || "Failed to create account",
+      });
+      return;
+    }
   }
-  
+
   return (
-    <form onSubmit={form.handleSubmit(submitForm)} className={cn("flex flex-col gap-6", className)} {...props}>
+    <form
+      onSubmit={form.handleSubmit(submitForm)}
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+    >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Sign up for an account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -68,26 +71,62 @@ export default function SignUpForm({
       </div>
       <div className="grid gap-6">
         <div className="grid grid-cols-2 gap-2">
-        <div className="grid gap-3">
-          <Label htmlFor="firstName">First Name</Label>
-          <Input id="firstName" type="text" placeholder="John"  {...form.register("firstName")}  className={cn(form.formState.errors.firstName && "border-red-500 focus-visible:ring-red-500")} required />
-          {form.formState.errors.firstName && (
-            <p className="text-red-500 text-sm">{form.formState.errors.firstName.message}</p>
-          )}
-        </div>
-        <div className="grid gap-3">
-          <Label htmlFor="lastName">Last Name</Label>
-          <Input id="lastName" type="text" placeholder="Appleseed" {...form.register("lastName")}  className={cn(form.formState.errors.lastName && "border-red-500 focus-visible:ring-red-500")} required />
-           {form.formState.errors.lastName && (
-            <p className="text-red-500 text-sm">{form.formState.errors.lastName.message}</p>
-          )}
-        </div>
+          <div className="grid gap-3">
+            <Label htmlFor="firstName">First Name</Label>
+            <Input
+              id="firstName"
+              type="text"
+              placeholder="John"
+              {...form.register("firstName")}
+              className={cn(
+                form.formState.errors.firstName &&
+                  "border-red-500 focus-visible:ring-red-500"
+              )}
+              required
+            />
+            {form.formState.errors.firstName && (
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.firstName.message}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              type="text"
+              placeholder="Appleseed"
+              {...form.register("lastName")}
+              className={cn(
+                form.formState.errors.lastName &&
+                  "border-red-500 focus-visible:ring-red-500"
+              )}
+              required
+            />
+            {form.formState.errors.lastName && (
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.lastName.message}
+              </p>
+            )}
+          </div>
         </div>
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" {...form.register("email")} className={cn(form.formState.errors.email && "border-red-500 focus-visible:ring-red-500")} required />
-           {form.formState.errors.email && (
-            <p className="text-red-500 text-sm">{form.formState.errors.email.message}</p>
+          <Input
+            id="email"
+            type="email"
+            placeholder="m@example.com"
+            {...form.register("email")}
+            className={cn(
+              form.formState.errors.email &&
+                "border-red-500 focus-visible:ring-red-500"
+            )}
+            required
+          />
+          {form.formState.errors.email && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.email.message}
+            </p>
           )}
         </div>
         <div className="grid gap-3">
@@ -100,13 +139,24 @@ export default function SignUpForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required  {...form.register("password")} className={cn(form.formState.errors.password && "border-red-500 focus-visible:ring-red-500")}/>
-            {form.formState.errors.password && (
-            <p className="text-red-500 text-sm">{form.formState.errors.password.message}</p>
+          <Input
+            id="password"
+            type="password"
+            required
+            {...form.register("password")}
+            className={cn(
+              form.formState.errors.password &&
+                "border-red-500 focus-visible:ring-red-500"
+            )}
+          />
+          {form.formState.errors.password && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.password.message}
+            </p>
           )}
         </div>
-        <Button type="submit" className="w-full" >
-        Sign Up
+        <Button type="submit" className="w-full">
+          Sign Up
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
