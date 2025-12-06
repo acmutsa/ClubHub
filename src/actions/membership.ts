@@ -8,17 +8,8 @@ import { authAction } from "@/lib/safe-action";
 import { z } from "zod";
 
 export const leaveClub = authAction
-  .inputSchema(
-    z.object({
-      userId: z.string(),
-      clubId: z.number(),
-    })
-  )
-  .bindArgsSchemas<[userId: z.ZodString, clubId: z.ZodNumber]>([
-    z.string(),
-    z.number(),
-  ])
-  .action(async ({ bindArgsParsedInputs: [userId, clubId] }) => {
+  .bindArgsSchemas<[clubId: z.ZodNumber]>([z.number()])
+  .action(async ({ bindArgsParsedInputs: [clubId], ctx: { userId } }) => {
     await db
       .delete(membership)
       .where(and(eq(membership.userId, userId), eq(membership.clubId, clubId)));
@@ -26,20 +17,14 @@ export const leaveClub = authAction
   });
 
 export const joinClub = authAction
-  .inputSchema(
-    z.object({
-      userId: z.string(),
-      clubId: z.number(),
-    })
-  )
-  .bindArgsSchemas<[userId: z.ZodString, clubId: z.ZodNumber]>([
-    z.string(),
-    z.number(),
-  ])
-  .action(async ({ bindArgsParsedInputs: [userId, clubId] }) => {
-    await db.insert(membership).values({
-      userId,
-      clubId,
-    });
+  .bindArgsSchemas<[clubId: z.ZodNumber]>([z.number()])
+  .action(async ({ bindArgsParsedInputs: [clubId], ctx: { userId } }) => {
+    await db
+      .insert(membership)
+      .values({
+        userId,
+        clubId,
+      })
+      .onConflictDoNothing();
     revalidatePath("/clubs");
   });

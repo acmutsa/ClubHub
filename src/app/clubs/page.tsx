@@ -63,9 +63,9 @@ export default async function Page() {
                   <TableCell>{club.description}</TableCell>
                   <TableCell className="whitespace-nowrap w-0">
                     {memberClubIds.has(club.id) ? (
-                      <LeaveClubButton userId={user.id} clubId={club.id} />
+                      <LeaveClubButton clubId={club.id} />
                     ) : (
-                      <JoinClubButton userId={user.id} clubId={club.id} />
+                      <JoinClubButton clubId={club.id} />
                     )}
                   </TableCell>
                 </TableRow>
