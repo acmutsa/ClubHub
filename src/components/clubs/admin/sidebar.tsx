@@ -11,13 +11,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Club } from "@/lib/types/club";
 import { Calendar, Home, Users } from "lucide-react";
 import Link from "next/link";
 
-export const ClubAdminSidebar = () => {
+interface ClubAdminSidebarProps {
+  club: Club;
+}
+
+export const ClubAdminSidebar = ({ club }: ClubAdminSidebarProps) => {
   return (
     <Sidebar>
-      <SidebarHeader />
+      <SidebarHeader>
+        <h1 className="text-2xl font-bold">{club.name}</h1>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Management</SidebarGroupLabel>
@@ -25,7 +32,7 @@ export const ClubAdminSidebar = () => {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/clubs/admin/overview">
+                  <Link href={`/admin`}>
                     <Home />
                     <span>Overview</span>
                   </Link>
@@ -33,7 +40,7 @@ export const ClubAdminSidebar = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/clubs/admin/members">
+                  <Link href={`/admin/members`}>
                     <Users />
                     <span>Members</span>
                   </Link>
@@ -41,7 +48,7 @@ export const ClubAdminSidebar = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/clubs/admin/events">
+                  <Link href={`/admin/events`}>
                     <Calendar />
                     <span>Events</span>
                   </Link>

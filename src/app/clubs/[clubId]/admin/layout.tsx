@@ -1,9 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { db } from "@/db/index";
-import { membership } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { getClub } from "@/lib/club";
 import isClubAdmin from "@/lib/membership";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ClubAdminSidebar } from "@/components/clubs/admin/sidebar";
@@ -27,9 +25,14 @@ export default async function Layout({
     return redirect("/clubs");
   }
 
+  const club = await getClub(clubId);
+  if (!club) {
+    return redirect("/clubs");
+  }
+
   return (
     <SidebarProvider>
-      <ClubAdminSidebar />
+      <ClubAdminSidebar club={club} />
       <main>
         <SidebarTrigger />
         {children}
