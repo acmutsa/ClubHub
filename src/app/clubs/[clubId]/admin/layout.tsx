@@ -21,7 +21,7 @@ export default async function Layout({
     return redirect("/sign-in");
   }
   const user = session.user;
-  if (!isClubAdmin(user.id, clubId)) {
+  if (!(await isClubAdmin(user.id, clubId))) {
     return redirect("/clubs");
   }
 
