@@ -20,7 +20,7 @@ import { redirect } from "next/navigation";
 import {
   JoinClubButton,
   LeaveClubButton,
-} from "@/lib/shared/membership/buttons";
+} from "@/components/shared/membership/buttons";
 
 export default async function Page() {
   const session = await auth.api.getSession({
