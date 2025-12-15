@@ -7,7 +7,7 @@ export default async function isClubAdmin(userId: string, clubId: string) {
     .select()
     .from(membership)
     .where(and(eq(membership.userId, userId), eq(membership.clubId, clubId)));
-  if (!member) {
+  if (member.length === 0) {
     return false;
   }
   return member[0].role === "admin" || member[0].role === "super_admin";
