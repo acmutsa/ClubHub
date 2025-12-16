@@ -6,7 +6,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.schema";
 import { membershipRoles } from "@/lib/types/membership";
-import { sql } from "drizzle-orm";
+import { sql, relations } from "drizzle-orm";
 
 const commonTimestamps = {
   createdAt: integer({ mode: "timestamp" })
@@ -101,5 +101,68 @@ export const thumbnails = sqliteTable("thumbnails", {
   url: text().notNull(),
   ...commonTimestamps,
 });
+
+export const clubsRelationships = relations(clubs, ({ one, many }) => ({
+  events: many(events),
+  membership: many(membership),
+  eventTypes: many(eventTypes),
+}));
+
+export const eventsRelationships = relations(events, ({ one, many }) => ({
+  club: one(clubs, {
+    fields: [events.clubId],
+    references: [clubs.id],
+  }),
+  eventTypes: one(eventTypes, {
+    fields: [events.eventTypeId],
+    references: [eventTypes.id],
+  }),
+  location: one(locations, {
+    fields: [events.locationId],
+    references: [locations.id],
+  }),
+  thumbnail: one(thumbnails, {
+    fields: [events.thumbnailId],
+    references: [thumbnails.id],
+  }),
+  creator: one(user, {
+    fields: [events.createdBy],
+    references: [user.id],
+  }),
+  updater: one(user, {
+    fields: [events.updatedBy],
+    references: [user.id],
+  }),
+}));
+
+export const eventTypesRelationships = relations(
+  eventTypes,
+  ({ one, many }) => ({
+    club: one(clubs, {
+      fields: [eventTypes.clubId],
+      references: [clubs.id],
+    }),
+    events: many(events),
+  })
+);
+
+export const locationsRelationships = relations(locations, ({ one, many }) => ({
+  building: one(buildings, {
+    fields: [locations.buildingId],
+    references: [buildings.id],
+  }),
+  events: many(events),
+}));
+
+export const buildingsRelationships = relations(buildings, ({ one, many }) => ({
+  locations: many(locations),
+}));
+
+export const thumbnailsRelationships = relations(
+  thumbnails,
+  ({ one, many }) => ({
+    events: many(events),
+  })
+);
 
 export * from "./auth.schema";
