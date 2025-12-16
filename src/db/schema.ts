@@ -13,7 +13,7 @@ export const membership = sqliteTable(
     userId: text()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    clubId: int()
+    clubId: text()
       .notNull()
       .references(() => clubs.id, { onDelete: "cascade" }),
   },
