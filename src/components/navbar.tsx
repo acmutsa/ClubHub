@@ -16,6 +16,7 @@ interface NavbarProps {
   clubName: string;
   clubId: string;
   userType: string;
+  //we will need to retieve image/logo eventually
 }
 
 export default async function Navbar({
