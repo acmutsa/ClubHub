@@ -4,6 +4,8 @@ import { joinClub, leaveClub } from "@/actions/membership";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { getClub } from "@/lib/club";
 
 export function JoinClubButton({ clubId }: { clubId: string }) {
   const { execute, isPending } = useAction(joinClub.bind(null, clubId));
