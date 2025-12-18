@@ -8,7 +8,7 @@ import { authAction } from "@/lib/safe-action";
 import { z } from "zod";
 
 export const leaveClub = authAction
-  .bindArgsSchemas<[clubId: z.ZodNumber]>([z.number()])
+  .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
   .action(async ({ bindArgsParsedInputs: [clubId], ctx: { userId } }) => {
     await db
       .delete(membership)
@@ -17,7 +17,7 @@ export const leaveClub = authAction
   });
 
 export const joinClub = authAction
-  .bindArgsSchemas<[clubId: z.ZodNumber]>([z.number()])
+  .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
   .action(async ({ bindArgsParsedInputs: [clubId], ctx: { userId } }) => {
     await db
       .insert(membership)

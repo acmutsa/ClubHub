@@ -4,5 +4,6 @@ export default async function Page({
   params: Promise<{ clubId: string }>;
 }) {
   const { clubId } = await params;
-  return <div>Admin for {clubId}</div>;
+
+  return <div>Admin Overview for {clubId}</div>;
 }

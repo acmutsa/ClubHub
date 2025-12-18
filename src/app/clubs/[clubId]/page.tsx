@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import SignOutButton from "@/components/sign-out-button";
 import Link from "next/link";
 
 export default async function Page({ params }: { params: { clubId: string } }) {
@@ -16,7 +15,6 @@ export default async function Page({ params }: { params: { clubId: string } }) {
       {session?.user ? (
         <>
           <p>Session: {session.user?.email}</p>
-          <SignOutButton />
         </>
       ) : (
         <Link href="/sign-in">

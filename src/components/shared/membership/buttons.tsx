@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAction } from "next-safe-action/hooks";
 
-export function JoinClubButton({ clubId }: { clubId: number }) {
+export function JoinClubButton({ clubId }: { clubId: string }) {
   const { execute, isPending } = useAction(joinClub.bind(null, clubId));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -22,7 +22,7 @@ export function JoinClubButton({ clubId }: { clubId: number }) {
   );
 }
 
-export function LeaveClubButton({ clubId }: { clubId: number }) {
+export function LeaveClubButton({ clubId }: { clubId: string }) {
   const { execute, isPending } = useAction(leaveClub.bind(null, clubId));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
