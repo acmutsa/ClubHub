@@ -1,11 +1,12 @@
 "use server";
 
-import { membership } from "@/db/schema";
+import { clubs, membership } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db/index";
 import { revalidatePath } from "next/cache";
 import { authAction } from "@/lib/safe-action";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 
 export const leaveClub = authAction
   .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
@@ -28,3 +29,28 @@ export const joinClub = authAction
       .onConflictDoNothing();
     revalidatePath("/clubs");
   });
+
+export const createClub = authAction
+  .bindArgsSchemas<[name: z.ZodString, description: z.ZodString]>([
+    z.string().min(1, "Club Name Required"),
+    z.string().min(1, "Description Required"),
+  ])
+  .action(
+    async ({ bindArgsParsedInputs: [name, description], ctx: { userId } }) => {
+      const clubId = randomUUID();
+      await db.transaction(async (tx) => {
+        await tx.insert(clubs).values({
+          id: clubId,
+          name,
+          description,
+        });
+        await tx.insert(membership).values({
+          userId,
+          clubId,
+          role: "super_admin",
+        });
+      });
+      revalidatePath("/clubs");
+      return { clubId };
+    }
+  );
