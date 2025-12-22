@@ -63,7 +63,9 @@ export default async function Page() {
                   <TableCell>{club.description}</TableCell>
                   <TableCell className="whitespace-nowrap w-0">
                     {memberClubIds.has(club.id) ? (
+
                       <LeaveClubButton clubId={club.id} />
+
                     ) : (
                       <JoinClubButton clubId={club.id} />
                     )}
