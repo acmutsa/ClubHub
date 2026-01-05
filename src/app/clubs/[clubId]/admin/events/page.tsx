@@ -3,6 +3,7 @@ import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import { Plus } from "lucide-react";
 import { getClubEvents } from "@/lib/queries/events";
+import Link from "next/link";
 
 export default async function Page({ params }: { params: { clubId: string } }) {
   const { clubId } = await params;
@@ -21,10 +22,12 @@ export default async function Page({ params }: { params: { clubId: string } }) {
                 Manage and monitor your organizations events
               </p>
             </div>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create Event
-            </Button>
+            <Link href={`/admin/events/new`}>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Create Event
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
