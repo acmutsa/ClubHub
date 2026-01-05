@@ -1,25 +1,36 @@
 import { Button } from "@/components/ui/button";
+import { DataTable } from "./data-table";
+import { columns } from "./columns";
 import { Plus } from "lucide-react";
+import { getClubEvents } from "@/lib/queries/events";
 
-export default function Page() {
+export default async function Page({ params }: { params: { clubId: string } }) {
+  const { clubId } = await params;
+  const clubEvents = await getClubEvents(clubId);
+
   return (
-    <div className="border-b border-border bg-card">
-      <div className="mx-auto max-w-7xl p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-balance">
-              Events
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Manage and monitor your organizations events
-            </p>
+    <>
+      <div className="border-b border-border bg-card">
+        <div className="mx-auto max-w-7xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-balance">
+                Events
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Manage and monitor your organizations events
+              </p>
+            </div>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create Event
+            </Button>
           </div>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create Event
-          </Button>
         </div>
       </div>
-    </div>
+      <div className="mx-auto max-w-7xl p-4">
+        <DataTable columns={columns} data={clubEvents} />
+      </div>
+    </>
   );
 }

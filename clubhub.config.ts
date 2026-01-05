@@ -56,10 +56,10 @@ export const defaults = {
     { name: "Sombrilla Fountain and Plaza", code: "SFP" },
   ],
   eventTypes: [
-    { name: "General Meeting", code: "GM", color: "#FF5733" },
-    { name: "Workshop", code: "WS", color: "#33FF57" },
-    { name: "Social", code: "SOC", color: "#3357FF" },
-    { name: "Fundraiser", code: "FUND", color: "#F1C40F" },
-    { name: "Hackathon", code: "HACK", color: "#9B59B6" },
+    { name: "General Meeting", code: "GM", color: "#22c55e" }, // Green
+    { name: "Workshop", code: "WS", color: "#3b82f6" }, // Blue
+    { name: "Social", code: "SOC", color: "#f97316" }, // Orange
+    { name: "Fundraiser", code: "FUND", color: "#eab308" }, // Yellow
+    // { name: "Hackathon", code: "HACK", color: "#a855f7" }, // Purple
   ],
 } as const;

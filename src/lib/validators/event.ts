@@ -15,6 +15,6 @@ export const baseEventSelectSchema = createSelectSchema(events);
 export const adminEventSelectSchema = baseEventSelectSchema.extend({
   club: baseClubSelectSchema,
   eventTypes: baseEventTypeSelectSchema,
-  location: baseLocationSelectSchema,
-  thumbnail: baseThumbnailSelectSchema,
+  location: baseLocationSelectSchema.nullable(),
+  thumbnail: baseThumbnailSelectSchema.nullable(),
 });
