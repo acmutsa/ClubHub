@@ -16,7 +16,7 @@ import {
 import { useAction } from "next-safe-action/hooks";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getClub } from "@/lib/club";
+import { getClub } from "@/lib/queries/club";
 
 export function JoinClubButton({ clubId }: { clubId: string }) {
   const { execute, isPending } = useAction(joinClub.bind(null, clubId));
