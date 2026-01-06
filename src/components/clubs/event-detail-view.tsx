@@ -125,15 +125,12 @@ export function EventDetailView({ event }: EventDetailViewProps) {
       <main className="mx-auto max-w-6xl px-4 py-8 md:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
-          <Link
-            href={`/clubs/${event.club.id}`}
-            className="transition-colors hover:text-foreground"
-          >
+          <Link href={`/`} className="transition-colors hover:text-foreground">
             {event.club.name}
           </Link>
           <ChevronRight className="size-4" />
           <Link
-            href={`/clubs/${event.club.id}/events`}
+            href={`/events`}
             className="transition-colors hover:text-foreground"
           >
             Events
