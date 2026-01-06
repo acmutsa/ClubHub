@@ -58,3 +58,64 @@ export async function getAllLocations() {
   });
   return locations;
 }
+
+export async function getClubEvent(clubId: string, eventId: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    unauthorized();
+  }
+  const user = session.user;
+  if (!(await isClubAdmin(user.id, clubId))) {
+    unauthorized();
+  }
+  const event = await db.query.events.findFirst({
+    where: (events, { eq, and }) =>
+      and(eq(events.clubId, clubId), eq(events.id, eventId)),
+    with: {
+      club: true,
+      eventTypes: true,
+      location: {
+        with: {
+          building: true,
+        },
+      },
+      thumbnail: true,
+    },
+  });
+  return event;
+}
+
+/**
+ * Get event for member view (does not require admin privileges)
+ * Excludes hidden events from being fetched
+ */
+export async function getMemberEvent(clubId: string, eventId: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    unauthorized();
+  }
+
+  const event = await db.query.events.findFirst({
+    where: (events, { eq, and }) =>
+      and(
+        eq(events.clubId, clubId),
+        eq(events.id, eventId),
+        eq(events.hidden, false)
+      ),
+    with: {
+      club: true,
+      eventTypes: true,
+      location: {
+        with: {
+          building: true,
+        },
+      },
+      thumbnail: true,
+    },
+  });
+  return event;
+}

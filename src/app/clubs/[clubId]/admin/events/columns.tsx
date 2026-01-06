@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Calendar, MapPin, Eye, EyeOff, ImageIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export const columns: ColumnDef<AdminSelectEvent>[] = [
   {
@@ -35,7 +36,9 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
     accessorKey: "title",
     header: "Title",
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("title")}</div>
+      <Link href={`/events/${row.original.id}`}>
+        <div className="font-medium">{row.getValue("title")}</div>
+      </Link>
     ),
   },
   {
