@@ -11,11 +11,18 @@ import {
   Award,
   UserCheck,
 } from "lucide-react";
+import { google, outlook, office365, yahoo, ics } from "calendar-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface EventDetailViewProps {
   event: {
@@ -78,6 +85,41 @@ function formatTimeRange(start: Date, end: Date): string {
 }
 
 export function EventDetailView({ event }: EventDetailViewProps) {
+  // Create calendar event object for the calendar-link library
+  const calendarEvent = {
+    title: event.title,
+    description: event.description,
+    start: event.start,
+    end: event.end,
+    location: event.location
+      ? `${event.location.building.name}, ${event.location.name} (${event.location.building.code} ${event.location.roomNumber})`
+      : undefined,
+  };
+
+  const handleAddToCalendar = (
+    type: "google" | "outlook" | "office365" | "yahoo" | "ics"
+  ) => {
+    let url: string;
+    switch (type) {
+      case "google":
+        url = google(calendarEvent);
+        break;
+      case "outlook":
+        url = outlook(calendarEvent);
+        break;
+      case "office365":
+        url = office365(calendarEvent);
+        break;
+      case "yahoo":
+        url = yahoo(calendarEvent);
+        break;
+      case "ics":
+        url = ics(calendarEvent);
+        break;
+    }
+    window.open(url, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto max-w-6xl px-4 py-8 md:px-6 lg:px-8">
@@ -265,10 +307,41 @@ export function EventDetailView({ event }: EventDetailViewProps) {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 gap-2">
-                    <CalendarPlus className="size-4" />
-                    Add to Calendar
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex-1 gap-2">
+                        <CalendarPlus className="size-4" />
+                        Add to Calendar
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      <DropdownMenuItem
+                        onClick={() => handleAddToCalendar("google")}
+                      >
+                        Google Calendar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleAddToCalendar("outlook")}
+                      >
+                        Outlook.com
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleAddToCalendar("office365")}
+                      >
+                        Office 365
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleAddToCalendar("yahoo")}
+                      >
+                        Yahoo Calendar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleAddToCalendar("ics")}
+                      >
+                        Download .ics file
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="outline" size="icon">
                     <Heart className="size-4" />
                   </Button>
