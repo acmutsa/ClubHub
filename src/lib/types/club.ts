@@ -1,4 +1,4 @@
-import { clubs } from "@/db/schema";
-import { InferSelectModel } from "drizzle-orm";
+import { z } from "zod";
+import { adminClubSelectSchema } from "../validators/club";
 
-export type Club = InferSelectModel<typeof clubs>;
+export type AdminSelectClub = z.infer<typeof adminClubSelectSchema>;

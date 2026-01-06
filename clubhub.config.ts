@@ -1,0 +1,65 @@
+export const defaults = {
+  buildings: [
+    // Parking garages and related
+    { name: "Bauerle Road Garage", code: "BRG" },
+    { name: "Tobin Avenue Garage", code: "TAG" },
+    { name: "Ximenes Avenue Garage", code: "XAG" },
+    { name: "Bosque Street Building", code: "BOS" },
+    { name: "Central Receiving & Warehouse", code: "CRW" },
+    // Student life and administration
+    { name: "H-E-B Student Union", code: "HSU" },
+    { name: "Student Union", code: "SU" },
+    { name: "Main Building", code: "MB" },
+    { name: "Multidisciplinary Studies Building", code: "MS" },
+    // Athletic and recreation facilities
+    { name: "Aquatic Center", code: "AC" },
+    { name: "Convocation Center", code: "CC" },
+    { name: "Football Practice Field A & B", code: "FPF" },
+    { name: "Recreation Field Complex - East", code: "RFC-E" },
+    { name: "Recreation Field Complex - South", code: "RFC-S" },
+    { name: "Recreation Wellness Center", code: "RWC" },
+    { name: "Roadrunner Athletic Center of Excellence", code: "RACE" },
+    { name: "Roadrunner Field (Baseball)", code: "RRF-B" },
+    { name: "Roadrunner Field (Softball)", code: "RRF-S" },
+    { name: "Tennis Center", code: "TC" },
+    // Academic and research buildings
+    { name: "Applied Engineering and Technology", code: "AET" },
+    { name: "Arts Building", code: "ART" },
+    { name: "Biosciences Building", code: "BSB" },
+    { name: "Biotechnology Sciences & Engineering", code: "BSE" },
+    { name: "Business Building", code: "BB" },
+    { name: "Engineering Building", code: "EB" },
+    { name: "Graduate School & Research Building", code: "GSR" },
+    { name: "Margaret Batts Tobin Laboratories", code: "MBT" },
+    { name: "McKinney Humanities Building", code: "MHB" },
+    { name: "North Paseo Building", code: "NPB" },
+    { name: "Peter T. Flawn Sciences Building", code: "FLN" },
+    { name: "Science and Engineering Building", code: "SEB" },
+    { name: "Science Research Laboratories", code: "SRL" },
+    { name: "Student Success Center", code: "SSC" },
+    // Housing and dining
+    { name: "Alvarez Hall", code: "ALV" },
+    { name: "Blanco Hall", code: "BLC" },
+    { name: "Chaparral Village", code: "CV" },
+    { name: "Chisholm Hall", code: "CH" },
+    { name: "Guadalupe Hall", code: "GH" },
+    { name: "Laurel Village", code: "LV" },
+    { name: "Roadrunner Café", code: "RC" },
+    { name: "University Oaks", code: "UO" },
+    // Libraries and performance spaces
+    { name: "Applied Engineering & Technology Library", code: "AETL" },
+    { name: "John Peace Library", code: "JPL" },
+    { name: "Recital Hall", code: "RH" },
+    // Points of interest
+    { name: "Rowdy Campus Store", code: "RCS" },
+    { name: "Rowdy the Roadrunner Statue", code: "RRS" },
+    { name: "Sombrilla Fountain and Plaza", code: "SFP" },
+  ],
+  eventTypes: [
+    { name: "General Meeting", code: "GM", color: "#22c55e" }, // Green
+    { name: "Workshop", code: "WS", color: "#3b82f6" }, // Blue
+    { name: "Social", code: "SOC", color: "#f97316" }, // Orange
+    { name: "Fundraiser", code: "FUND", color: "#eab308" }, // Yellow
+    // { name: "Hackathon", code: "HACK", color: "#a855f7" }, // Purple
+  ],
+} as const;
