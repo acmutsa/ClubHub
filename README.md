@@ -1,4 +1,5 @@
-This is a test of the feasibility of a multi-tenant SaaS version of Clubkit
+# ClubHub
+Reimagining the best parts of ClubKit as a multi-tenant SaaS application. A platform that gives any student organization on your campus the ability to manage membership and events.
 
 ## Getting Started
 
@@ -10,14 +11,14 @@ pnpm dev
 
 ## Test Multi-tenant Subdomain
 
-1. Navigate to https://acmutsa.club.localhost:3000 in the browser.
-2. If successful, you should see "Club acmutsa" on the `/` route
+1. Navigate to https://acm-utsa.localhost:3000 in the browser.
+2. If successful, you should see "Club acm-utsa" on the `/` route
 
 ## Todo
 
-- [ ] Make sign-in/sign-up functional
-- [ ] Make club creation
+- [x] Make sign-in/sign-up functional
+- [x] Make club creation
 - [ ] Make club admin functionality
-- [ ] Make membership management functional
+- [x] Make membership management functional
 - [ ] Make saas admin functionality
-- [ ] Make at least one db call with WHERE clause for demo
+- [x] Make at least one db call with WHERE clause for demo
