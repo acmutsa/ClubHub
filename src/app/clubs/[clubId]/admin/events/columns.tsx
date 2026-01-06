@@ -4,14 +4,56 @@ import { AdminSelectEvent } from "@/lib/types/event";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Calendar, MapPin, Eye, EyeOff, ImageIcon } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Eye,
+  EyeOff,
+  ImageIcon,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+// Sortable column header component
+function SortableHeader({
+  column,
+  children,
+}: {
+  column: {
+    getIsSorted: () => false | "asc" | "desc";
+    toggleSorting: (desc?: boolean) => void;
+  };
+  children: React.ReactNode;
+}) {
+  const sorted = column.getIsSorted();
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="-ml-3 h-8 data-[state=open]:bg-accent"
+      onClick={() => column.toggleSorting(sorted === "asc")}
+    >
+      {children}
+      {sorted === "asc" ? (
+        <ArrowUp className="ml-2 h-4 w-4" />
+      ) : sorted === "desc" ? (
+        <ArrowDown className="ml-2 h-4 w-4" />
+      ) : (
+        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+      )}
+    </Button>
+  );
+}
 
 export const columns: ColumnDef<AdminSelectEvent>[] = [
   {
     accessorKey: "thumbnail",
     header: "Thumbnail",
+    enableSorting: false,
     cell: ({ row }) => {
       const thumbnail = row.original.thumbnail;
       return (
@@ -34,16 +76,24 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
   },
   {
     accessorKey: "title",
-    header: "Title",
+    header: ({ column }) => (
+      <SortableHeader column={column}>Title</SortableHeader>
+    ),
     cell: ({ row }) => (
       <Link href={`/events/${row.original.id}`}>
-        <div className="font-medium">{row.getValue("title")}</div>
+        <div className="font-medium hover:underline">
+          {row.getValue("title")}
+        </div>
       </Link>
     ),
   },
   {
     accessorKey: "eventTypes",
     header: "Type",
+    filterFn: (row, id, value) => {
+      const eventType = row.original.eventTypes;
+      return String(eventType.id) === value;
+    },
     cell: ({ row }) => {
       const eventType = row.original.eventTypes;
       return (
@@ -62,7 +112,9 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
   },
   {
     accessorKey: "start",
-    header: "Date & Time",
+    header: ({ column }) => (
+      <SortableHeader column={column}>Date & Time</SortableHeader>
+    ),
     cell: ({ row }) => {
       const startDate = row.original.start;
       return (
@@ -76,6 +128,7 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
   {
     accessorKey: "location",
     header: "Location",
+    enableSorting: false,
     cell: ({ row }) => {
       const location = row.original.location;
       if (!location) {
@@ -91,7 +144,9 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
   },
   {
     accessorKey: "points",
-    header: "Points",
+    header: ({ column }) => (
+      <SortableHeader column={column}>Points</SortableHeader>
+    ),
     cell: ({ row }) => {
       const points = row.getValue("points") as number;
       return (
@@ -103,7 +158,15 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
   },
   {
     accessorKey: "hidden",
-    header: "Status",
+    header: ({ column }) => (
+      <SortableHeader column={column}>Status</SortableHeader>
+    ),
+    filterFn: (row, id, value) => {
+      const isHidden = row.getValue(id) as boolean;
+      if (value === "visible") return !isHidden;
+      if (value === "hidden") return isHidden;
+      return true;
+    },
     cell: ({ row }) => {
       const isHidden = row.getValue("hidden") as boolean;
       return isHidden ? (

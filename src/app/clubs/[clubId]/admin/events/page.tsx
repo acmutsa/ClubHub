@@ -2,12 +2,15 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import { Plus } from "lucide-react";
-import { getClubEvents } from "@/lib/queries/events";
+import { getClubEvents, getClubEventTypes } from "@/lib/queries/events";
 import Link from "next/link";
 
 export default async function Page({ params }: { params: { clubId: string } }) {
   const { clubId } = await params;
-  const clubEvents = await getClubEvents(clubId);
+  const [clubEvents, eventTypes] = await Promise.all([
+    getClubEvents(clubId),
+    getClubEventTypes(clubId),
+  ]);
 
   return (
     <>
@@ -32,7 +35,11 @@ export default async function Page({ params }: { params: { clubId: string } }) {
         </div>
       </div>
       <div className="mx-auto max-w-7xl p-4">
-        <DataTable columns={columns} data={clubEvents} />
+        <DataTable
+          columns={columns}
+          data={clubEvents}
+          eventTypes={eventTypes}
+        />
       </div>
     </>
   );
