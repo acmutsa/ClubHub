@@ -27,7 +27,7 @@ export const ClubAdminSidebar = ({
   return (
     <Sidebar className={className}>
       <SidebarHeader>
-        <h1 className="text-2xl font-bold">{club.name}</h1>
+        <h1 className="text-lg font-bold">Admin</h1>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
