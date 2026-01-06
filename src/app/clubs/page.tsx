@@ -20,6 +20,7 @@ import { redirect } from "next/navigation";
 import {
   JoinClubButton,
   LeaveClubButton,
+  CreateClubButton,
 } from "@/components/shared/membership/buttons";
 
 export default async function Page() {
@@ -63,7 +64,9 @@ export default async function Page() {
                   <TableCell>{club.description}</TableCell>
                   <TableCell className="whitespace-nowrap w-0">
                     {memberClubIds.has(club.id) ? (
+
                       <LeaveClubButton clubId={club.id} />
+
                     ) : (
                       <JoinClubButton clubId={club.id} />
                     )}
@@ -73,6 +76,9 @@ export default async function Page() {
             </TableBody>
           </Table>
         </div>
+      </div>
+      <div className="fixed bottom-4 right-4">
+        <CreateClubButton />
       </div>
     </>
   );
