@@ -13,6 +13,7 @@ import {
   type EventInsertInput,
 } from "@/lib/validators/event";
 import { createEventAction } from "@/actions/events";
+import { ThumbnailPicker } from "@/components/clubs/admin/thumbnail-picker";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,10 +65,17 @@ interface Location {
   };
 }
 
+type ThumbnailItem = {
+  key: string;
+  url: string;
+  thumbnailId?: number;
+};
+
 interface NewEventFormProps {
   clubId: string;
   eventTypes: EventType[];
   locations: Location[];
+  initialThumbnails?: ThumbnailItem[];
   className?: string;
 }
 
@@ -75,6 +83,7 @@ export function NewEventForm({
   clubId,
   eventTypes,
   locations,
+  initialThumbnails = [],
   className,
 }: NewEventFormProps) {
   const router = useRouter();
@@ -88,6 +97,7 @@ export function NewEventForm({
       points: 0,
       hidden: false,
       locationId: null,
+      thumbnailId: null,
     },
   });
 
@@ -142,7 +152,7 @@ export function NewEventForm({
                 {...form.register("title")}
                 className={cn(
                   form.formState.errors.title &&
-                    "border-destructive focus-visible:ring-destructive"
+                    "border-destructive focus-visible:ring-destructive",
                 )}
               />
               <FieldError>{form.formState.errors.title?.message}</FieldError>
@@ -157,7 +167,7 @@ export function NewEventForm({
                 {...form.register("description")}
                 className={cn(
                   form.formState.errors.description &&
-                    "border-destructive focus-visible:ring-destructive"
+                    "border-destructive focus-visible:ring-destructive",
                 )}
               />
               <FieldError>
@@ -178,7 +188,7 @@ export function NewEventForm({
                   id="eventTypeId"
                   className={cn(
                     form.formState.errors.eventTypeId &&
-                      "border-destructive focus-visible:ring-destructive"
+                      "border-destructive focus-visible:ring-destructive",
                   )}
                 >
                   <SelectValue placeholder="Select an event type" />
@@ -202,6 +212,28 @@ export function NewEventForm({
               </FieldError>
             </Field>
           </FieldGroup>
+        </CardContent>
+      </Card>
+
+      {/* Thumbnail */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Thumbnail</CardTitle>
+          <CardDescription>
+            Upload a new image or select from your library
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThumbnailPicker
+            clubId={clubId}
+            initialThumbnails={initialThumbnails}
+            value={form.watch("thumbnailId") ?? null}
+            onChange={(thumbnailId) =>
+              form.setValue("thumbnailId", thumbnailId, {
+                shouldValidate: true,
+              })
+            }
+          />
         </CardContent>
       </Card>
 
@@ -295,7 +327,7 @@ export function NewEventForm({
                   form.setValue(
                     "locationId",
                     value === "none" ? null : parseInt(value),
-                    { shouldValidate: true }
+                    { shouldValidate: true },
                   )
                 }
               >
@@ -330,7 +362,7 @@ export function NewEventForm({
                   {...form.register("points", { valueAsNumber: true })}
                   className={cn(
                     form.formState.errors.points &&
-                      "border-destructive focus-visible:ring-destructive"
+                      "border-destructive focus-visible:ring-destructive",
                   )}
                 />
                 <FieldDescription>
@@ -420,7 +452,7 @@ function DateTimePicker({ value, onChange, error }: DateTimePickerProps) {
             className={cn(
               "w-[200px] justify-start text-left font-normal",
               !value && "text-muted-foreground",
-              error && "border-destructive focus-visible:ring-destructive"
+              error && "border-destructive focus-visible:ring-destructive",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -439,10 +471,15 @@ function DateTimePicker({ value, onChange, error }: DateTimePickerProps) {
         type="time"
         id="time-picker"
         step="1"
-        defaultValue="10:30:00"
+        value={
+          value
+            ? `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}`
+            : "10:30"
+        }
+        onChange={handleTimeChange}
         className={cn(
           "w-[120px] bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none",
-          error && "border-destructive focus-visible:ring-destructive"
+          error && "border-destructive focus-visible:ring-destructive",
         )}
       />
     </div>

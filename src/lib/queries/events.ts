@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { unauthorized } from "next/navigation";
 import isClubAdmin from "@/lib/membership";
+import { thumbnailStorage } from "@/lib/storage/thumbnails";
 
 export async function getClubEvents(clubId: string) {
   const session = await auth.api.getSession({
@@ -24,7 +25,24 @@ export async function getClubEvents(clubId: string) {
       thumbnail: true,
     },
   });
-  return clubEvents;
+
+  // Resolve thumbnail keys to presigned URLs
+  const resolved = await Promise.all(
+    clubEvents.map(async (event) => {
+      if (event.thumbnail) {
+        const presignedUrl = await thumbnailStorage.getThumbnailUrl(
+          event.thumbnail.url,
+        );
+        return {
+          ...event,
+          thumbnail: { ...event.thumbnail, url: presignedUrl },
+        };
+      }
+      return event;
+    }),
+  );
+
+  return resolved;
 }
 
 export async function getClubEventTypes(clubId: string) {
@@ -84,6 +102,14 @@ export async function getClubEvent(clubId: string, eventId: number) {
       thumbnail: true,
     },
   });
+
+  if (event?.thumbnail) {
+    const presignedUrl = await thumbnailStorage.getThumbnailUrl(
+      event.thumbnail.url,
+    );
+    return { ...event, thumbnail: { ...event.thumbnail, url: presignedUrl } };
+  }
+
   return event;
 }
 
@@ -104,7 +130,7 @@ export async function getMemberEvent(clubId: string, eventId: number) {
       and(
         eq(events.clubId, clubId),
         eq(events.id, eventId),
-        eq(events.hidden, false)
+        eq(events.hidden, false),
       ),
     with: {
       club: true,
@@ -117,5 +143,13 @@ export async function getMemberEvent(clubId: string, eventId: number) {
       thumbnail: true,
     },
   });
+
+  if (event?.thumbnail) {
+    const presignedUrl = await thumbnailStorage.getThumbnailUrl(
+      event.thumbnail.url,
+    );
+    return { ...event, thumbnail: { ...event.thumbnail, url: presignedUrl } };
+  }
+
   return event;
 }

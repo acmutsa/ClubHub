@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { AdminSelectClub } from "@/lib/types/club";
-import { Calendar, Home, Users } from "lucide-react";
+import { Calendar, Home, Image, Users } from "lucide-react";
 import Link from "next/link";
 
 interface ClubAdminSidebarProps {
@@ -55,6 +55,14 @@ export const ClubAdminSidebar = ({
                   <Link href={`/admin/events`}>
                     <Calendar />
                     <span>Events</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href={`/admin/thumbnails`}>
+                    <Image />
+                    <span>Thumbnails</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

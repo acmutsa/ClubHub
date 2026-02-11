@@ -30,6 +30,7 @@ export const eventInsertBaseSchema = z.object({
   checkinEnd: z.date({ message: "Check-in end is required" }),
   eventTypeId: z.number({ message: "Event type is required" }),
   locationId: z.number().optional().nullable(),
+  thumbnailId: z.number().optional().nullable(),
   points: z.number("Points must be a number").min(0, "Points must be positive"),
   hidden: z.boolean(),
 });
