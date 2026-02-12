@@ -3,7 +3,7 @@ import { getMembers } from "@/lib/queries/club";
 import isClubAdmin from "@/lib/membership";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, unauthorized } from "next/navigation";
 import { memberColumns } from "@/components/clubs/admin/user-columns";
 
 export default async function Page({
@@ -24,8 +24,10 @@ export default async function Page({
 
   const user = sessionData.user;
 
-  const isAdmin = await isClubAdmin(clubId, user.id);
-  //add authentication here
+  const isAdmin = await isClubAdmin(user.id, clubId);
+  if (!isAdmin){
+    return unauthorized();
+  }
 
   const members = await getMembers(clubId);
 

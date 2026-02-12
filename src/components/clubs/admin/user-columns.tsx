@@ -43,18 +43,17 @@ export const memberColumns: ColumnDef<Member>[] = [
     cell: ({ row }) => <div>{row.getValue("email")}</div>,
   },
   {
-    accessorKey: "role",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={column.getToggleSortingHandler()}
-        >
-          Role
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+  accessorKey: "role",
+  header: "Role",
+  filterFn: (row, id, value) => {
+    const role = row.getValue<string>(id)
+
+    if (Array.isArray(value)) {
+      return value.includes(role)
+    }
+
+    return role === value
+  },
     cell: ({ row }) => <div className="capitalize">{row.getValue("role")}</div>,
   },
 ];

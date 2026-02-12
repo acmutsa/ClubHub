@@ -74,40 +74,74 @@ export default function MemberDataTable<TData, TValue>({
  
   return (
     <div className="overflow-hidden rounded-md border">
-            <Input
-            placeholder="Search members..."
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="max-w-lg m-3 "
-            />
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                Show Only
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                {table
-                .getAllColumns()
-                .filter(
-                    (column) => column.getCanHide()
-                )
-                .map((column) => {
-                    return (
-                    <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                        }
-                    >
-                        {column.id}
-                    </DropdownMenuCheckboxItem>
-                    )
-                })}
-            </DropdownMenuContent>
-            </DropdownMenu>
+      <div className="flex flex-row items-center ">
+              <Input
+              placeholder="Search members..."
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="max-w-lg ml-2"
+              />
+              <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="ml-auto">
+                  Show Only
+                  </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                  {table
+                  .getAllColumns()
+                  .filter(
+                      (column) => column.getCanHide()
+                  )
+                  .map((column) => {
+                      return (
+                      <DropdownMenuCheckboxItem
+                          key={column.id}
+                          className="capitalize"
+                          checked={column.getIsVisible()}
+                          onCheckedChange={(value) =>
+                          column.toggleVisibility(!!value)
+                          }
+                      >
+                          {column.id}
+                      </DropdownMenuCheckboxItem>
+                      )
+                  })}
+              </DropdownMenuContent>
+              </DropdownMenu>
+              <Select
+                defaultValue="all"
+                onValueChange={(value) => {
+                  const roleColumn = table.getColumn("role")
+
+                  if (!roleColumn) return
+
+                  if (value === "all") {
+                    roleColumn.setFilterValue(undefined)
+                  }
+
+                  if (value === "admins") {
+                    roleColumn.setFilterValue(["admin", "super_admin"])
+                  }
+
+                  if (value === "members") {
+                    roleColumn.setFilterValue("member")
+                  }
+                }}
+              >
+                    <SelectTrigger className="w-[180px] m-3">
+                      <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="all">All Members</SelectItem>
+                        <SelectItem value="admins">Admins Only</SelectItem>
+                        <SelectItem value="members">Members Only</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+              </Select>
+          </div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
