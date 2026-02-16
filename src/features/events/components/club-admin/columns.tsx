@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminSelectEvent } from "@/features/club-admin/events/lib/types/event";
+import { AdminSelectEvent } from "@/features/events/lib/types/event";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";

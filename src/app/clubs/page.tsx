@@ -21,7 +21,7 @@ import {
   JoinClubButton,
   LeaveClubButton,
 } from "@/features/membership/components/membership-buttons";
-import { CreateClubButton } from "@/features/admin/components/club-button";
+import { CreateClubButton } from "@/features/clubs/components/club-button";
 
 export default async function Page() {
   const session = await auth.api.getSession({

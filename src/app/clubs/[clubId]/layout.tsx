@@ -1,10 +1,10 @@
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { getClub } from "@/lib/queries/club";
+import { getClub } from "@/features/clubs/lib/queries/club";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import isClubAdmin from "@/features/club-admin/lib/membership";
+import isClubAdmin from "@/lib/membership";
 
 export default async function Layout({
   children,

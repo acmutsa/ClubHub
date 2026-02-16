@@ -5,7 +5,7 @@ import {
   integer,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.schema";
-import { membershipRoles } from "@/lib/types/membership";
+import { membershipRoles } from "@/features/membership/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
 
 const commonTimestamps = {

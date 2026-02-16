@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getMemberEvent } from "@/features/events/actions/events";
+import { getMemberEvent } from "@/features/events/lib/queries/events";
 import { EventDetailView } from "@/features/events/components/event-detail-view";
 
 interface EventDetailsPageProps {

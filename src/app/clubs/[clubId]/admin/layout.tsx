@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getClub } from "@/lib/queries/club";
-import isClubAdmin from "@/features/club-admin/lib/membership";
+import { getClub } from "@/features/clubs/lib/queries/club";
+import isClubAdmin from "@/lib/membership";
 import {
   SidebarProvider,
   SidebarTrigger,

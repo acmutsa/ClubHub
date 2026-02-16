@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useMemo, useState } from "react";
-import { createClub } from "@/features/admin/actions/club-action";
+import { createClub } from "@/features/clubs/actions/club-action";
 import { useAction } from "next-safe-action/hooks";
 
 export function CreateClubButton() {

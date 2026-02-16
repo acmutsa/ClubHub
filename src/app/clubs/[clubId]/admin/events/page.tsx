@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/features/club-admin/events/components/data-table";
-import { columns } from "@/features/club-admin/events/components/columns";
+import { DataTable } from "@/features/events/components/club-admin/data-table";
+import { columns } from "@/features/events/components/club-admin/columns";
 import { Plus } from "lucide-react";
-import { getClubEvents, getClubEventTypes } from "@/features/club-admin/events/lib/queries/events";
+import { getClubEvents, getClubEventTypes } from "@/features/events/lib/queries/events";
 import Link from "next/link";
 
 export default async function Page({ params }: { params: { clubId: string } }) {

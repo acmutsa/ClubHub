@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { AdminSelectClub } from "@/features/club-admin/lib/types/club";
+import { AdminSelectClub } from "@/features/clubs/lib/types/club";
 import { Calendar, Home, Users } from "lucide-react";
 import Link from "next/link";
 
