@@ -1,6 +1,6 @@
 import { Users } from "lucide-react";
 
-import SignUpForm from "@/components/sign-up-form";
+import SignUpForm from "@/features/authentication/components/sign-up-form";
 import Image from "next/image";
 
 export default function SignUpPage() {

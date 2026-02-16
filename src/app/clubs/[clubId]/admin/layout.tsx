@@ -2,13 +2,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getClub } from "@/lib/queries/club";
-import isClubAdmin from "@/lib/membership";
+import isClubAdmin from "@/features/club-admin/lib/membership";
 import {
   SidebarProvider,
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { ClubAdminSidebar } from "@/components/clubs/admin/sidebar";
+import { ClubAdminSidebar } from "@/features/club-admin/components/sidebar";
 import { unauthorized } from "next/navigation";
 
 export default async function Layout({

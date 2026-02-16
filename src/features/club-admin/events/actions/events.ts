@@ -2,10 +2,10 @@
 import { db } from "@/db/index";
 import { events } from "@/db/schema";
 import { authAction } from "@/lib/safe-action";
-import { eventInsertSchema } from "@/lib/validators/event";
+import { eventInsertSchema } from "@/features/club-admin/events/lib/validators/event";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import isClubAdmin from "@/lib/membership";
+import isClubAdmin from "@/features/club-admin/lib/membership";
 import { returnValidationErrors } from "next-safe-action";
 
 const createEventSchema = eventInsertSchema.safeExtend({

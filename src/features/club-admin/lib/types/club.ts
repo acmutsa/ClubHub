@@ -1,4 +1,4 @@
 import { z } from "zod";
-import { adminClubSelectSchema } from "../validators/club";
+import { adminClubSelectSchema } from "@/features/club-admin/lib/validators/club";
 
 export type AdminSelectClub = z.infer<typeof adminClubSelectSchema>;

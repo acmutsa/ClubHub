@@ -1,5 +1,5 @@
-import { NewEventForm } from "@/components/clubs/new-event-form";
-import { getClubEventTypes, getAllLocations } from "@/lib/queries/events";
+import { NewEventForm } from "@/features/club-admin/events/components/new-event-form";
+import { getClubEventTypes, getAllLocations } from "@/features/club-admin/events/lib/queries/events";
 
 export default async function NewEventPage({
   params,

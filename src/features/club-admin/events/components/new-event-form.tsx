@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 import {
   eventInsertBaseSchema,
   type EventInsertInput,
-} from "@/lib/validators/event";
-import { createEventAction } from "@/actions/events";
+} from "@/features/club-admin/events/lib/validators/event";
+import { createEventAction } from "@/features/club-admin/events/actions/events";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

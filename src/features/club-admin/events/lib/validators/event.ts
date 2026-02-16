@@ -1,5 +1,5 @@
 import { events, eventTypes, thumbnails } from "@/db/schema";
-import { baseClubSelectSchema } from "@/lib/validators/club";
+import { baseClubSelectSchema } from "@/features/club-admin/lib/validators/club";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { baseLocationSelectSchema } from "@/lib/validators/location";
 import { z } from "zod";

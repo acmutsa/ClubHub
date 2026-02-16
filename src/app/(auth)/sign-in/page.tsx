@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from "lucide-react";
 
-import SignInForm from "@/components/sign-in-form";
+import SignInForm from "@/features/authentication/components/sign-in-form";
 import Image from "next/image";
 
 export default function SignInPage() {
