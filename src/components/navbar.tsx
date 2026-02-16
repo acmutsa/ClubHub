@@ -35,26 +35,32 @@ export default async function Navbar({
   return (
     <header className="h-16 bg-background border-b border-border">
       <div className="h-full flex items-center justify-between px-4">
-        <Link href={`/clubs/${clubId}`} className=" font-bold text-2xl">
+        <Link href="/" className=" font-bold text-2xl">
           {clubName}
         </Link>
 
         <div className="h-full flex items-center gap-4">
           {userType === "admin" && (
             <Button variant="link" asChild>
-              <Link className="font-semibold" href={`/clubs/${clubId}/admin`}>Admin</Link>
+              <Link className="font-semibold" href="/admin">
+                Admin
+              </Link>
             </Button>
           )}
 
           <Button variant="link" asChild>
-            <Link className="font-semibold" href={`/clubs/${clubId}/events`}>Events</Link>
+            <Link className="font-semibold" href="/events">
+              Events
+            </Link>
           </Button>
 
           <Button variant="link" asChild>
-            <Link className="font-semibold" href={`/clubs/${clubId}/members`}>Members</Link>
+            <Link className="font-semibold" href="/members">
+              Members
+            </Link>
           </Button>
 
-          <DropdownMenu modal={false} >
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <div className="h-full flex items-center cursor-pointer">
                 <div className="flex items-center justify-center h-6 w-6">
@@ -65,7 +71,7 @@ export default async function Navbar({
 
             <DropdownMenuContent side="bottom" align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/clubs/${clubId}/profile`} className="w-full">
+                <Link href="/profile" className="w-full">
                   Settings
                 </Link>
               </DropdownMenuItem>

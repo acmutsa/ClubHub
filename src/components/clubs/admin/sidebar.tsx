@@ -11,19 +11,23 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Club } from "@/lib/types/club";
+import { AdminSelectClub } from "@/lib/types/club";
 import { Calendar, Home, Users } from "lucide-react";
 import Link from "next/link";
 
 interface ClubAdminSidebarProps {
-  club: Club;
+  club: AdminSelectClub;
+  className?: string;
 }
 
-export const ClubAdminSidebar = ({ club }: ClubAdminSidebarProps) => {
+export const ClubAdminSidebar = ({
+  club,
+  className,
+}: ClubAdminSidebarProps) => {
   return (
-    <Sidebar>
+    <Sidebar className={className}>
       <SidebarHeader>
-        <h1 className="text-2xl font-bold">{club.name}</h1>
+        <h1 className="text-lg font-bold">Admin</h1>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

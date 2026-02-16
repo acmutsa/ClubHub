@@ -1,10 +1,15 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getClub } from "@/lib/club";
+import { getClub } from "@/lib/queries/club";
 import isClubAdmin from "@/lib/membership";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
 import { ClubAdminSidebar } from "@/components/clubs/admin/sidebar";
+import { unauthorized } from "next/navigation";
 
 export default async function Layout({
   params,
@@ -22,21 +27,23 @@ export default async function Layout({
   }
   const user = session.user;
   if (!(await isClubAdmin(user.id, clubId))) {
-    return redirect("/clubs");
+    return unauthorized();
   }
 
   const club = await getClub(clubId);
   if (!club) {
-    return redirect("/clubs");
+    return unauthorized();
   }
 
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={club} />
-      <main>
-        <SidebarTrigger />
-        {children}
-      </main>
+      <ClubAdminSidebar club={club} className="relative" />
+      <SidebarInset>
+        <main>
+          {/* <SidebarTrigger /> */}
+          {children}
+        </main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
