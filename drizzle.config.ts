@@ -8,7 +8,8 @@ export default defineConfig({
   schema: "./src/db/schema.ts",
   dialect: "turso",
   dbCredentials: {
-    url: process.env.TURSO_DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN!,
+    url: "http://127.0.0.1:8080",
+    // url: process.env.TURSO_DATABASE_URL!,
+    // authToken: process.env.TURSO_AUTH_TOKEN!,
   },
 });

@@ -1,8 +1,9 @@
+"use server";
 import { db } from "@/db/index";
 import { membership } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
-export default async function isClubAdmin(userId: string, clubId: string) {
+export async function isClubAdmin(userId: string, clubId: string) {
   const member = await db
     .select()
     .from(membership)
