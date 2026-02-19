@@ -25,13 +25,11 @@ class ThumbnailStorage extends BlobSystem<ThumbnailMeta> {
     return this.getPresignedGetUrl(key);
   }
 
-  async deleteThumbnail(clubId: string, thumbnailId: string) {
-    const key = this.buildKey({ clubId, thumbnailId }, "image/png");
+  async deleteThumbnailByKey(key: string) {
     return this.delete(key);
   }
 
-  async existsThumbnail(clubId: string, thumbnailId: string) {
-    const key = this.buildKey({ clubId, thumbnailId }, "image/png");
+  async existsThumbnailByKey(key: string) {
     return this.exists(key);
   }
 

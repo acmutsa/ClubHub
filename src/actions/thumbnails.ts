@@ -168,19 +168,18 @@ export const deleteThumbnailAction = authAction
       });
     }
 
-    // Extract the thumbnailId from the key (e.g. "clubs/<id>/thumbnails/<uuid>.png")
-    const filename = key.split("/").pop();
-    if (!filename) {
-      returnValidationErrors(z.null(), {
-        _errors: ["Invalid thumbnail key"],
-      });
-    }
-    const thumbnailId = filename!.split(".")[0];
+    db.transaction(async (tx) => {
+      // Delete the DB record if it exists
+      await tx.delete(thumbnails).where(eq(thumbnails.url, key));
 
-    // Delete the DB record if it exists
-    await db.delete(thumbnails).where(eq(thumbnails.url, key));
-
-    await thumbnailStorage.deleteThumbnail(clubId, thumbnailId);
+      // Delete in blob
+      try {
+        await thumbnailStorage.deleteThumbnailByKey(key);
+      } catch (error) {
+        tx.rollback();
+        console.error("Failed to delete thumbnail from blob storage:", error);
+      }
+    });
 
     revalidatePath(`/clubs/${clubId}/admin/thumbnails`);
 
