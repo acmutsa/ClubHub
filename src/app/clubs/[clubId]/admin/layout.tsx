@@ -35,10 +35,8 @@ export default async function Layout({
   if (!club) {
     return unauthorized();
   }
-  const h = await headers();
-  const host = h.get("host") ?? "";
-
-  const path =  getBasePath(host)? "" : `/clubs/${clubId}`;
+  const h = (await headers()).get("host") ?? "";
+  const path =  getBasePath(h)? "" : `/clubs/${clubId}`;
 
   return (
     <SidebarProvider>

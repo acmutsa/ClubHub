@@ -32,10 +32,8 @@ export default async function Layout({
     return redirect("/clubs");
   }
   
-  const h = await headers();
-  const host = h.get("host") ?? "";
-
-  const path =  getBasePath(host)? "" : `/clubs/${clubId}`;
+  const h = (await headers()).get("host") ?? "";
+  const path =  getBasePath(h)? "" : `/clubs/${clubId}`;
 
  
   return (
