@@ -34,10 +34,22 @@ export default async function Layout({
   if (!club) {
     return unauthorized();
   }
+  
+  async function handleSubdomainRequest() {
+    const h = await headers();
+    const host = h.get("host") ?? ""
+    console.log(host)
+    if (host.split(".").length > 1){
+      return host.split(".")[0]
+    }
+    return ""
+  }
 
+  const subdomain = await handleSubdomainRequest();
+  const path = subdomain ? "" : `/clubs/${clubId}`
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={club} className="relative" />
+      <ClubAdminSidebar club={club} className="relative" baseUrl={path} />
       <SidebarInset>
         <main>
           {/* <SidebarTrigger /> */}

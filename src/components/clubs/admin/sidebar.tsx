@@ -18,11 +18,13 @@ import Link from "next/link";
 interface ClubAdminSidebarProps {
   club: AdminSelectClub;
   className?: string;
+  baseUrl: string;
 }
 
 export const ClubAdminSidebar = ({
   club,
   className,
+  baseUrl,
 }: ClubAdminSidebarProps) => {
   return (
     <Sidebar className={className}>
@@ -36,7 +38,7 @@ export const ClubAdminSidebar = ({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/admin`}>
+                  <Link href={`${baseUrl}/admin`}>
                     <Home />
                     <span>Overview</span>
                   </Link>
@@ -44,7 +46,7 @@ export const ClubAdminSidebar = ({
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/admin/members`}>
+                  <Link href={`${baseUrl}/admin/members`}>
                     <Users />
                     <span>Members</span>
                   </Link>
@@ -52,7 +54,7 @@ export const ClubAdminSidebar = ({
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/admin/events`}>
+                  <Link href={`${baseUrl}/admin/events`}>
                     <Calendar />
                     <span>Events</span>
                   </Link>
