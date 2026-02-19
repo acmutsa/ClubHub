@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import isClubAdmin from "@/lib/membership";
+import { getBasePath } from "@/lib/routing/subdomain";
 export default async function Layout({
   children,
   params,
@@ -30,18 +31,13 @@ export default async function Layout({
   if (!club) {
     return redirect("/clubs");
   }
-  async function handleSubdomainRequest() {
-    const h = await headers();
-    const host = h.get("host") ?? ""
-    console.log(host)
-    if (host.split(".").length > 1){
-      return host.split(".")[0]
-    }
-    return ""
-  }
+  
+  const h = await headers();
+  const host = h.get("host") ?? "";
 
-  const subdomain = await handleSubdomainRequest();
-  const path = subdomain ? "" : `/clubs/${clubId}`
+  const path =  getBasePath(host)? "" : `/clubs/${clubId}`;
+
+ 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar
