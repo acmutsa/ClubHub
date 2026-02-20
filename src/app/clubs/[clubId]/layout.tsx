@@ -5,7 +5,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import isClubAdmin from "@/lib/membership";
-import { getBasePath } from "@/lib/routing/subdomain";
+import { modifyBasePath } from "@/lib/routing/subdomain";
+
 export default async function Layout({
   children,
   params,
@@ -31,11 +32,10 @@ export default async function Layout({
   if (!club) {
     return redirect("/clubs");
   }
-  
-  const h = (await headers()).get("host") ?? "";
-  const path =  getBasePath(h)? "" : `/clubs/${clubId}`;
 
- 
+  const h = (await headers()).get("host") ?? "";
+  const path = modifyBasePath(clubId, h, "/");
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar
