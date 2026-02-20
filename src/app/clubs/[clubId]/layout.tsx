@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import isClubAdmin from "@/lib/membership";
+import { modifyBasePath } from "@/lib/routing/subdomain";
+
 export default async function Layout({
   children,
   params,
@@ -30,12 +32,17 @@ export default async function Layout({
   if (!club) {
     return redirect("/clubs");
   }
+
+  const h = (await headers()).get("host") ?? "";
+  const path = modifyBasePath(clubId, h, "/");
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar
         clubName={club.name}
         clubId={clubId}
         userType={userRole ? "admin" : "member"}
+        baseUrl={path}
       />
       <main className="flex-1">{children}</main>
       <Footer clubId={clubId} clubName={club.name} />

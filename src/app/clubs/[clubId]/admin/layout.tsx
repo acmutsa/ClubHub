@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ClubAdminSidebar } from "@/components/clubs/admin/sidebar";
 import { unauthorized } from "next/navigation";
+import { modifyBasePath } from "@/lib/routing/subdomain";
 
 export default async function Layout({
   params,
@@ -34,10 +35,12 @@ export default async function Layout({
   if (!club) {
     return unauthorized();
   }
+  const h = (await headers()).get("host") ?? "";
+  const path = modifyBasePath(clubId, h, "");
 
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={club} className="relative" />
+      <ClubAdminSidebar club={club} className="relative" baseUrl={path} />
       <SidebarInset>
         <main>
           {/* <SidebarTrigger /> */}
