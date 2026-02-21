@@ -148,7 +148,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                 <img
                   src={event.thumbnail.url}
                   alt={event.title}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-center"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
