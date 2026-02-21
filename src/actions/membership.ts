@@ -31,10 +31,9 @@ export const joinClub = authAction
   });
 
 export const createClub = authAction
-  .bindArgsSchemas<[name: z.ZodString, description: z.ZodString]>([
-    z.string().min(1, "Club Name Required"),
-    z.string().min(1, "Description Required"),
-  ])
+  .bindArgsSchemas<
+    [name: z.ZodString, description: z.ZodString]
+  >([z.string().min(1, "Club Name Required"), z.string().min(1, "Description Required")])
   .action(
     async ({ bindArgsParsedInputs: [name, description], ctx: { userId } }) => {
       const clubId = randomUUID();
@@ -43,6 +42,7 @@ export const createClub = authAction
           id: clubId,
           name,
           description,
+          owner: userId,
         });
         await tx.insert(membership).values({
           userId,
@@ -52,5 +52,5 @@ export const createClub = authAction
       });
       revalidatePath("/clubs");
       return { clubId };
-    }
+    },
   );

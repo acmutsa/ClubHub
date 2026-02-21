@@ -50,6 +50,13 @@
       "when": 1765924012375,
       "tag": "0006_foamy_obadiah_stane",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1771520922440,
+      "tag": "0007_silent_paladin",
+      "breakpoints": true
     }
   ]
 }
