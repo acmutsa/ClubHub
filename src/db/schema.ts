@@ -22,6 +22,7 @@ export const clubs = sqliteTable("clubs", {
   id: text().primaryKey(),
   name: text().notNull(),
   description: text().notNull(),
+  owner: text().notNull(),
 });
 
 export const membership = sqliteTable(
@@ -35,7 +36,7 @@ export const membership = sqliteTable(
       .references(() => clubs.id, { onDelete: "cascade" }),
     role: text({ enum: membershipRoles }).notNull().default("member"),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.clubId] })]
+  (table) => [primaryKey({ columns: [table.userId, table.clubId] })],
 );
 
 export const events = sqliteTable("events", {
@@ -143,7 +144,7 @@ export const eventTypesRelationships = relations(
       references: [clubs.id],
     }),
     events: many(events),
-  })
+  }),
 );
 
 export const locationsRelationships = relations(locations, ({ one, many }) => ({
@@ -162,7 +163,7 @@ export const thumbnailsRelationships = relations(
   thumbnails,
   ({ one, many }) => ({
     events: many(events),
-  })
+  }),
 );
 
 export * from "./auth.schema";
