@@ -14,7 +14,7 @@ import {
 import { DropdownSwitcher } from "./ThemeSwitcher";
 interface NavbarProps {
   clubName: string;
-  clubId: string;
+  clubSlug: string;
   userType: string;
   baseUrl: string;
   //we will need to retieve image/logo eventually
@@ -22,7 +22,7 @@ interface NavbarProps {
 
 export default async function Navbar({
   clubName,
-  clubId,
+  clubSlug,
   userType,
   baseUrl,
 }: NavbarProps) {

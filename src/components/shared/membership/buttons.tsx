@@ -15,9 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAction } from "next-safe-action/hooks";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { getClub } from "@/lib/queries/club";
-
+import { checkSlugUniqueness } from "@/lib/queries/club";
 export function JoinClubButton({ clubId }: { clubId: string }) {
   const { execute, isPending } = useAction(joinClub.bind(null, clubId));
 
@@ -56,12 +54,26 @@ export function CreateClubButton() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-
+  const [slug, setSlug] = useState("");
   const boundAction = useMemo(
-    () => createClub.bind(null, name, description),
-    [name, description]
+    () => createClub.bind(null, name, description,slug),
+    [name, description,slug]
   );
 
+  function generateSlug(name:string){
+     const baseSlug = name.toLowerCase()
+     .trim()
+     .replace(/[^\w\s-]/g, "")
+     .replace(/\s+/g, "-");
+
+     let count = Math.random() * (100 - 1) + 1;
+     let clubSlug = baseSlug;
+
+     while (!(checkSlugUniqueness(slug))){
+      clubSlug = `${baseSlug}-${count}`;
+     }
+     return clubSlug;
+  }
   const { execute, isPending } = useAction(boundAction);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -91,11 +103,18 @@ export function CreateClubButton() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Name"
               required
+              onBlur={async () => setSlug(generateSlug(name))}
             />
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Description"
+              required
+            />
+            <Input
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="Your Org's Slug"
               required
             />
           </div>

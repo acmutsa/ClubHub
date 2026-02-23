@@ -7,6 +7,7 @@ import {
 import { user } from "./auth.schema";
 import { membershipRoles } from "@/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
+import { id } from "date-fns/locale";
 
 const commonTimestamps = {
   createdAt: integer({ mode: "timestamp" })
@@ -23,6 +24,7 @@ export const clubs = sqliteTable("clubs", {
   name: text().notNull(),
   description: text().notNull(),
   owner: text().notNull(),
+  slug: text().notNull(),
 });
 
 export const membership = sqliteTable(
