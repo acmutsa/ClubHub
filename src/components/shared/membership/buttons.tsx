@@ -96,6 +96,7 @@ export function CreateClubButton() {
       setName("");
       setDescription("");
       setSlugError(null);
+      setSlug("");
     }
   });
 
