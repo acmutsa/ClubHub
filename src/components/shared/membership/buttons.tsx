@@ -16,6 +16,8 @@ import {
 import { useAction } from "next-safe-action/hooks";
 import { useMemo, useState } from "react";
 import { checkSlugUniqueness } from "@/lib/queries/club";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
+
 export function JoinClubButton({ clubId }: { clubId: string }) {
   const { execute, isPending } = useAction(joinClub.bind(null, clubId));
 
@@ -55,33 +57,51 @@ export function CreateClubButton() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [slug, setSlug] = useState("");
+  const [slugError, setSlugError] = useState<string | null>(null);
+
   const boundAction = useMemo(
-    () => createClub.bind(null, name, description,slug),
-    [name, description,slug]
+    () => createClub.bind(null, name, description, slug),
+    [name, description, slug]
   );
 
-  function generateSlug(name:string){
-     const baseSlug = name.toLowerCase()
-     .trim()
-     .replace(/[^\w\s-]/g, "")
-     .replace(/\s+/g, "-");
+  async function generateSlug(name: string) {
+    const baseSlug = name.toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-");
 
-     let count = Math.random() * (100 - 1) + 1;
-     let clubSlug = baseSlug;
 
-     while (!(checkSlugUniqueness(slug))){
+    let clubSlug = baseSlug;
+
+    while (!(await checkSlugUniqueness(clubSlug))) {
+      let count = Math.floor(Math.random() * (100 - 1) + 1);
       clubSlug = `${baseSlug}-${count}`;
-     }
-     return clubSlug;
+    }
+    return clubSlug;
   }
-  const { execute, isPending } = useAction(boundAction);
+
+  async function validateSlug(slug: string) {
+    if (!slug) return;
+    const isUnique = await checkSlugUniqueness(slug)
+    if (!isUnique) {
+      setSlugError("Slug is in use by another org.");
+    } else {
+      setSlugError("");
+    }
+  }
+
+  const { execute, isPending } = useAction(boundAction, {
+    onSuccess: () => {
+      setOpen(false);
+      setName("");
+      setDescription("");
+      setSlugError(null);
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     execute();
-    setOpen(false);
-    setName("");
-    setDescription("");
   };
 
   return (
@@ -93,33 +113,54 @@ export function CreateClubButton() {
         <DialogHeader>
           <DialogTitle>Create New Club</DialogTitle>
           <DialogDescription>
-            Enter the name and description for your new club.
+            Fill out the fields below.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Name"
-              required
-              onBlur={async () => setSlug(generateSlug(name))}
-            />
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description"
-              required
-            />
-            <Input
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              placeholder="Your Org's Slug"
-              required
-            />
+            <Field>
+              <FieldLabel htmlFor="slug-input">Organization Name</FieldLabel>
+
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Name"
+                required
+                onBlur={async () => setSlug(await generateSlug(name))}
+              />
+              <FieldDescription>
+                This will be your Organization's Name.
+              </FieldDescription>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="slug-input">Organization Description</FieldLabel>
+              <Input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Description"
+                required
+              />
+              <FieldDescription>
+                Give a small description of your org.
+              </FieldDescription>
+            </Field>
+            <Field data-invalid={!!slugError}>
+              <FieldLabel htmlFor="slug-input">Organization Slug</FieldLabel>
+              <Input
+                id="slug-input"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                onBlur={async () => await validateSlug(slug)}
+                placeholder="Enter slug"
+                aria-invalid={!!slugError}
+              />
+              <FieldDescription>
+                {slugError ? slugError : "This will be your unique org identifier."}
+              </FieldDescription>
+            </Field>
           </div>
           <DialogFooter>
-            <Button type="submit" variant="default" disabled={isPending}>
+            <Button type="submit" variant="default" disabled={!!slugError || isPending}>
               {isPending ? <Spinner /> : "Create Club"}
             </Button>
           </DialogFooter>
