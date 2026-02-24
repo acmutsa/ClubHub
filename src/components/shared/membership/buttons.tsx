@@ -1,6 +1,10 @@
 "use client";
-
-import { joinClub, leaveClub, createClub } from "@/actions/membership";
+import {
+  joinClub,
+  leaveClub,
+  createClub,
+  transferOwnership,
+} from "@/actions/membership";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
@@ -59,7 +63,7 @@ export function CreateClubButton() {
 
   const boundAction = useMemo(
     () => createClub.bind(null, name, description),
-    [name, description]
+    [name, description],
   );
 
   const { execute, isPending } = useAction(boundAction);
@@ -102,6 +106,63 @@ export function CreateClubButton() {
           <DialogFooter>
             <Button type="submit" variant="default" disabled={isPending}>
               {isPending ? <Spinner /> : "Create Club"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function TransferOwnershipButton({ clubId }: { clubId: string }) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsPending(true);
+    setError(null);
+    try {
+      await transferOwnership(clubId, email);
+      setOpen(false);
+      setEmail("");
+    } catch (err: any) {
+      setError(err.message || "Error: Failed to transfer");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" className="w-full">
+          Transfer Ownership
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Transfer Ownership</DialogTitle>
+          <DialogDescription>
+            Enter the email of a member to transfer ownership of this club to.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Member's email"
+              required
+              type="email"
+            />
+            {error && <div className="text-red-500">{error}</div>}
+          </div>
+          <DialogFooter>
+            <Button type="submit" variant="default" disabled={isPending}>
+              {isPending ? <Spinner /> : "Transfer"}
             </Button>
           </DialogFooter>
         </form>

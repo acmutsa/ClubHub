@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { authAction } from "@/lib/safe-action";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+import { user as users } from "@/db/auth.schema";
 
 export const leaveClub = authAction
   .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
@@ -52,5 +53,40 @@ export const createClub = authAction
       });
       revalidatePath("/clubs");
       return { clubId };
+    },
+  );
+
+export const transferOwnership = authAction
+  .bindArgsSchemas<
+    [clubId: z.ZodString, email: z.ZodString]
+  >([z.string(), z.string().email()])
+  .action(
+    async ({ bindArgsParsedInputs: [clubId, email], ctx: { userId } }) => {
+      const [club] = await db.select().from(clubs).where(eq(clubs.id, clubId));
+      if (!club || club.owner !== userId)
+        throw new Error("Error: Not authorized");
+
+      const [newOwner] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email));
+      if (!newOwner) throw new Error("Error: User not found");
+
+      const [member] = await db
+        .select()
+        .from(membership)
+        .where(
+          and(
+            eq(membership.userId, newOwner.id),
+            eq(membership.clubId, clubId),
+          ),
+        );
+      if (!member) throw new Error("Error: User is not a member of this club");
+
+      // Update club owner
+      await db
+        .update(clubs)
+        .set({ owner: newOwner.id })
+        .where(eq(clubs.id, clubId));
     },
   );
