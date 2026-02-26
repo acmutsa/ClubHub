@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { unauthorized } from "next/navigation";
 import isClubAdmin from "@/lib/membership";
+import { events } from "@/db/schema";
+import { sql } from "drizzle-orm/sql";
 
 export async function getClubEvents(clubId: string) {
   const session = await auth.api.getSession({
@@ -118,4 +120,23 @@ export async function getMemberEvent(clubId: string, eventId: number) {
     },
   });
   return event;
+}
+
+export async function getAdminTotalEventCount(): Promise<number> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    unauthorized();
+  }
+  const role = session.user.role;
+  if (role !== "admin" && role !== "super_admin") {
+    unauthorized();
+  }
+
+  const result = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(events);
+
+  return result[0]?.count ?? 0;
 }

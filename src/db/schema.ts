@@ -7,6 +7,8 @@ import {
 import { user } from "./auth.schema";
 import { membershipRoles } from "@/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
+import { id } from "date-fns/locale";
+import { uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const commonTimestamps = {
   createdAt: integer({ mode: "timestamp" })
@@ -22,7 +24,14 @@ export const clubs = sqliteTable("clubs", {
   id: text().primaryKey(),
   name: text().notNull(),
   description: text().notNull(),
-});
+  owner: text().notNull(),
+  slug: text().notNull(),
+},
+  (table) => ({
+  slugUnique: uniqueIndex("clubs_slug_unique").on(table.slug),
+})
+  
+);
 
 export const membership = sqliteTable(
   "membership",
@@ -35,7 +44,7 @@ export const membership = sqliteTable(
       .references(() => clubs.id, { onDelete: "cascade" }),
     role: text({ enum: membershipRoles }).notNull().default("member"),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.clubId] })]
+  (table) => [primaryKey({ columns: [table.userId, table.clubId] })],
 );
 
 export const events = sqliteTable("events", {
