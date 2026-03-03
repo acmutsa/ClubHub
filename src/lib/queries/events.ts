@@ -1,3 +1,4 @@
+"use server";
 import { db } from "@/db/index";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -5,6 +6,7 @@ import { unauthorized } from "next/navigation";
 import isClubAdmin from "@/lib/membership";
 import { events } from "@/db/schema";
 import { sql } from "drizzle-orm/sql";
+import type { AdminEventRow } from "@/lib/types/event"
 
 export async function getClubEvents(clubId: string) {
   const session = await auth.api.getSession({
@@ -139,4 +141,46 @@ export async function getAdminTotalEventCount(): Promise<number> {
     .from(events);
 
   return result[0]?.count ?? 0;
+}
+
+export async function getAllEventsData(): Promise<AdminEventRow[]> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    unauthorized();
+  }
+  const role = session.user.role;
+  if (role !== "admin" && role !== "super_admin") {
+    unauthorized();
+  }
+
+  const rows = await db.query.events.findMany({
+    with: {
+      creator: true,
+      updater: true,
+    },
+  });
+
+  return rows.map((event) => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+
+    start: event.start,
+    end: event.end,
+    checkInStart: event.checkinStart,
+    checkInEnd: event.checkinEnd,
+
+    createdById: event.createdBy,
+    createdByName: event.creator?.name ?? "Unknown",
+
+    updatedById: event.updatedBy,
+    updatedByName: event.updater?.name ?? "Unknown",
+
+    location: event.locationId,
+    eventTypeId: event.eventTypeId,
+    points: event.points,
+    hidden: event.hidden,
+  }));
 }

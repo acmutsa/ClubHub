@@ -28,21 +28,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ClubColumns } from "@/components/admin/clubs/club-column";
-import type { AdminClubRow } from "@/lib/types/club";
-import { getAllClubsData } from "@/lib/queries/club";
+import { EventColumns } from "@/components/admin/events/event-column";
+import type { AdminEventRow } from "@/lib/types/event";
+import { getAllEventsData } from "@/lib/queries/events";
 
 interface ClubTableProps {
   isSuperAdmin: boolean;
 }
 
-export default function AdminClubTable({ isSuperAdmin }: ClubTableProps) {
-  const [data, setData] = useState<AdminClubRow[]>([]);
+export default function AdminEventTable({ isSuperAdmin }: ClubTableProps) {
+  const [data, setData] = useState<AdminEventRow[]>([]);
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const clubs: AdminClubRow[] = await getAllClubsData();
+        const clubs: AdminEventRow[] = await getAllEventsData();
         setData(clubs);
       } catch (error) {
         console.log("Failed to fetch users:", error);
@@ -52,7 +52,7 @@ export default function AdminClubTable({ isSuperAdmin }: ClubTableProps) {
   }, []);
 
   const refreshUsers = async () => {
-    const clubs = await getAllClubsData();
+    const clubs = await getAllEventsData();
     setData(clubs);
   }
 
@@ -61,7 +61,7 @@ export default function AdminClubTable({ isSuperAdmin }: ClubTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const columns = ClubColumns(isSuperAdmin);
+  const columns = EventColumns(isSuperAdmin);
 
   const table = useReactTable({
     data,
@@ -86,10 +86,10 @@ export default function AdminClubTable({ isSuperAdmin }: ClubTableProps) {
     <div className="w-full">
       <div className="flex items-center pb-4">
         <Input
-          placeholder="Filter club name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter event title..."
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

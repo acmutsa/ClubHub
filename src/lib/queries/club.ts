@@ -1,10 +1,12 @@
+"use server";
 import { db } from "@/db/index";
-import { clubs } from "@/db/schema";
+import { clubs, membership, events, user } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm/sql"
 import { unauthorized } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { AdminClubRow } from "@/lib/types/club";
 
 export async function getClub(clubId: string) {
   if (!clubId?.trim()) {
@@ -31,4 +33,40 @@ export async function getAdminTotalClubCount(): Promise<number> {
     .from(clubs);
 
   return result[0]?.count ?? 0;
+}
+
+export async function getAllClubsData(): Promise<AdminClubRow[]> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    unauthorized();
+  }
+  const role = session.user.role;
+  if (role !== "admin" && role !== "super_admin") {
+    unauthorized();
+  }
+
+  const clubRows = await db.select({
+    id: clubs.id,
+    name: clubs.name,
+    description: clubs.description,
+    ownerId: clubs.owner,
+    ownerName: user.name,
+    slug: clubs.slug,
+    memberCount: sql<number>`(
+      SELECT COUNT(*)
+      FROM membership
+      WHERE membership.clubId = clubs.id
+    )`,
+    eventCount: sql<number>`(
+      SELECT COUNT(*)
+      FROM events
+      WHERE events.clubId = clubs.id
+    )`,
+  })
+  .from(clubs)
+  .innerJoin(user, eq(user.id, clubs.owner));
+
+  return clubRows;
 }

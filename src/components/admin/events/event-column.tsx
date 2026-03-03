@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, ArrowUpDown } from "lucide-react"
 import Link from "next/link"
-import type { AdminClubRow } from "@/lib/types/club"
+import type { AdminEventRow } from "@/lib/types/event"
 
-export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] => [
+export const EventColumns = (isSuperAdmin: boolean ): ColumnDef<AdminEventRow>[] => [
     {
-      accessorKey: "name",
+      accessorKey: "title",
       header: ({ column }) => {
         return (
           <Button
@@ -15,13 +15,13 @@ export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] =
             size={"sm"}
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="cursor-pointer !m-0 !p-1"
-          >Name<ArrowUpDown/></Button>
+          >Title<ArrowUpDown/></Button>
         );
       },
-      cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+      cell: ({ row }) => <div className="font-medium">{row.getValue("title")}</div>,
     },
     {
-      accessorKey: "ownerName",
+      accessorKey: "description",
       header: ({ column }) => {
         return (
           <Button
@@ -29,15 +29,15 @@ export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] =
             size={"sm"}
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="cursor-pointer !m-0 !p-1"
-          >Owner<ArrowUpDown/></Button>
+          >Description<ArrowUpDown/></Button>
         );
       },
       cell: ({ row }) => (
-        <div className="text-left text-muted-foreground">{row.getValue("ownerName")}</div>
+        <div className="text-left text-muted-foreground text-wrap w-[50ch]">{row.getValue("description")}</div>
       ),
     },
     {
-      accessorKey: "slug",
+      accessorKey: "start",
       header: ({ column }) => {
         return (
           <Button
@@ -45,15 +45,91 @@ export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] =
             size={"sm"}
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="cursor-pointer !m-0 !p-1"
-          >Slug<ArrowUpDown/></Button>
+          >Start<ArrowUpDown/></Button>
+        );
+      },
+      cell: ({ row }) => {
+        const date = row.original.start;
+        return (
+            <div className="text-left text-muted-foreground">{date.toLocaleString()}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "end",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant={"ghost"}
+            size={"sm"}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="cursor-pointer !m-0 !p-1"
+          >End<ArrowUpDown/></Button>
+        );
+      },
+      cell: ({ row }) => {
+        const date = row.original.end;
+        return (
+            <div className="text-left text-muted-foreground">{date.toLocaleString()}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "checkInStart",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant={"ghost"}
+            size={"sm"}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="cursor-pointer !m-0 !p-1"
+          >CheckInStart<ArrowUpDown/></Button>
+        );
+      },
+      cell: ({ row }) => {
+        const date = row.original.checkInStart;
+        return (
+            <div className="text-left text-muted-foreground">{date.toLocaleString()}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "checkInEnd",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant={"ghost"}
+            size={"sm"}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="cursor-pointer !m-0 !p-1"
+          >CheckInEnd<ArrowUpDown/></Button>
+        );
+      },
+      cell: ({ row }) => {
+        const date = row.original.checkInEnd;
+        return (
+            <div className="text-left text-muted-foreground">{date.toLocaleString()}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "createdByName",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant={"ghost"}
+            size={"sm"}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="cursor-pointer !m-0 !p-1"
+          >CreatedByName<ArrowUpDown/></Button>
         );
       },
       cell: ({ row }) => (
-        <div className="text-left text-muted-foreground">{row.getValue("slug")}</div>
+        <div className="text-left text-muted-foreground">{row.getValue("createdByName")}</div>
       ),
     },
     {
-      accessorKey: "memberCount",
+      accessorKey: "updatedByName",
       header: ({ column }) => {
         return (
           <Button
@@ -61,27 +137,11 @@ export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] =
             size={"sm"}
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="cursor-pointer !m-0 !p-1"
-          >Members<ArrowUpDown/></Button>
+          >UpdatedByName<ArrowUpDown/></Button>
         );
       },
       cell: ({ row }) => (
-        <div className="text-left text-muted-foreground">{row.getValue("memberCount")}</div>
-      ),
-    },
-    {
-      accessorKey: "eventCount",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant={"ghost"}
-            size={"sm"}
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="cursor-pointer !m-0 !p-1"
-          >Events<ArrowUpDown/></Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="text-left text-muted-foreground">{row.getValue("eventCount")}</div>
+        <div className="text-left text-muted-foreground">{row.getValue("updatedByName")}</div>
       ),
     },
     {
@@ -89,7 +149,7 @@ export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] =
       enableHiding: false,
       header: "Actions",
       cell: ({ row }) => {
-        const club = row.original;
+        const event = row.original;
 
         return (
           <DropdownMenu>
@@ -100,8 +160,8 @@ export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] =
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/admin/clubs/${club.id}`}>
-                  View Club
+                <Link href={`/admin/events/${event.id}`}>
+                  View Event
                 </Link>
               </DropdownMenuItem>
               {isSuperAdmin && (
@@ -111,14 +171,14 @@ export const ClubColumns = (isSuperAdmin: boolean ): ColumnDef<AdminClubRow>[] =
                     onSelect={(e) => console.log("click")}
                     className="cursor-pointer"
                   >
-                    Edit Club
+                    Edit Event
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => console.log("Click")}
                     className="cursor-pointer bg-red-300 dark:bg-red-800 data-[highlighted]:bg-red-600 dark:data-[highlighted]:bg-red-600"
                   >
-                    Delete Club
+                    Delete Event
                   </DropdownMenuItem>
                 </>
               )}

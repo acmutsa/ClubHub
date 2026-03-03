@@ -5,7 +5,7 @@ export default async function AdminUserPage() {
     const superAdmin = await isSuperAdmin();
 
     return (
-        <div className="max-w-full">
+        <div>
             <AdminUserTable isSuperAdmin={superAdmin}/>
         </div>
     );
