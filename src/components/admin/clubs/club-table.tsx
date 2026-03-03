@@ -37,7 +37,7 @@ interface UserTableProps {
   isSuperAdmin: boolean;
 }
 
-export default function AdminUserTable({ isSuperAdmin }: UserTableProps) {
+export default function AdminClubTable({ isSuperAdmin }: UserTableProps) {
   const [data, setData] = useState<AdminUserRow[]>([]);
 
   useEffect(() => {

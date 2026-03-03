@@ -1,18 +1,12 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { getAllUsersData } from "@/lib/queries/user";
 import AdminUserTable from "@/components/admin/user/user-table";
+import { isSuperAdmin } from "@/lib/user";
 
 export default async function AdminUserPage() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-    const isSuperAdmin = session?.user.role === "super_admin";
-    const data = await getAllUsersData();
+    const superAdmin = await isSuperAdmin();
 
     return (
-        <div className="">
-            <AdminUserTable data={data} isSuperAdmin={isSuperAdmin}/>
+        <div className="max-w-full">
+            <AdminUserTable isSuperAdmin={superAdmin}/>
         </div>
     );
 }

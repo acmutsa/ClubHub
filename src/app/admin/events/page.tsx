@@ -1,5 +1,8 @@
+import { isSuperAdmin } from "@/lib/user";
 
-export default function AdminEventPage() {
+export default async function AdminEventPage() {
+    const superAdmin = await isSuperAdmin();
+    
     return (
         <div className="">
             Event
