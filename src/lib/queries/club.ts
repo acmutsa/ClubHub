@@ -1,4 +1,4 @@
-"use server";
+'use server'
 import { db } from "@/db/index";
 import { clubs, membership, events, user } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -11,7 +11,7 @@ import { AdminClubRow } from "@/lib/types/club";
 export async function getClub(clubId: string) {
   if (!clubId?.trim()) {
     return null;
-  }
+  } ``
   const club = await db.query.clubs.findFirst({ where: eq(clubs.id, clubId) });
   return club || null;
 }
@@ -69,4 +69,15 @@ export async function getAllClubsData(): Promise<AdminClubRow[]> {
   .innerJoin(user, eq(user.id, clubs.owner));
 
   return clubRows;
+export async function getClubBySlug(slug: string) {
+  if (!slug?.trim()) {
+    return null;
+  } ``
+  const club = await db.query.clubs.findFirst({ where: eq(clubs.slug, slug) });
+  return club || null;
+}
+
+export async function checkSlugUniqueness(slug: string) {
+  const existingSlug = await db.query.clubs.findFirst({ where: eq(clubs.slug, slug) });
+  return existingSlug == null;
 }

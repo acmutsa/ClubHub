@@ -152,7 +152,7 @@ export const eventTypesRelationships = relations(
       references: [clubs.id],
     }),
     events: many(events),
-  })
+  }),
 );
 
 export const locationsRelationships = relations(locations, ({ one, many }) => ({
@@ -171,7 +171,7 @@ export const thumbnailsRelationships = relations(
   thumbnails,
   ({ one, many }) => ({
     events: many(events),
-  })
+  }),
 );
 
 export * from "./auth.schema";
