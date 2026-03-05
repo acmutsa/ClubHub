@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ClubAdminSidebar } from "@/components/clubs/admin/sidebar";
 import { unauthorized } from "next/navigation";
+import { isClubOwner } from "@/lib/membership";
 
 export default async function Layout({
   params,
@@ -34,10 +35,11 @@ export default async function Layout({
   if (!club) {
     return unauthorized();
   }
+  const isOwner = await isClubOwner(user.id, clubId);
 
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={club} className="relative" />
+      <ClubAdminSidebar club={club} isOwner={isOwner} className="relative" />
       <SidebarInset>
         <main>
           {/* <SidebarTrigger /> */}

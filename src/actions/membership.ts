@@ -88,5 +88,23 @@ export const transferOwnership = authAction
         .update(clubs)
         .set({ owner: newOwner.id })
         .where(eq(clubs.id, clubId));
+
+      // Change old owner to become meber
+      await db
+        .update(membership)
+        .set({ role: "member" })
+        .where(
+          and(eq(membership.userId, userId), eq(membership.clubId, clubId)),
+        );
+      // Change the new owner to become super_admin
+      await db
+        .update(membership)
+        .set({ role: "super_admin" })
+        .where(
+          and(
+            eq(membership.userId, newOwner.id),
+            eq(membership.clubId, clubId),
+          ),
+        );
     },
   );

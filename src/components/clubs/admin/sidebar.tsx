@@ -14,15 +14,18 @@ import {
 import { AdminSelectClub } from "@/lib/types/club";
 import { Calendar, Home, Users } from "lucide-react";
 import Link from "next/link";
+import { TransferOwnershipButton } from "@/components/shared/membership/buttons";
 
 interface ClubAdminSidebarProps {
   club: AdminSelectClub;
   className?: string;
+  isOwner?: boolean;
 }
 
 export const ClubAdminSidebar = ({
   club,
   className,
+  isOwner,
 }: ClubAdminSidebarProps) => {
   return (
     <Sidebar className={className}>
@@ -58,6 +61,11 @@ export const ClubAdminSidebar = ({
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {isOwner && (
+                <SidebarMenuItem>
+                  <TransferOwnershipButton clubId={club.id} />
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
