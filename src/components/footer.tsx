@@ -3,12 +3,12 @@ import { Github, Twitter, Linkedin, Instagram } from "lucide-react";
 import CreatedWithCK from "./created-with-ck";
 
 interface FooterProps {
-  clubId: string;
+  clubSlug: string;
   clubName: string;
   //we will need to add an array of link for the clubs socials/contact info and image/logo
 }
 
-export default function Footer({ clubId, clubName }: FooterProps) {
+export default function Footer({ clubSlug, clubName }: FooterProps) {
   return (
     <footer className="border-t bg-background">
       <div className="max-w-7xl mx-auto px-6 py-10">

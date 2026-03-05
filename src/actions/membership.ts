@@ -33,10 +33,10 @@ export const joinClub = authAction
 
 export const createClub = authAction
   .bindArgsSchemas<
-    [name: z.ZodString, description: z.ZodString]
-  >([z.string().min(1, "Club Name Required"), z.string().min(1, "Description Required")])
+    [name: z.ZodString, description: z.ZodString, slug: z.ZodString,]
+  >([z.string().min(1, "Club Name Required"), z.string().min(1, "Description Required"), z.string().min(1,"Club Slug Required")])
   .action(
-    async ({ bindArgsParsedInputs: [name, description], ctx: { userId } }) => {
+    async ({ bindArgsParsedInputs: [name, description, slug], ctx: { userId } }) => {
       const clubId = randomUUID();
       await db.transaction(async (tx) => {
         await tx.insert(clubs).values({
@@ -44,6 +44,7 @@ export const createClub = authAction
           name,
           description,
           owner: userId,
+          slug: slug,
         });
         await tx.insert(membership).values({
           userId,

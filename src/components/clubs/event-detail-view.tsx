@@ -97,7 +97,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
   };
 
   const handleAddToCalendar = (
-    type: "google" | "outlook" | "office365" | "yahoo" | "ics"
+    type: "google" | "outlook" | "office365" | "yahoo" | "ics",
   ) => {
     let url: string;
     switch (type) {

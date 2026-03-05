@@ -1,12 +1,17 @@
 import { db } from "@/db/index";
 import { membership, clubs } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
-
-export default async function isClubAdmin(userId: string, clubId: string) {
+import { getClubBySlug } from "./queries/club";
+export default async function isClubAdmin(userId: string, slug: string) {
+  
+  const club = await getClubBySlug(slug);
+  if(!club){
+    return false;
+  }
   const member = await db
     .select()
     .from(membership)
-    .where(and(eq(membership.userId, userId), eq(membership.clubId, clubId)));
+    .where(and(eq(membership.userId, userId), eq(membership.clubId, club.id)));
   if (member.length === 0) {
     return false;
   }
