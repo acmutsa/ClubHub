@@ -7,11 +7,11 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { modifyBasePath } from "@/lib/routing/subdomain";
 
-export default async function Page({ params }: { params: { clubId: string } }) {
-  const { clubId } = await params;
+export default async function Page({ params }: { params: { clubId: string, slug: string } }) {
+  const { clubId, slug } = await params;
   const [clubEvents, eventTypes] = await Promise.all([
-    getClubEvents(clubId),
-    getClubEventTypes(clubId),
+    getClubEvents(slug),
+    getClubEventTypes(slug),
   ]);
 
   const h = (await headers()).get("host") ?? "";
@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: { clubId: string } }) {
                 Manage and monitor your organizations events
               </p>
             </div>
-            <Link href={modifyBasePath(clubId, h, "/admin/events/new")}>
+            <Link href={modifyBasePath(slug, h, "/admin/events/new")}>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Event
