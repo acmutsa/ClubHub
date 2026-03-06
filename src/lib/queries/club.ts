@@ -69,6 +69,8 @@ export async function getAllClubsData(): Promise<AdminClubRow[]> {
   .innerJoin(user, eq(user.id, clubs.owner));
 
   return clubRows;
+}
+
 export async function getClubBySlug(slug: string) {
   if (!slug?.trim()) {
     return null;
