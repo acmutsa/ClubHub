@@ -22,13 +22,12 @@ export const authAction = publicAction.use(async ({ next }) => {
 });
 
 export const clubAdminAction = authAction
-  .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
-  .use(async ({ next, ctx, bindArgsClientInputs: [clubId] }) => {
-    const parsedClubId = clubId as string;
-    if (!(await isClubAdmin(ctx.userId, parsedClubId))) {
+  .bindArgsSchemas<[slug: z.ZodString]>([z.string()])
+  .use(async ({ next, ctx, bindArgsClientInputs: [slug] }) => {
+    if (!(await isClubAdmin(ctx.userId, slug as string))) {
       returnValidationErrors(z.null(), {
         _errors: ["Forbidden (Not a Club Admin)"],
       });
     }
-    return next({ ctx: { ...ctx, clubId: parsedClubId } });
+    return next({ ctx: { ...ctx, clubId: slug as string } });
   });
