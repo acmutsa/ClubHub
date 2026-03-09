@@ -6,7 +6,7 @@ export function getSubdomain(host: string): string {
 }
 
 export function modifyBasePath(
-  clubId: string,
+  slug: string,
   host: string,
   path: string,
 ): string {
@@ -14,5 +14,5 @@ export function modifyBasePath(
   if (hostName) {
     return path;
   }
-  return `/clubs/${clubId}${path}`;
+  return `/clubs/${slug}${path}`;
 }

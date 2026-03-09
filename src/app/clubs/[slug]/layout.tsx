@@ -13,9 +13,9 @@ export default async function Layout({
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ clubId: string, slug: string }>;
+  params: Promise<{ slug: string }>;
 }>) {
-  const { clubId,slug } = await params;
+  const { slug } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -23,7 +23,7 @@ export default async function Layout({
     return redirect("/sign-in");
   }
   const user = session.user;
-  
+
   const userRole = await isClubAdmin(user.id, slug);
   if (!userRole) {
     return redirect("/clubs");
@@ -33,13 +33,13 @@ export default async function Layout({
   // if (!club) {
   //   return redirect("/clubs");
   // }
-const club = await getClubBySlug(slug);
-   if (!club) {
-     return redirect("/clubs");
-   }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return redirect("/clubs");
+  }
   const h = (await headers()).get("host") ?? "";
-  const path = modifyBasePath(slug, h, "/");
-   console.log(path);
+  const path = modifyBasePath(slug, h, "");
+  console.log(path);
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar

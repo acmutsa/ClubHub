@@ -65,7 +65,7 @@ export const ClubAdminSidebar = ({
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/admin/thumbnails`}>
+                  <Link href={`${baseUrl}/admin/thumbnails`}>
                     <Image />
                     <span>Thumbnails</span>
                   </Link>
