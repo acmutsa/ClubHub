@@ -7,8 +7,8 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { modifyBasePath } from "@/lib/routing/subdomain";
 
-export default async function Page({ params }: { params: { clubId: string, slug: string } }) {
-  const { clubId, slug } = await params;
+export default async function Page({ params }: { params: { slug: string } }) {
+  const { slug } = await params;
   const [clubEvents, eventTypes] = await Promise.all([
     getClubEvents(slug),
     getClubEventTypes(slug),

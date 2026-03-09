@@ -17,10 +17,10 @@ export default async function Layout({
   params,
   children,
 }: {
-  params: Promise<{ clubId: string, slug: string }>;
+  params: Promise<{ slug: string }>;
   children: React.ReactNode;
 }) {
-  const { clubId, slug } = await params;
+  const { slug } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -36,17 +36,22 @@ export default async function Layout({
   // if (!club) {
   //   return unauthorized();
   // }
-    const club = await getClubBySlug(slug);
-   if (!club) {
-     return unauthorized();
-   }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return unauthorized();
+  }
   const h = (await headers()).get("host") ?? "";
   const path = modifyBasePath(slug, h, "");
-  const isOwner = await isClubOwner(user.id, clubId);
+  const isOwner = await isClubOwner(user.id, club.id);
 
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={club} isOwner={isOwner} className="relative" baseUrl={path} />
+      <ClubAdminSidebar
+        club={club}
+        isOwner={isOwner}
+        className="relative"
+        baseUrl={path}
+      />
       <SidebarInset>
         <main>
           {/* <SidebarTrigger /> */}
