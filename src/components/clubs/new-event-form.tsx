@@ -103,7 +103,7 @@ export function NewEventForm({
 
   const { execute, isPending, result } = useAction(createEventAction, {
     onSuccess: () => {
-      router.push(`/clubs/${clubId}/admin/events`);
+      router.push(`/admin/events`);
     },
     onError: () => {
       console.log(result);

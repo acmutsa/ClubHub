@@ -14,15 +14,17 @@ import {
 import { DropdownSwitcher } from "./ThemeSwitcher";
 interface NavbarProps {
   clubName: string;
-  clubId: string;
+  clubSlug: string;
   userType: string;
+  baseUrl: string;
   //we will need to retieve image/logo eventually
 }
 
 export default async function Navbar({
   clubName,
-  clubId,
+  clubSlug,
   userType,
+  baseUrl,
 }: NavbarProps) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -42,20 +44,20 @@ export default async function Navbar({
         <div className="h-full flex items-center gap-4">
           {userType === "admin" && (
             <Button variant="link" asChild>
-              <Link className="font-semibold" href="/admin">
+              <Link className="font-semibold" href={`${baseUrl}/admin`}>
                 Admin
               </Link>
             </Button>
           )}
 
           <Button variant="link" asChild>
-            <Link className="font-semibold" href="/events">
+            <Link className="font-semibold" href={`${baseUrl}/events`}>
               Events
             </Link>
           </Button>
 
           <Button variant="link" asChild>
-            <Link className="font-semibold" href="/members">
+            <Link className="font-semibold" href={`${baseUrl}/members`}>
               Members
             </Link>
           </Button>
