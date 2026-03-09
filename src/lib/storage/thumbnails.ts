@@ -34,8 +34,8 @@ class ThumbnailStorage extends BlobSystem<ThumbnailMeta> {
   }
 
   /** List all thumbnails in a club's library. */
-  async listClubThumbnails(clubId: string) {
-    return this.list({ prefix: `clubs/${clubId}/thumbnails/` });
+  async listClubThumbnails(slug: string) {
+    return this.list({ prefix: `clubs/${slug}/thumbnails/` });
   }
 }
 

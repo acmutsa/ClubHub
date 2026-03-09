@@ -26,12 +26,12 @@ type Thumbnail = {
 };
 
 interface ThumbnailLibraryProps {
-  clubId: string;
+  slug: string;
   initialThumbnails: Thumbnail[];
 }
 
 export function ThumbnailLibrary({
-  clubId,
+  slug,
   initialThumbnails,
 }: ThumbnailLibraryProps) {
   const [thumbnails, setThumbnails] = useState<Thumbnail[]>(initialThumbnails);
@@ -64,7 +64,7 @@ export function ThumbnailLibrary({
     try {
       // Step 1: Get a presigned PUT URL from the server
       const urlResult = await getUploadUrlAction({
-        clubId,
+        slug,
         contentType: file.type,
       });
 
@@ -88,7 +88,7 @@ export function ThumbnailLibrary({
       }
 
       // Step 3: Confirm the upload on the server (revalidates the page)
-      const confirmResult = await confirmUploadAction({ clubId, key });
+      const confirmResult = await confirmUploadAction({ slug, key });
 
       if (confirmResult?.data?.thumbnail) {
         setThumbnails((prev) => [...prev, confirmResult.data!.thumbnail]);
@@ -105,14 +105,14 @@ export function ThumbnailLibrary({
       selectedFileRef.current = null;
       if (fileRef.current) fileRef.current.value = "";
     }
-  }, [clubId]);
+  }, [slug]);
 
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
       const result = await deleteThumbnailAction({
-        clubId,
+        slug,
         key: deleteTarget.key,
       });
       if (result?.data?.success) {
@@ -127,7 +127,7 @@ export function ThumbnailLibrary({
       setDeleting(false);
       setDeleteTarget(null);
     }
-  }, [clubId, deleteTarget]);
+  }, [slug, deleteTarget]);
 
   const resetUploadDialog = useCallback(() => {
     setPreview(null);

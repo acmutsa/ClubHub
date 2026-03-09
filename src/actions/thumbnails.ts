@@ -13,15 +13,15 @@ import { eq } from "drizzle-orm";
 // ─── List ────────────────────────────────────────────────────────────────────
 
 const listThumbnailsSchema = z.object({
-  clubId: z.string().min(1, "Club ID is required"),
+  slug: z.string().min(1, "club slug is required"),
 });
 
 export const listThumbnailsAction = authAction
   .inputSchema(listThumbnailsSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { clubId } = parsedInput;
+    const { slug } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, clubId))) {
+    if (!(await isClubAdmin(ctx.userId, slug))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to view thumbnails for this club",
@@ -29,7 +29,7 @@ export const listThumbnailsAction = authAction
       });
     }
 
-    const result = await thumbnailStorage.listClubThumbnails(clubId);
+    const result = await thumbnailStorage.listClubThumbnails(slug);
 
     const thumbnails = await Promise.all(
       result.keys.map(async (key) => ({
@@ -44,16 +44,16 @@ export const listThumbnailsAction = authAction
 // ─── Get Upload URL ──────────────────────────────────────────────────────────
 
 const getUploadUrlSchema = z.object({
-  clubId: z.string().min(1, "Club ID is required"),
+  slug: z.string().min(1, "club slug is required"),
   contentType: z.string().min(1, "Content type is required"),
 });
 
 export const getUploadUrlAction = authAction
   .inputSchema(getUploadUrlSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { clubId, contentType } = parsedInput;
+    const { slug, contentType } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, clubId))) {
+    if (!(await isClubAdmin(ctx.userId, slug))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to upload thumbnails for this club",
@@ -62,7 +62,7 @@ export const getUploadUrlAction = authAction
     }
 
     const { key, thumbnailId, uploadUrl } = await thumbnailStorage.getUploadUrl(
-      clubId,
+      slug,
       contentType,
     );
 
@@ -72,16 +72,16 @@ export const getUploadUrlAction = authAction
 // ─── Confirm Upload ──────────────────────────────────────────────────────────
 
 const confirmUploadSchema = z.object({
-  clubId: z.string().min(1, "Club ID is required"),
+  slug: z.string().min(1, "club slug is required"),
   key: z.string().min(1, "Key is required"),
 });
 
 export const confirmUploadAction = authAction
   .inputSchema(confirmUploadSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { clubId, key } = parsedInput;
+    const { slug, key } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, clubId))) {
+    if (!(await isClubAdmin(ctx.userId, slug))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to upload thumbnails for this club",
@@ -98,7 +98,7 @@ export const confirmUploadAction = authAction
     // Get a presigned GET URL for the newly uploaded thumbnail
     const presignedUrl = await thumbnailStorage.getThumbnailUrl(key);
 
-    revalidatePath(`/clubs/${clubId}/admin/thumbnails`);
+    revalidatePath(`/clubs/${slug}/admin/thumbnails`);
 
     return {
       success: true,
@@ -109,7 +109,7 @@ export const confirmUploadAction = authAction
 // ─── Get or Create Thumbnail DB Record ───────────────────────────────────────
 
 const getOrCreateThumbnailSchema = z.object({
-  clubId: z.string().min(1, "Club ID is required"),
+  slug: z.string().min(1, "club slug is required"),
   key: z.string().min(1, "Thumbnail key is required"),
 });
 
@@ -120,9 +120,9 @@ const getOrCreateThumbnailSchema = z.object({
 export const getOrCreateThumbnailAction = authAction
   .inputSchema(getOrCreateThumbnailSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { clubId, key } = parsedInput;
+    const { slug, key } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, clubId))) {
+    if (!(await isClubAdmin(ctx.userId, slug))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to manage thumbnails for this club",
@@ -151,16 +151,16 @@ export const getOrCreateThumbnailAction = authAction
 // ─── Delete ──────────────────────────────────────────────────────────────────
 
 const deleteThumbnailSchema = z.object({
-  clubId: z.string().min(1, "Club ID is required"),
+  slug: z.string().min(1, "club slug is required"),
   key: z.string().min(1, "Thumbnail key is required"),
 });
 
 export const deleteThumbnailAction = authAction
   .inputSchema(deleteThumbnailSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { clubId, key } = parsedInput;
+    const { slug, key } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, clubId))) {
+    if (!(await isClubAdmin(ctx.userId, slug))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to delete thumbnails for this club",
@@ -181,7 +181,7 @@ export const deleteThumbnailAction = authAction
       }
     });
 
-    revalidatePath(`/clubs/${clubId}/admin/thumbnails`);
+    revalidatePath(`/clubs/${slug}/admin/thumbnails`);
 
     return { success: true };
   });
