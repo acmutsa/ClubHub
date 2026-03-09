@@ -17,10 +17,10 @@ export default async function Layout({
   params,
   children,
 }: {
-  params: Promise<{ clubId: string; slug: string }>;
+  params: Promise<{ slug: string }>;
   children: React.ReactNode;
 }) {
-  const { clubId, slug } = await params;
+  const { slug } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -42,7 +42,7 @@ export default async function Layout({
   }
   const h = (await headers()).get("host") ?? "";
   const path = modifyBasePath(slug, h, "");
-  const isOwner = await isClubOwner(user.id, clubId);
+  const isOwner = await isClubOwner(user.id, club.id);
 
   return (
     <SidebarProvider>
