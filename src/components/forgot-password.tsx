@@ -37,7 +37,7 @@ export default function ForgotPasswordForm() {
       },
       {
         onSuccess: () => {
-          setSuccess("If your account exists a reset link will be sent.")
+          setSuccess("If your account exists, a reset link will be sent.")
           form.reset()
         },
         onError: (ctx) => {
@@ -79,7 +79,7 @@ export default function ForgotPasswordForm() {
       )}
 
       {success && (
-        <p>
+        <p className="text-sm">
           {success}
         </p>
       )}
