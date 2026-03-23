@@ -1,8 +1,9 @@
 import {
   sqliteTable,
   text,
-  primaryKey,
   integer,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.schema";
 import { membershipRoles } from "@/lib/types/membership";
@@ -27,6 +28,7 @@ export const clubs = sqliteTable("clubs", {
 export const membership = sqliteTable(
   "membership",
   {
+    id: integer().primaryKey({ autoIncrement: true }),
     userId: text()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -35,7 +37,11 @@ export const membership = sqliteTable(
       .references(() => clubs.id, { onDelete: "cascade" }),
     role: text({ enum: membershipRoles }).notNull().default("member"),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.clubId] })]
+  (table) => [
+    uniqueIndex("membership_user_club_unique").on(table.userId, table.clubId),
+    index("membership_user_idx").on(table.userId),
+    index("membership_club_idx").on(table.clubId),
+  ]
 );
 
 export const events = sqliteTable("events", {
@@ -66,6 +72,33 @@ export const events = sqliteTable("events", {
   hidden: integer({ mode: "boolean" }).notNull().default(false),
   ...commonTimestamps,
 });
+
+export const checkins = sqliteTable(
+  "checkins",
+  {
+    id: integer().primaryKey({ autoIncrement: true }),
+    eventId: integer()
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    membershipId: integer()
+      .notNull()
+      .references(() => membership.id, { onDelete: "cascade" }),
+    createdAt: integer({ mode: "timestamp" })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    rating: integer().default(sql`NULL`),
+    feedback: text().default(sql`NULL`),
+    method: text().default(sql`NULL`),
+  },
+  (table) => [
+    uniqueIndex("checkins_event_membership_unique").on(
+      table.eventId,
+      table.membershipId
+    ),
+    index("checkins_event_idx").on(table.eventId),
+    index("checkins_membership_idx").on(table.membershipId),
+  ]
+);
 
 export const eventTypes = sqliteTable("event_types", {
   id: integer().primaryKey({ autoIncrement: true }),
@@ -108,6 +141,21 @@ export const clubsRelationships = relations(clubs, ({ one, many }) => ({
   eventTypes: many(eventTypes),
 }));
 
+export const membershipRelationships = relations(
+  membership,
+  ({ one, many }) => ({
+    club: one(clubs, {
+      fields: [membership.clubId],
+      references: [clubs.id],
+    }),
+    user: one(user, {
+      fields: [membership.userId],
+      references: [user.id],
+    }),
+    checkins: many(checkins),
+  })
+);
+
 export const eventsRelationships = relations(events, ({ one, many }) => ({
   club: one(clubs, {
     fields: [events.clubId],
@@ -132,6 +180,18 @@ export const eventsRelationships = relations(events, ({ one, many }) => ({
   updater: one(user, {
     fields: [events.updatedBy],
     references: [user.id],
+  }),
+  checkins: many(checkins),
+}));
+
+export const checkinsRelationships = relations(checkins, ({ one }) => ({
+  event: one(events, {
+    fields: [checkins.eventId],
+    references: [events.id],
+  }),
+  membership: one(membership, {
+    fields: [checkins.membershipId],
+    references: [membership.id],
   }),
 }));
 
