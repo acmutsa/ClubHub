@@ -50,7 +50,7 @@ export default function ForgotPasswordForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-3">
       <div className="text-center">
         <h1 className="text-2xl font-bold">Forgot password</h1>
         <p className="text-sm text-muted-foreground">
@@ -79,7 +79,7 @@ export default function ForgotPasswordForm() {
       )}
 
       {success && (
-        <p className="text-sm">
+        <p className="text-sm p-0">
           {success}
         </p>
       )}

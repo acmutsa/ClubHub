@@ -70,7 +70,7 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-3">
       <div className="text-center">
         <h1 className="text-2xl font-bold">Reset Password</h1>
         <p className="text-sm text-muted-foreground">

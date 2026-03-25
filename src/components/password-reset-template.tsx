@@ -28,14 +28,14 @@ export default function EmailTemplate({ name, url }: EmailTemplateProps) {
 
             {/* Greeting */}
             <Section className="mb-4">
-              <Text className="text-base text-gray-800">
+              <Text className="text-base text-gray-800 font-bold">
                 Hi {name},
               </Text>
             </Section>
 
             {/* Message */}
             <Section className="mb-6">
-              <Text className="text-sm text-gray-700 leading-relaxed">
+              <Text className="text-sm text-black leading-relaxed">
                 We received a request to reset your password. If this was you,
                 click the button below to set a new password.
               </Text>
@@ -45,7 +45,7 @@ export default function EmailTemplate({ name, url }: EmailTemplateProps) {
             <Section className="mb-6 text-center">
               <Button
                 href={url}
-                className="bg-blue-600 text-black text-sm font-medium px-5 py-3 rounded-md"
+                className="bg-blue-600 text-white text-sm font-medium px-5 py-3 rounded-md"
               >
                 Reset Password
               </Button>

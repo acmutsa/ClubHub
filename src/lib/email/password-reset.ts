@@ -13,11 +13,12 @@ interface passwordResetParams{
 };
 
 export async function sendPasswordResetEmail({ user ,url }: passwordResetParams){
+    const firstName = user.name.split(" ")[0]
     resend.emails.send({ // should we swap email providers you will replace this logic
-        from: "accounts@utsa.club",
+        from: "onboarding@utsa.club",
         to: user.email,
         subject: "Reset Your ClubHub Password",
-        react: EmailTemplate({name: user.name, url: url}),
+        react: EmailTemplate({name: firstName, url: url}),
         replyTo:"accounts@utsa.club"
       });
 }
