@@ -20,17 +20,18 @@ const commonTimestamps = {
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
 };
 
-export const clubs = sqliteTable("clubs", {
-  id: text().primaryKey(),
-  name: text().notNull(),
-  description: text().notNull(),
-  owner: text().notNull(),
-  slug: text().notNull(),
-},
+export const clubs = sqliteTable(
+  "clubs",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    description: text().notNull(),
+    owner: text().notNull(),
+    slug: text().notNull(),
+  },
   (table) => ({
-  slugUnique: uniqueIndex("clubs_slug_unique").on(table.slug),
-})
-  
+    slugUnique: uniqueIndex("clubs_slug_unique").on(table.slug),
+  }),
 );
 
 export const membership = sqliteTable(
@@ -115,6 +116,17 @@ export const clubsRelationships = relations(clubs, ({ one, many }) => ({
   events: many(events),
   membership: many(membership),
   eventTypes: many(eventTypes),
+}));
+
+export const membershipRelationships = relations(membership, ({ one }) => ({
+  club: one(clubs, {
+    fields: [membership.clubId],
+    references: [clubs.id],
+  }),
+  user: one(user, {
+    fields: [membership.userId],
+    references: [user.id],
+  }),
 }));
 
 export const eventsRelationships = relations(events, ({ one, many }) => ({
