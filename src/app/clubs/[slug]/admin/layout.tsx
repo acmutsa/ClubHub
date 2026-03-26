@@ -16,37 +16,38 @@ import { modifyBasePath } from "@/lib/routing/subdomain";
 export default async function Layout({
   params,
   children,
-}: {
-  params: Promise<{ clubId: string, slug: string }>;
+}: Readonly<{
+  params: Promise<{ slug: string }>;
   children: React.ReactNode;
-}) {
-  const { clubId, slug } = await params;
+}>) {
+  const { slug } = await params;
+  const domain = "localtest.me:3000";
+  const baseURL = `http://${domain}`;
+  const clubURL = `http://${slug}.${domain}`
+  
   const session = await auth.api.getSession({
     headers: await headers(),
   });
   if (!session) {
     return redirect("/sign-in");
   }
+
   const user = session.user;
+
   if (!(await isClubAdmin(user.id, slug))) {
     return unauthorized();
   }
 
-  // const club = await getClub(clubId);
-  // if (!club) {
-  //   return unauthorized();
-  // }
-    const club = await getClubBySlug(slug);
-   if (!club) {
-     return unauthorized();
-   }
-  const h = (await headers()).get("host") ?? "";
-  const path = modifyBasePath(slug, h, "");
-  const isOwner = await isClubOwner(user.id, clubId);
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return unauthorized();
+  }
+  
+  const isOwner = await isClubOwner(user.id, club.id);
 
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={club} isOwner={isOwner} className="relative" baseUrl={path} />
+      <ClubAdminSidebar club={club} isOwner={isOwner} className="relative" baseUrl={clubURL} />
       <SidebarInset>
         <main>
           {/* <SidebarTrigger /> */}
