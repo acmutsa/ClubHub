@@ -43,17 +43,17 @@ export const membership = sqliteTable(
     userId: text()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    clubId: text()
+    slug: text()
       .notNull()
-      .references(() => clubs.id, { onDelete: "cascade" }),
+      .references(() => clubs.slug, { onDelete: "cascade" }),
     role: text({ enum: membershipRoles }).notNull().default("member"),
   },
   (table) => ({
     userClubUnique: uniqueIndex("membership_user_club_unique").on(
       table.userId,
-      table.clubId
+      table.slug
     ),
-  })
+})
 );
 
 export const events = sqliteTable("events", {
