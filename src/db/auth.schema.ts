@@ -1,8 +1,10 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { userRoles } from "@/lib/types/user";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  role: text({ enum: userRoles }).default("user").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" })
     .default(false)

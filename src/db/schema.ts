@@ -4,10 +4,13 @@ import {
   integer,
   index,
   uniqueIndex,
+  primaryKey,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.schema";
 import { membershipRoles } from "@/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
+import { id } from "date-fns/locale";
+import { uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const commonTimestamps = {
   createdAt: integer({ mode: "timestamp" })
@@ -19,11 +22,19 @@ const commonTimestamps = {
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
 };
 
-export const clubs = sqliteTable("clubs", {
-  id: text().primaryKey(),
-  name: text().notNull(),
-  description: text().notNull(),
-});
+export const clubs = sqliteTable(
+  "clubs",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    description: text().notNull(),
+    owner: text().notNull(),
+    slug: text().notNull(),
+  },
+  (table) => ({
+    slugUnique: uniqueIndex("clubs_slug_unique").on(table.slug),
+  }),
+);
 
 export const membership = sqliteTable(
   "membership",
@@ -37,11 +48,7 @@ export const membership = sqliteTable(
       .references(() => clubs.id, { onDelete: "cascade" }),
     role: text({ enum: membershipRoles }).notNull().default("member"),
   },
-  (table) => [
-    uniqueIndex("membership_user_club_unique").on(table.userId, table.clubId),
-    index("membership_user_idx").on(table.userId),
-    index("membership_club_idx").on(table.clubId),
-  ]
+  (table) => [primaryKey({ columns: [table.userId, table.clubId] })],
 );
 
 export const events = sqliteTable("events", {
@@ -203,7 +210,7 @@ export const eventTypesRelationships = relations(
       references: [clubs.id],
     }),
     events: many(events),
-  })
+  }),
 );
 
 export const locationsRelationships = relations(locations, ({ one, many }) => ({
@@ -222,7 +229,7 @@ export const thumbnailsRelationships = relations(
   thumbnails,
   ({ one, many }) => ({
     events: many(events),
-  })
+  }),
 );
 
 export * from "./auth.schema";

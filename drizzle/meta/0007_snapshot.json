@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5e94b7bd-1776-4c9a-93b3-21616f2080e8",
+  "id": "dc4f0bd1-36e0-4c8e-bbae-b684df501428",
   "prevId": "09c064f9-f2b7-4cd8-b5e3-69571c55a7ad",
   "tables": {
     "buildings": {
@@ -51,119 +51,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "checkins": {
-      "name": "checkins",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "eventId": {
-          "name": "eventId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "membershipId": {
-          "name": "membershipId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "rating": {
-          "name": "rating",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "NULL"
-        },
-        "feedback": {
-          "name": "feedback",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "NULL"
-        },
-        "method": {
-          "name": "method",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "NULL"
-        }
-      },
-      "indexes": {
-        "checkins_event_membership_unique": {
-          "name": "checkins_event_membership_unique",
-          "columns": [
-            "eventId",
-            "membershipId"
-          ],
-          "isUnique": true
-        },
-        "checkins_event_idx": {
-          "name": "checkins_event_idx",
-          "columns": [
-            "eventId"
-          ],
-          "isUnique": false
-        },
-        "checkins_membership_idx": {
-          "name": "checkins_membership_idx",
-          "columns": [
-            "membershipId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "checkins_eventId_events_id_fk": {
-          "name": "checkins_eventId_events_id_fk",
-          "tableFrom": "checkins",
-          "tableTo": "events",
-          "columnsFrom": [
-            "eventId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "checkins_membershipId_membership_id_fk": {
-          "name": "checkins_membershipId_membership_id_fk",
-          "tableFrom": "checkins",
-          "tableTo": "membership",
-          "columnsFrom": [
-            "membershipId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "clubs": {
       "name": "clubs",
       "columns": {
@@ -186,6 +73,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },
@@ -563,13 +457,6 @@
     "membership": {
       "name": "membership",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
         "userId": {
           "name": "userId",
           "type": "text",
@@ -593,30 +480,7 @@
           "default": "'member'"
         }
       },
-      "indexes": {
-        "membership_user_club_unique": {
-          "name": "membership_user_club_unique",
-          "columns": [
-            "userId",
-            "clubId"
-          ],
-          "isUnique": true
-        },
-        "membership_user_idx": {
-          "name": "membership_user_idx",
-          "columns": [
-            "userId"
-          ],
-          "isUnique": false
-        },
-        "membership_club_idx": {
-          "name": "membership_club_idx",
-          "columns": [
-            "clubId"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "membership_userId_user_id_fk": {
           "name": "membership_userId_user_id_fk",
@@ -645,7 +509,15 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "membership_userId_clubId_pk": {
+          "columns": [
+            "userId",
+            "clubId"
+          ],
+          "name": "membership_userId_clubId_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
