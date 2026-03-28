@@ -1,29 +1,25 @@
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { and, eq } from "drizzle-orm";
+
 import { db } from "@/db";
-import { events } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { checkins, events, membership } from "@/db/schema";
 import CheckinsClient from "./checkins-client";
 
 type PageProps = {
   params: Promise<{
+    clubId: string;
     eventId: string;
   }>;
 };
 
 export default async function CheckinsPage({ params }: PageProps) {
-  const { eventId } = await params;
+  const { clubId, eventId } = await params;
   const numericEventId = Number(eventId);
 
-  if (Number.isNaN(numericEventId)) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 px-4 py-10">
-        <div className="mx-auto max-w-4xl rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold text-zinc-950">
-            Invalid event
-          </h1>
-          <p className="mt-2 text-zinc-600">That event ID is not valid.</p>
-        </div>
-      </main>
-    );
+  if (!Number.isInteger(numericEventId) || numericEventId <= 0) {
+    notFound();
   }
 
   const event = await db.query.events.findFirst({
@@ -38,19 +34,46 @@ export default async function CheckinsPage({ params }: PageProps) {
     },
   });
 
-  if (!event) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50 px-4 py-10">
-        <div className="mx-auto max-w-4xl rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold text-zinc-950">
-            Event not found
-          </h1>
-          <p className="mt-2 text-zinc-600">
-            We couldn’t find that event.
-          </p>
-        </div>
-      </main>
-    );
+  if (!event || event.clubId !== clubId) {
+    notFound();
+  }
+
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  let viewerSignedIn = false;
+  let viewerCanCheckIn = false;
+  let initialCheckedIn = false;
+  let initialRating = 0;
+  let initialFeedback = "";
+
+  if (session?.user?.id) {
+    viewerSignedIn = true;
+
+    const membershipRow = await db.query.membership.findFirst({
+      where: and(
+        eq(membership.userId, session.user.id),
+        eq(membership.clubId, event.clubId),
+      ),
+    });
+
+    if (membershipRow) {
+      viewerCanCheckIn = true;
+
+      const existingCheckin = await db.query.checkins.findFirst({
+        where: and(
+          eq(checkins.eventId, event.id),
+          eq(checkins.membershipId, membershipRow.id),
+        ),
+      });
+
+      if (existingCheckin) {
+        initialCheckedIn = true;
+        initialRating = existingCheckin.rating ?? 0;
+        initialFeedback = existingCheckin.feedback ?? "";
+      }
+    }
   }
 
   const startDate = new Date(event.start);
@@ -83,11 +106,12 @@ export default async function CheckinsPage({ params }: PageProps) {
   const imageUrl = event.thumbnail?.url
     ? event.thumbnail.url.startsWith("http")
       ? event.thumbnail.url
-      : `/${event.thumbnail.url}`
+      : `/${event.thumbnail.url.replace(/^\/+/, "")}`
     : null;
 
   return (
     <CheckinsClient
+      clubId={clubId}
       event={{
         id: event.id,
         title: event.title,
@@ -99,6 +123,11 @@ export default async function CheckinsPage({ params }: PageProps) {
         imageUrl,
         checkinStatus,
       }}
+      viewerSignedIn={viewerSignedIn}
+      viewerCanCheckIn={viewerCanCheckIn}
+      initialCheckedIn={initialCheckedIn}
+      initialRating={initialRating}
+      initialFeedback={initialFeedback}
     />
   );
 }

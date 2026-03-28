@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { CalendarDays, Clock3, Star, Ticket } from "lucide-react";
+import { createCheckinAction } from "./actions";
 
 type CheckinStatus = "open" | "upcoming" | "closed";
 
@@ -18,25 +20,32 @@ type EventData = {
 };
 
 type Props = {
+  clubId: string;
   event: EventData;
+  viewerSignedIn: boolean;
+  viewerCanCheckIn: boolean;
+  initialCheckedIn: boolean;
+  initialRating: number;
+  initialFeedback: string;
 };
 
-export default function CheckinsClient({ event }: Props) {
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [checkedIn, setCheckedIn] = useState(false);
+export default function CheckinsClient({
+  clubId,
+  event,
+  viewerSignedIn,
+  viewerCanCheckIn,
+  initialCheckedIn,
+  initialRating,
+  initialFeedback,
+}: Props) {
+  const router = useRouter();
 
-  async function handleCheckIn() {
-    setIsSubmitting(true);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      setCheckedIn(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const [rating, setRating] = useState(initialRating);
+  const [feedback, setFeedback] = useState(initialFeedback);
+  const [checkedIn, setCheckedIn] = useState(initialCheckedIn);
+  const [message, setMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const statusConfig = {
     open: {
@@ -60,18 +69,46 @@ export default function CheckinsClient({ event }: Props) {
     },
   }[event.checkinStatus];
 
-  const buttonDisabled =
-    isSubmitting || checkedIn || event.checkinStatus !== "open";
+  const canAttemptCheckin =
+    viewerSignedIn &&
+    viewerCanCheckIn &&
+    event.checkinStatus === "open" &&
+    !checkedIn;
 
-  const buttonLabel = checkedIn
-    ? "Checked In"
-    : event.checkinStatus === "upcoming"
-      ? "Not Open Yet"
-      : event.checkinStatus === "closed"
-        ? "Check-In Closed"
-        : isSubmitting
-          ? "Checking In..."
-          : "Check In";
+  let buttonLabel = "Check In";
+  if (!viewerSignedIn) buttonLabel = "Sign In Required";
+  else if (!viewerCanCheckIn) buttonLabel = "Club Membership Required";
+  else if (event.checkinStatus === "upcoming") buttonLabel = "Not Open Yet";
+  else if (event.checkinStatus === "closed") buttonLabel = "Check-In Closed";
+  else if (checkedIn) buttonLabel = "Checked In";
+  else if (isPending) buttonLabel = "Checking In...";
+
+  function handleCheckIn() {
+    if (!canAttemptCheckin || isPending) return;
+
+    setMessage(null);
+    setErrorMessage(null);
+
+    startTransition(async () => {
+      const result = await createCheckinAction({
+        clubId,
+        eventId: event.id,
+        rating,
+        feedback,
+      });
+
+      if (!result.ok) {
+        setErrorMessage(result.message);
+        return;
+      }
+
+      setCheckedIn(true);
+      setRating(result.rating ?? 0);
+      setFeedback(result.feedback ?? "");
+      setMessage(result.message);
+      router.refresh();
+    });
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
@@ -159,6 +196,18 @@ export default function CheckinsClient({ event }: Props) {
               <p className="mt-2 text-sm leading-6 text-zinc-600">
                 {statusConfig.description}
               </p>
+
+              {!viewerSignedIn ? (
+                <p className="mt-3 text-sm font-medium text-amber-700">
+                  You need to sign in before checking in.
+                </p>
+              ) : null}
+
+              {viewerSignedIn && !viewerCanCheckIn ? (
+                <p className="mt-3 text-sm font-medium text-amber-700">
+                  You need club membership before you can check in.
+                </p>
+              ) : null}
             </div>
           </section>
 
@@ -178,25 +227,6 @@ export default function CheckinsClient({ event }: Props) {
                   By checking in, you confirm your attendance for this event.
                 </p>
               </div>
-
-              <button
-                type="button"
-                onClick={handleCheckIn}
-                disabled={buttonDisabled}
-                className={`inline-flex h-12 w-full items-center justify-center rounded-2xl px-5 text-sm font-semibold transition ${
-                  buttonDisabled
-                    ? "cursor-not-allowed bg-zinc-200 text-zinc-500"
-                    : "bg-zinc-950 text-white hover:bg-zinc-800"
-                }`}
-              >
-                {buttonLabel}
-              </button>
-
-              {checkedIn ? (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-                  You’re checked in. Thanks for attending!
-                </div>
-              ) : null}
 
               <div>
                 <label className="mb-3 block text-sm font-semibold text-zinc-900">
@@ -257,6 +287,37 @@ export default function CheckinsClient({ event }: Props) {
                   {feedback.length} / 400
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={handleCheckIn}
+                disabled={!canAttemptCheckin || isPending}
+                className={`inline-flex h-12 w-full items-center justify-center rounded-2xl px-5 text-sm font-semibold transition ${
+                  !canAttemptCheckin || isPending
+                    ? "cursor-not-allowed bg-zinc-200 text-zinc-500"
+                    : "bg-zinc-950 text-white hover:bg-zinc-800"
+                }`}
+              >
+                {buttonLabel}
+              </button>
+
+              {checkedIn ? (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                  You’re checked in. Thanks for attending!
+                </div>
+              ) : null}
+
+              {message ? (
+                <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+                  {message}
+                </div>
+              ) : null}
+
+              {errorMessage ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {errorMessage}
+                </div>
+              ) : null}
             </div>
           </section>
         </div>
