@@ -4,13 +4,17 @@ import { columns } from "./columns";
 import { Plus } from "lucide-react";
 import { getClubEvents, getClubEventTypes } from "@/lib/queries/events";
 import Link from "next/link";
-
+import { headers } from "next/headers";
+import { getBasePath } from "@/lib/routing/subdomain";
 export default async function Page({ params }: { params: { clubId: string } }) {
   const { clubId } = await params;
   const [clubEvents, eventTypes] = await Promise.all([
     getClubEvents(clubId),
     getClubEventTypes(clubId),
   ]);
+
+  const h = (await headers()).get("host") ?? "";
+  const path =  getBasePath(h)? "" : `/clubs/${clubId}`;
 
   return (
     <>
@@ -25,7 +29,7 @@ export default async function Page({ params }: { params: { clubId: string } }) {
                 Manage and monitor your organizations events
               </p>
             </div>
-            <Link href={`/admin/events/new`}>
+            <Link href={path}>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Event
