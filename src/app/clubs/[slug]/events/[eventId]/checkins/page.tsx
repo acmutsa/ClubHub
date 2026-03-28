@@ -4,18 +4,18 @@ import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { checkins, events, membership } from "@/db/schema";
+import { checkins, clubs, events, membership } from "@/db/schema";
 import CheckinsClient from "./checkins-client";
 
 type PageProps = {
   params: Promise<{
-    clubId: string;
+    slug: string;
     eventId: string;
   }>;
 };
 
 export default async function CheckinsPage({ params }: PageProps) {
-  const { clubId, eventId } = await params;
+  const { slug, eventId } = await params;
   const numericEventId = Number(eventId);
 
   if (!Number.isInteger(numericEventId) || numericEventId <= 0) {
@@ -34,7 +34,7 @@ export default async function CheckinsPage({ params }: PageProps) {
     },
   });
 
-  if (!event || event.clubId !== clubId) {
+  if (!event || event.clubId !== clubs.id) {
     notFound();
   }
 
