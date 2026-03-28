@@ -12,18 +12,21 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { AdminSelectClub } from "@/lib/types/club";
-import { Calendar, Home, Users } from "lucide-react";
+import { Calendar, Home, Image, Users } from "lucide-react";
 import Link from "next/link";
+import { TransferOwnershipButton } from "@/components/shared/membership/buttons";
 
 interface ClubAdminSidebarProps {
   club: AdminSelectClub;
   className?: string;
+  isOwner?: boolean;
   baseUrl: string;
 }
 
 export const ClubAdminSidebar = ({
   club,
   className,
+  isOwner,
   baseUrl,
 }: ClubAdminSidebarProps) => {
   return (
@@ -60,6 +63,19 @@ export const ClubAdminSidebar = ({
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href={`${baseUrl}/admin/thumbnails`}>
+                    <Image />
+                    <span>Thumbnails</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {isOwner && (
+                <SidebarMenuItem>
+                  <TransferOwnershipButton clubId={club.id} />
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

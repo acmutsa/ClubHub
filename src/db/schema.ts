@@ -7,6 +7,8 @@ import {
 import { user } from "./auth.schema";
 import { membershipRoles } from "@/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
+import { id } from "date-fns/locale";
+import { uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const commonTimestamps = {
   createdAt: integer({ mode: "timestamp" })
@@ -18,11 +20,19 @@ const commonTimestamps = {
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
 };
 
-export const clubs = sqliteTable("clubs", {
-  id: text().primaryKey(),
-  name: text().notNull(),
-  description: text().notNull(),
-});
+export const clubs = sqliteTable(
+  "clubs",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    description: text().notNull(),
+    owner: text().notNull(),
+    slug: text().notNull(),
+  },
+  (table) => ({
+    slugUnique: uniqueIndex("clubs_slug_unique").on(table.slug),
+  }),
+);
 
 export const membership = sqliteTable(
   "membership",
@@ -35,7 +45,7 @@ export const membership = sqliteTable(
       .references(() => clubs.id, { onDelete: "cascade" }),
     role: text({ enum: membershipRoles }).notNull().default("member"),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.clubId] })]
+  (table) => [primaryKey({ columns: [table.userId, table.clubId] })],
 );
 
 export const events = sqliteTable("events", {
@@ -108,6 +118,17 @@ export const clubsRelationships = relations(clubs, ({ one, many }) => ({
   eventTypes: many(eventTypes),
 }));
 
+export const membershipRelationships = relations(membership, ({ one }) => ({
+  club: one(clubs, {
+    fields: [membership.clubId],
+    references: [clubs.id],
+  }),
+  user: one(user, {
+    fields: [membership.userId],
+    references: [user.id],
+  }),
+}));
+
 export const eventsRelationships = relations(events, ({ one, many }) => ({
   club: one(clubs, {
     fields: [events.clubId],
@@ -143,7 +164,7 @@ export const eventTypesRelationships = relations(
       references: [clubs.id],
     }),
     events: many(events),
-  })
+  }),
 );
 
 export const locationsRelationships = relations(locations, ({ one, many }) => ({
@@ -162,7 +183,7 @@ export const thumbnailsRelationships = relations(
   thumbnails,
   ({ one, many }) => ({
     events: many(events),
-  })
+  }),
 );
 
 export * from "./auth.schema";

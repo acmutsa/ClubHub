@@ -1,5 +1,6 @@
 import { NewEventForm } from "@/components/clubs/new-event-form";
 import { getClubEventTypes, getAllLocations } from "@/lib/queries/events";
+import { thumbnailStorage } from "@/lib/storage/thumbnails";
 
 export default async function NewEventPage({
   params,
@@ -8,10 +9,18 @@ export default async function NewEventPage({
 }) {
   const { clubId } = await params;
 
-  const [eventTypes, locations] = await Promise.all([
+  const [eventTypes, locations, thumbnailResult] = await Promise.all([
     getClubEventTypes(clubId),
     getAllLocations(),
+    thumbnailStorage.listClubThumbnails(clubId),
   ]);
+
+  const thumbnails = await Promise.all(
+    thumbnailResult.keys.map(async (key) => ({
+      key,
+      url: await thumbnailStorage.getThumbnailUrl(key),
+    })),
+  );
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -36,6 +45,7 @@ export default async function NewEventPage({
             clubId={clubId}
             eventTypes={eventTypes}
             locations={locations}
+            initialThumbnails={thumbnails}
           />
         </div>
       </div>
