@@ -22,6 +22,14 @@ export default async function CheckinsPage({ params }: PageProps) {
     notFound();
   }
 
+  const club = await db.query.clubs.findFirst({
+    where: eq(clubs.slug, slug),
+  });
+
+  if (!club) {
+    notFound();
+  }
+
   const event = await db.query.events.findFirst({
     where: eq(events.id, numericEventId),
     with: {
@@ -34,7 +42,7 @@ export default async function CheckinsPage({ params }: PageProps) {
     },
   });
 
-  if (!event || event.clubId !== clubs.id) {
+  if (!event || event.clubId !== club.id) {
     notFound();
   }
 
@@ -54,7 +62,7 @@ export default async function CheckinsPage({ params }: PageProps) {
     const membershipRow = await db.query.membership.findFirst({
       where: and(
         eq(membership.userId, session.user.id),
-        eq(membership.clubId, event.clubId),
+        eq(membership.clubId, club.id),
       ),
     });
 
@@ -111,7 +119,7 @@ export default async function CheckinsPage({ params }: PageProps) {
 
   return (
     <CheckinsClient
-      clubId={clubId}
+      clubId={club.id}
       event={{
         id: event.id,
         title: event.title,
