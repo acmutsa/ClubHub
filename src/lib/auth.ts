@@ -17,15 +17,21 @@ export const auth = betterAuth({
     enabled: true,
     async sendResetPassword(data, request) {
 
-            // Send an email to the user with a link to reset their password
+      // Send an email to the user with a link to reset their password
 
-        },
+    },
+  },
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    }
   },
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "mysql", "sqlite"
   }),
   trustedOrigins: [
-    "https://*.localhost:3000","http://*.localhost:3000"
+    "https://*.localhost:3000", "http://*.localhost:3000"
   ]
 });
 
