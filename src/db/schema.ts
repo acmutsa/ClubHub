@@ -58,7 +58,7 @@ export const membership = sqliteTable(
 
 export const events = sqliteTable("events", {
   id: integer().primaryKey({ autoIncrement: true }),
-  clubId: text()
+  slug: text()
     .notNull()
     .references(() => clubs.id, { onDelete: "cascade" }),
   title: text().notNull(),
@@ -118,9 +118,9 @@ export const eventTypes = sqliteTable("event_types", {
   description: text().notNull(),
   color: text().notNull(),
   requiredPoints: integer().notNull().default(0),
-  clubId: text()
+  slug: text()
     .notNull()
-    .references(() => clubs.id, { onDelete: "cascade" }),
+    .references(() => clubs.slug, { onDelete: "cascade" }),
   ...commonTimestamps,
 });
 
@@ -157,8 +157,8 @@ export const membershipRelationships = relations(
   membership,
   ({ one, many }) => ({
     club: one(clubs, {
-      fields: [membership.clubId],
-      references: [clubs.id],
+      fields: [membership.slug],
+      references: [clubs.slug],
     }),
     user: one(user, {
       fields: [membership.userId],
@@ -170,8 +170,8 @@ export const membershipRelationships = relations(
 
 export const eventsRelationships = relations(events, ({ one, many }) => ({
   club: one(clubs, {
-    fields: [events.clubId],
-    references: [clubs.id],
+    fields: [events.slug],
+    references: [clubs.slug],
   }),
   eventTypes: one(eventTypes, {
     fields: [events.eventTypeId],
@@ -211,8 +211,8 @@ export const eventTypesRelationships = relations(
   eventTypes,
   ({ one, many }) => ({
     club: one(clubs, {
-      fields: [eventTypes.clubId],
-      references: [clubs.id],
+      fields: [eventTypes.slug],
+      references: [clubs.slug],
     }),
     events: many(events),
   }),

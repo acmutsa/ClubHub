@@ -25,14 +25,14 @@ type Thumbnail = {
 };
 
 interface ThumbnailPickerProps {
-  clubId: string;
+  slug: string;
   initialThumbnails: Thumbnail[];
   value: number | null;
   onChange: (thumbnailId: number | null, previewUrl?: string) => void;
 }
 
 export function ThumbnailPicker({
-  clubId,
+  slug,
   initialThumbnails,
   value,
   onChange,
@@ -74,7 +74,7 @@ export function ThumbnailPicker({
     try {
       // Step 1: Get presigned URL
       const urlResult = await getUploadUrlAction({
-        clubId,
+        slug,
         contentType: file.type,
       });
 
@@ -98,7 +98,7 @@ export function ThumbnailPicker({
       }
 
       // Step 3: Confirm (creates DB record)
-      const confirmResult = await confirmUploadAction({ clubId, key });
+      const confirmResult = await confirmUploadAction({ slug, key });
 
       if (confirmResult?.data?.thumbnail) {
         const newThumb = confirmResult.data.thumbnail;
@@ -120,7 +120,7 @@ export function ThumbnailPicker({
       selectedFileRef.current = null;
       if (fileRef.current) fileRef.current.value = "";
     }
-  }, [clubId, onChange]);
+  }, [slug, onChange]);
 
   const handleSelectFromLibrary = useCallback(
     async (thumb: Thumbnail) => {
@@ -136,7 +136,7 @@ export function ThumbnailPicker({
 
         // Otherwise, get-or-create a DB record
         const result = await getOrCreateThumbnailAction({
-          clubId,
+          slug,
           key: thumb.key,
         });
 
@@ -161,7 +161,7 @@ export function ThumbnailPicker({
         setDialogOpen(false);
       }
     },
-    [clubId, onChange],
+    [slug, onChange],
   );
 
   const handleRemove = useCallback(() => {

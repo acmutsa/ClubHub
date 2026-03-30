@@ -9,7 +9,7 @@ import isClubAdmin from "@/lib/membership";
 import { returnValidationErrors } from "next-safe-action";
 
 const createEventSchema = eventInsertSchema.safeExtend({
-  clubId: z.string().min(1, "Club ID is required"),
+  slug: z.string().min(1, "Club ID is required"),
 });
 
 export const createEventAction = authAction
@@ -18,7 +18,7 @@ export const createEventAction = authAction
     const { userId } = ctx;
 
     // Check if user is admin of the club
-    if (!(await isClubAdmin(userId, parsedInput.clubId))) {
+    if (!(await isClubAdmin(userId, parsedInput.slug))) {
       returnValidationErrors(z.null(), {
         _errors: ["You do not have permission to create events for this club"],
       });
@@ -34,7 +34,7 @@ export const createEventAction = authAction
         })
         .returning();
 
-      revalidatePath(`/clubs/${parsedInput.clubId}/admin/events`);
+      revalidatePath(`/clubs/${parsedInput.slug}/admin/events`);
 
       return { success: true, event: newEvent[0] };
     } catch (error) {

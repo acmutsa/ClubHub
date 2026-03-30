@@ -8,11 +8,11 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { AdminClubRow } from "@/lib/types/club";
 
-export async function getClub(clubId: string) {
-  if (!clubId?.trim()) {
+export async function getClub(slug: string) {
+  if (!slug?.trim()) {
     return null;
   } ``
-  const club = await db.query.clubs.findFirst({ where: eq(clubs.id, clubId) });
+  const club = await db.query.clubs.findFirst({ where: eq(clubs.slug, slug) });
   return club || null;
 }
 
@@ -57,12 +57,12 @@ export async function getAllClubsData(): Promise<AdminClubRow[]> {
     memberCount: sql<number>`(
       SELECT COUNT(*)
       FROM membership
-      WHERE membership.clubId = clubs.id
+      WHERE membership.slug = clubs.slug
     )`,
     eventCount: sql<number>`(
       SELECT COUNT(*)
       FROM events
-      WHERE events.clubId = clubs.id
+      WHERE events.slug = clubs.slug
     )`,
   })
   .from(clubs)

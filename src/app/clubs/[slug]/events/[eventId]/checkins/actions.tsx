@@ -17,7 +17,7 @@ type CheckinResult = {
 };
 
 type CheckinPayload = {
-  clubId: string;
+  slug: string;
   eventId: number;
   rating?: number;
   feedback?: string;
@@ -67,7 +67,7 @@ export async function createCheckinAction(
     };
   }
 
-  if (event.clubId !== payload.clubId) {
+  if (event.slug !== payload.slug) {
     return {
       ok: false,
       message: "That event does not belong to this club.",
@@ -77,7 +77,7 @@ export async function createCheckinAction(
   const membershipRow = await db.query.membership.findFirst({
     where: and(
       eq(membership.userId, session.user.id),
-      eq(membership.clubId, event.clubId),
+      eq(membership.slug, event.slug),
     ),
   });
 
@@ -127,7 +127,7 @@ export async function createCheckinAction(
       .where(eq(checkins.id, existingCheckin.id));
 
     revalidatePath(
-      `/clubs/${payload.clubId}/events/${payload.eventId}/checkins`,
+      `/clubs/${payload.slug}/events/${payload.eventId}/checkins`,
     );
 
     return {
@@ -151,7 +151,7 @@ export async function createCheckinAction(
     method: "manual",
   });
 
-  revalidatePath(`/clubs/${payload.clubId}/events/${payload.eventId}/checkins`);
+  revalidatePath(`/clubs/${payload.slug}/events/${payload.eventId}/checkins`);
 
   return {
     ok: true,

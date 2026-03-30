@@ -26,12 +26,12 @@ export async function getAllUsersData(): Promise<AdminUserRow[]> {
             name: user.name,
             email: user.email,
             role: user.role,
-            clubCount: sql<number>`COUNT(${membership.clubId})`,
+            clubCount: sql<number>`COUNT(${membership.slug})`,
             clubs: sql<string>`
             COALESCE(
                 json_group_array(
                 json_object(
-                    'id', ${clubs.id},
+                    'id', ${clubs.slug},
                     'name', ${clubs.name}
                 )
                 ),
@@ -41,7 +41,7 @@ export async function getAllUsersData(): Promise<AdminUserRow[]> {
         })
         .from(user)
         .leftJoin(membership, eq(membership.userId, user.id))
-        .leftJoin(clubs, eq(clubs.id, membership.clubId))
+        .leftJoin(clubs, eq(clubs.slug, membership.slug))
         .groupBy(user.id);
 
     const users: AdminUserRow[] = rows.map((row) => ({

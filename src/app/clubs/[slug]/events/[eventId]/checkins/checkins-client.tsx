@@ -20,7 +20,7 @@ type EventData = {
 };
 
 type Props = {
-  clubId: string;
+  slug: string;
   event: EventData;
   viewerSignedIn: boolean;
   viewerCanCheckIn: boolean;
@@ -30,7 +30,7 @@ type Props = {
 };
 
 export default function CheckinsClient({
-  clubId,
+  slug,
   event,
   viewerSignedIn,
   viewerCanCheckIn,
@@ -91,7 +91,7 @@ export default function CheckinsClient({
 
     startTransition(async () => {
       const result = await createCheckinAction({
-        clubId,
+        slug,
         eventId: event.id,
         rating,
         feedback,
