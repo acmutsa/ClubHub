@@ -13,6 +13,7 @@ import {
   type EventInsertInput,
 } from "@/lib/validators/event";
 import { createEventAction } from "@/actions/events";
+import { ThumbnailPicker } from "@/components/clubs/admin/thumbnail-picker";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,10 +65,17 @@ interface Location {
   };
 }
 
+type ThumbnailItem = {
+  key: string;
+  url: string;
+  thumbnailId?: number;
+};
+
 interface NewEventFormProps {
   clubId: string;
   eventTypes: EventType[];
   locations: Location[];
+  initialThumbnails?: ThumbnailItem[];
   className?: string;
 }
 
@@ -75,6 +83,7 @@ export function NewEventForm({
   clubId,
   eventTypes,
   locations,
+  initialThumbnails = [],
   className,
 }: NewEventFormProps) {
   const router = useRouter();
@@ -88,6 +97,7 @@ export function NewEventForm({
       points: 0,
       hidden: false,
       locationId: null,
+      thumbnailId: null,
     },
   });
 
@@ -202,6 +212,28 @@ export function NewEventForm({
               </FieldError>
             </Field>
           </FieldGroup>
+        </CardContent>
+      </Card>
+
+      {/* Thumbnail */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Thumbnail</CardTitle>
+          <CardDescription>
+            Upload a new image or select from your library
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThumbnailPicker
+            clubId={clubId}
+            initialThumbnails={initialThumbnails}
+            value={form.watch("thumbnailId") ?? null}
+            onChange={(thumbnailId) =>
+              form.setValue("thumbnailId", thumbnailId, {
+                shouldValidate: true,
+              })
+            }
+          />
         </CardContent>
       </Card>
 
@@ -439,7 +471,12 @@ function DateTimePicker({ value, onChange, error }: DateTimePickerProps) {
         type="time"
         id="time-picker"
         step="1"
-        defaultValue="10:30:00"
+        value={
+          value
+            ? `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}`
+            : "10:30"
+        }
+        onChange={handleTimeChange}
         className={cn(
           "w-[120px] bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none",
           error && "border-destructive focus-visible:ring-destructive",

@@ -5,7 +5,7 @@ import { getClubBySlug } from "./queries/club";
 
 export default async function isClubAdmin(userId: string, slug: string) {  
   const club = await getClubBySlug(slug);
-  if(!club){
+  if (!club) {
     return false;
   }
   const member = await db

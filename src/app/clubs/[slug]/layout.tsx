@@ -35,6 +35,13 @@ export default async function Layout({
     return redirect(`${baseURL}/clubs`);
   }
 
+  const userRole = await isClubAdmin(user.id, slug);
+  if (!userRole) {
+    return redirect("/clubs");
+  }
+  const h = (await headers()).get("host") ?? "";
+  const path = modifyBasePath(slug, h, "");
+  console.log(path);
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar
