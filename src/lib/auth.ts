@@ -31,8 +31,8 @@ export const auth = betterAuth({
     provider: "sqlite", // or "mysql", "sqlite"
   }),
   trustedOrigins: [
-    "https://*.localhost:3000", "http://*.localhost:3000"
-  ]
+    "https://*.localhost:3000", "http://*.localhost:3000", "http://*.localtest.me:3000", "http://localtest.me:3000"
+  ],
   advanced: {
     crossSubDomainCookies: {
       enabled: true,
