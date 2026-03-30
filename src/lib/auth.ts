@@ -25,8 +25,16 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "mysql", "sqlite"
   }),
-  trustedOrigins: [
-    "https://*.localhost:3000","http://*.localhost:3000"
-  ]
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: ".localtest.me",
+    },
+    defaultCookieAttributes: {
+      secure: false,
+      httpOnly: true,
+      sameSite: "lax",
+    },
+  },
 });
 
