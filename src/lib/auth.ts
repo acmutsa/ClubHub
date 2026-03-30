@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-
+import { sendPasswordResetEmail } from "./email/password-reset";
 export const auth = betterAuth({
   user: {
     additionalFields: {
@@ -15,11 +15,11 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    async sendResetPassword(data, request) {
-
-      // Send an email to the user with a link to reset their password
-
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({ user,url });
     },
+    revokeSessionsOnPasswordReset: true, //disable use of link twice
+    resetPasswordTokenExpiresIn: 900, // 15 min timeout of link after generation
   },
   socialProviders: {
     github: {
@@ -33,5 +33,16 @@ export const auth = betterAuth({
   trustedOrigins: [
     "https://*.localhost:3000", "http://*.localhost:3000"
   ]
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: ".localtest.me",
+    },
+    defaultCookieAttributes: {
+      secure: false,
+      httpOnly: true,
+      sameSite: "lax",
+    },
+  },
 });
 
