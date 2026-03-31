@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { checkins, clubs, events, membership } from "@/db/schema";
 import CheckinsClient from "./checkins-client";
+import { thumbnailStorage } from "@/lib/storage/thumbnails";
 
 type PageProps = {
   params: Promise<{
@@ -112,10 +113,10 @@ export default async function CheckinsPage({ params }: PageProps) {
     now < checkinStart ? "upcoming" : now > checkinEnd ? "closed" : "open";
 
   const imageUrl = event.thumbnail?.url
-    ? event.thumbnail.url.startsWith("http")
-      ? event.thumbnail.url
-      : `/${event.thumbnail.url.replace(/^\/+/, "")}`
-    : null;
+  ? event.thumbnail.url.startsWith("http")
+    ? event.thumbnail.url
+    : await thumbnailStorage.getThumbnailUrl(event.thumbnail.url)
+  : null;
 
   return (
     <CheckinsClient

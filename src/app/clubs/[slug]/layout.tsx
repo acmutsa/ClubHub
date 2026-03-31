@@ -29,7 +29,7 @@ export default async function Layout({
     return redirect("/clubs");
   }
 
-  // const club = await getClub(clubId);
+  // const club = await getClub(slug);
   // if (!club) {
   //   return redirect("/clubs");
   // }

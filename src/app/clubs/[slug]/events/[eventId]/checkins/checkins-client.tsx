@@ -110,134 +110,139 @@ export default function CheckinsClient({
     });
   }
 
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-        <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-            
-            <section className="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
-              
-              {event.imageUrl && (
-                <div className="h-[260px] w-full">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+
+          <section className="rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <div className="p-6 sm:p-8">
+
+              <div className="flex gap-6 items-start mb-6">
+                {event.imageUrl && (
                   <img
                     src={event.imageUrl}
                     alt={event.title}
-                    className="h-full w-full object-cover"
+                    className="w-50 h-50 object-cover rounded-xl border"
                   />
-                </div>
-              )}
+                )} 
 
-              <div className="p-6 sm:p-8">
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-                  <div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex items-center justify-between gap-4">
                     <h1 className="text-3xl sm:text-4xl font-semibold text-zinc-950">
                       {event.title}
                     </h1>
-                    <p className="mt-3 text-zinc-600 max-w-2xl">
-                      {event.description}
-                    </p>
+
+                    <div className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium ${statusConfig.className}`}>
+                      {statusConfig.label}
+                    </div>
                   </div>
 
-                  <div
-                    className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium ${statusConfig.className}`}
-                  >
-                    {statusConfig.label}
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-xl bg-zinc-50 p-4">
-                    <p className="text-xs text-zinc-500 mb-1">Date</p>
-                    <p className="font-semibold text-zinc-900">{event.dateLabel}</p>
-                  </div>
-
-                  <div className="rounded-xl bg-zinc-50 p-4">
-                    <p className="text-xs text-zinc-500 mb-1">Time</p>
-                    <p className="font-semibold text-zinc-900">{event.timeLabel}</p>
-                  </div>
-
-                  <div className="rounded-xl bg-zinc-50 p-4">
-                    <p className="text-xs text-zinc-500 mb-1">Location</p>
-                    <p className="font-semibold text-zinc-900">{event.location}</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
-              <h2 className="text-2xl font-semibold text-zinc-950 mb-2">
-                Check In
-              </h2>
-              <p className="text-sm text-zinc-600 mb-6">
-                Confirm your attendance and leave feedback.
-              </p>
-
-              <div className="mb-6 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-600">
-                {statusConfig.description}
-              </div>
-
-              <div className="mb-6">
-                <p className="text-sm font-semibold mb-3">Rating</p>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((value) => {
-                    const active = value <= rating;
-                    return (
-                      <button
-                        key={value}
-                        onClick={() => setRating(value)}
-                        className="transition hover:scale-105"
-                      >
-                        <Star
-                          className={`h-7 w-7 ${
-                            active
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-zinc-300"
-                          }`}
-                        />
-                      </button>
-                    );
-                  })}
+                  <p className="text-zinc-600 max-w-2xl">
+                    {event.description}
+                  </p>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <textarea
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  placeholder="Leave feedback..."
-                  className="w-full rounded-xl border border-zinc-200 p-3 text-sm focus:border-zinc-400 outline-none"
-                />
-              </div>
-
-              <button
-                onClick={handleCheckIn}
-                disabled={!canAttemptCheckin || isPending}
-                className={`w-full h-12 rounded-xl font-semibold transition ${
-                  !canAttemptCheckin || isPending
-                    ? "bg-zinc-200 text-zinc-500"
-                    : "bg-zinc-950 text-white hover:bg-zinc-800"
-                }`}
-              >
-                {buttonLabel}
-              </button>
-
-              {checkedIn && (
-                <div className="mt-4 text-emerald-600 text-sm">
-                  You’re checked in.
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl bg-zinc-50 p-4">
+                  <p className="text-xs text-zinc-500 mb-1">Date</p>
+                  <p className="font-semibold text-zinc-900">
+                    {event.dateLabel}
+                  </p>
                 </div>
-              )}
 
-              {message && (
-                <div className="mt-4 text-blue-600 text-sm">{message}</div>
-              )}
+                <div className="rounded-xl bg-zinc-50 p-4">
+                  <p className="text-xs text-zinc-500 mb-1">Time</p>
+                  <p className="font-semibold text-zinc-900">
+                    {event.timeLabel}
+                  </p>
+                </div>
 
-              {errorMessage && (
-                <div className="mt-4 text-red-600 text-sm">{errorMessage}</div>
-              )}
-            </section>
-          </div>
-        </main>
+                <div className="rounded-xl bg-zinc-50 p-4">
+                  <p className="text-xs text-zinc-500 mb-1">Location</p>
+                  <p className="font-semibold text-zinc-900">
+                    {event.location}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
+            <h2 className="text-2xl font-semibold text-zinc-950 mb-2">
+              Check In
+            </h2>
+
+            <p className="text-sm text-zinc-600 mb-6">
+              Confirm your attendance and leave feedback.
+            </p>
+
+            <div className="mb-6 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-600">
+              {statusConfig.description}
+            </div>
+
+            <div className="mb-6">
+              <p className="text-sm font-semibold mb-3">Rating</p>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((value) => {
+                  const active = value <= rating;
+                  return (
+                    <button
+                      key={value}
+                      onClick={() => setRating(value)}
+                      className="transition hover:scale-105"
+                    >
+                      <Star
+                        className={`h-7 w-7 ${
+                          active
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-zinc-300"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Leave feedback..."
+                className="w-full rounded-xl border border-zinc-200 p-3 text-sm focus:border-zinc-400 outline-none"
+              />
+            </div>
+
+            <button
+              onClick={handleCheckIn}
+              disabled={!canAttemptCheckin || isPending}
+              className={`w-full h-12 rounded-xl font-semibold transition ${
+                !canAttemptCheckin || isPending
+                  ? "bg-zinc-200 text-zinc-500"
+                  : "bg-zinc-950 text-white hover:bg-zinc-800"
+              }`}
+            >
+              {buttonLabel}
+            </button>
+
+            {checkedIn && (
+              <div className="mt-4 text-emerald-600 text-sm">
+                You’re checked in.
+              </div>
+            )}
+
+            {message && (
+              <div className="mt-4 text-blue-600 text-sm">{message}</div>
+            )}
+
+            {errorMessage && (
+              <div className="mt-4 text-red-600 text-sm">{errorMessage}</div>
+            )}
+          </section>
+        </div>
       </div>
     </main>
   );
