@@ -74,7 +74,7 @@ export async function getAllClubsData(): Promise<AdminClubRow[]> {
 export async function getClubBySlug(slug: string) {
   if (!slug?.trim()) {
     return null;
-  } ``
+  }
   const club = await db.query.clubs.findFirst({ where: eq(clubs.slug, slug) });
   return club || null;
 }

@@ -2,7 +2,8 @@ import { db } from "@/db/index";
 import { membership, clubs } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getClubBySlug } from "./queries/club";
-export default async function isClubAdmin(userId: string, slug: string) {
+
+export default async function isClubAdmin(userId: string, slug: string) {  
   const club = await getClubBySlug(slug);
   if (!club) {
     return false;
