@@ -8,11 +8,11 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { AdminClubRow } from "@/lib/types/club";
 
-export async function getClub(slug: string) {
-  if (!slug?.trim()) {
+export async function getClub(clubId: string) {
+  if (!clubId?.trim()) {
     return null;
-  } ``
-  const club = await db.query.clubs.findFirst({ where: eq(clubs.slug, slug) });
+  }
+  const club = await db.query.clubs.findFirst({ where: eq(clubs.id, clubId) });
   return club || null;
 }
 
