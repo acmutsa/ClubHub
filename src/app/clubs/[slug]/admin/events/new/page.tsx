@@ -5,14 +5,14 @@ import { thumbnailStorage } from "@/lib/storage/thumbnails";
 export default async function NewEventPage({
   params,
 }: {
-  params: Promise<{ clubId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { clubId } = await params;
+  const { slug } = await params;
 
   const [eventTypes, locations, thumbnailResult] = await Promise.all([
-    getClubEventTypes(clubId),
+    getClubEventTypes(slug),
     getAllLocations(),
-    thumbnailStorage.listClubThumbnails(clubId),
+    thumbnailStorage.listClubThumbnails(slug),
   ]);
 
   const thumbnails = await Promise.all(
@@ -42,7 +42,7 @@ export default async function NewEventPage({
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-7xl p-8">
           <NewEventForm
-            clubId={clubId}
+            clubId={slug}
             eventTypes={eventTypes}
             locations={locations}
             initialThumbnails={thumbnails}
