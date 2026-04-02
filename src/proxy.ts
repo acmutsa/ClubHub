@@ -1,38 +1,30 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
+import { NextResponse, NextRequest } from "next/server";
 
-// This function can be marked `async` if using `await` inside
+function extractSubdomain(request: NextRequest): string | null {
+  const host = request.headers.get("host") || "";
+  const hostname = host.split(":")[0];
+  const parts = hostname.split(".");
+
+  if (parts.length > 2) {
+    return parts[0];
+  }
+
+  return null;
+}
+
 export function proxy(request: NextRequest) {
-  //if path starts w api
-  const url = request.nextUrl;
+  const { pathname } = request.nextUrl;
+  const subdomain = extractSubdomain(request);
 
-  const sessionCookie = getSessionCookie(request);
-  if (sessionCookie && ["/sign-in", "/sign-up"].includes(url.pathname)) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-  if (!sessionCookie && url.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
-  }
-
-  const hostName = request.headers.get("host") || "";
-  const root = "localhost:3000";
-
-  const sub = hostName.endsWith(root)
-    ? hostName.replace(`.${root}`, "")
-    : hostName.split(".")[0];
-
-  console.log("Subdomain", sub);
-
-  if (sub && sub !== "www" && sub !== "localhost:3000") {
-    url.pathname = `/clubs/${sub}${url.pathname}`;
-    return NextResponse.rewrite(url);
+  if (subdomain) {
+    return NextResponse.rewrite(
+      new URL(`/clubs/${subdomain}${pathname}`, request.url)
+    );
   }
 
   return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|sign-in|sign-up).*)"],
+  matcher: "/((?!api|_next|[\\w-]+\\.\\w+).*)",
 };
