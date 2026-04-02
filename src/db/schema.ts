@@ -43,22 +43,23 @@ export const membership = sqliteTable(
     userId: text()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    slug: text()
+    clubId: text()
       .notNull()
-      .references(() => clubs.slug, { onDelete: "cascade" }),
+      .references(() => clubs.id, { onDelete: "cascade" }),
     role: text({ enum: membershipRoles }).notNull().default("member"),
   },
   (table) => ({
     userClubUnique: uniqueIndex("membership_user_club_unique").on(
       table.userId,
-      table.slug
+      table.clubId
     ),
-})
+  })
+
 );
 
 export const events = sqliteTable("events", {
   id: integer().primaryKey({ autoIncrement: true }),
-  slug: text()
+  clubId: text()
     .notNull()
     .references(() => clubs.id, { onDelete: "cascade" }),
   title: text().notNull(),
@@ -118,9 +119,9 @@ export const eventTypes = sqliteTable("event_types", {
   description: text().notNull(),
   color: text().notNull(),
   requiredPoints: integer().notNull().default(0),
-  slug: text()
+  clubId: text()
     .notNull()
-    .references(() => clubs.slug, { onDelete: "cascade" }),
+    .references(() => clubs.id, { onDelete: "cascade" }),
   ...commonTimestamps,
 });
 
@@ -157,7 +158,7 @@ export const membershipRelationships = relations(
   membership,
   ({ one, many }) => ({
     club: one(clubs, {
-      fields: [membership.slug],
+      fields: [membership.clubId],
       references: [clubs.slug],
     }),
     user: one(user, {
@@ -170,8 +171,8 @@ export const membershipRelationships = relations(
 
 export const eventsRelationships = relations(events, ({ one, many }) => ({
   club: one(clubs, {
-    fields: [events.slug],
-    references: [clubs.slug],
+    fields: [events.clubId],
+    references: [clubs.id],
   }),
   eventTypes: one(eventTypes, {
     fields: [events.eventTypeId],
@@ -203,7 +204,7 @@ export const checkinsRelationships = relations(checkins, ({ one }) => ({
   }),
   membership: one(membership, {
     fields: [checkins.membershipId],
-    references: [membership.id],
+    references: [membership.clubId],
   }),
 }));
 
@@ -211,8 +212,8 @@ export const eventTypesRelationships = relations(
   eventTypes,
   ({ one, many }) => ({
     club: one(clubs, {
-      fields: [eventTypes.slug],
-      references: [clubs.slug],
+      fields: [eventTypes.clubId],
+      references: [clubs.id],
     }),
     events: many(events),
   }),
