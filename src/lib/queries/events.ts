@@ -6,7 +6,7 @@ import { unauthorized } from "next/navigation";
 import isClubAdmin from "@/lib/membership";
 import { events } from "@/db/schema";
 import { sql } from "drizzle-orm/sql";
-import type { AdminEventRow } from "@/lib/types/event"
+import type { AdminEventRow } from "@/lib/types/event";
 import { thumbnailStorage } from "@/lib/storage/thumbnails";
 
 export async function getClubEvents(clubId: string) {
@@ -118,7 +118,7 @@ export async function getClubEvent(clubId: string, eventId: number) {
 }
 
 /**
- * Get event for member view (does not require admin privileges)
+ * Get an event for member view (does not require admin privileges)
  * Excludes hidden events from being fetched
  */
 export async function getMemberEvent(clubId: string, eventId: number) {
@@ -158,6 +158,52 @@ export async function getMemberEvent(clubId: string, eventId: number) {
   return event;
 }
 
+/**
+ * Get ALL visible events for a club (member view)
+ * Excludes hidden events from being fetched
+ * Returns
+ */
+export async function getMemberEvents(clubId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    unauthorized();
+  }
+
+  const clubEvents = await db.query.events.findMany({
+    where: (events, { eq, and }) =>
+      and(
+        eq(events.clubId, clubId),
+        eq(events.hidden, false), // Only non-hidden events
+      ),
+    with: {
+      club: true,
+      eventTypes: true,
+      location: true,
+      thumbnail: true,
+    },
+  });
+
+  // Resolve thumbnail keys to presigned URLs
+  const resolved = await Promise.all(
+    clubEvents.map(async (event) => {
+      if (event.thumbnail) {
+        const presignedUrl = await thumbnailStorage.getThumbnailUrl(
+          event.thumbnail.url,
+        );
+        return {
+          ...event,
+          thumbnail: { ...event.thumbnail, url: presignedUrl },
+        };
+      }
+      return event;
+    }),
+  );
+
+  return resolved;
+}
+
 export async function getAdminTotalEventCount(): Promise<number> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -170,9 +216,7 @@ export async function getAdminTotalEventCount(): Promise<number> {
     unauthorized();
   }
 
-  const result = await db
-    .select({ count: sql<number>`COUNT(*)` })
-    .from(events);
+  const result = await db.select({ count: sql<number>`COUNT(*)` }).from(events);
 
   return result[0]?.count ?? 0;
 }
