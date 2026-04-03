@@ -4,21 +4,30 @@ import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { checkins, events, membership } from "@/db/schema";
+import { checkins, clubs, events, membership } from "@/db/schema";
 import CheckinsClient from "./checkins-client";
+import { thumbnailStorage } from "@/lib/storage/thumbnails";
 
 type PageProps = {
   params: Promise<{
-    clubId: string;
+    slug: string;
     eventId: string;
   }>;
 };
 
 export default async function CheckinsPage({ params }: PageProps) {
-  const { clubId, eventId } = await params;
+  const { slug, eventId } = await params;
   const numericEventId = Number(eventId);
 
   if (!Number.isInteger(numericEventId) || numericEventId <= 0) {
+    notFound();
+  }
+
+  const club = await db.query.clubs.findFirst({
+    where: eq(clubs.slug, slug),
+  });
+
+  if (!club) {
     notFound();
   }
 
@@ -34,7 +43,7 @@ export default async function CheckinsPage({ params }: PageProps) {
     },
   });
 
-  if (!event || event.clubId !== clubId) {
+  if (!event || event.clubId !== club.id) {
     notFound();
   }
 
@@ -54,7 +63,7 @@ export default async function CheckinsPage({ params }: PageProps) {
     const membershipRow = await db.query.membership.findFirst({
       where: and(
         eq(membership.userId, session.user.id),
-        eq(membership.clubId, event.clubId),
+        eq(membership.clubId, club.id),
       ),
     });
 
@@ -104,14 +113,14 @@ export default async function CheckinsPage({ params }: PageProps) {
     now < checkinStart ? "upcoming" : now > checkinEnd ? "closed" : "open";
 
   const imageUrl = event.thumbnail?.url
-    ? event.thumbnail.url.startsWith("http")
-      ? event.thumbnail.url
-      : `/${event.thumbnail.url.replace(/^\/+/, "")}`
-    : null;
+  ? event.thumbnail.url.startsWith("http")
+    ? event.thumbnail.url
+    : await thumbnailStorage.getThumbnailUrl(event.thumbnail.url)
+  : null;
 
   return (
     <CheckinsClient
-      clubId={clubId}
+      clubId={club.id}
       event={{
         id: event.id,
         title: event.title,
