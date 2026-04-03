@@ -18,8 +18,8 @@ export default async function Layout({
   const { slug } = await params;
   const domain = "localtest.me:3000";
   const baseURL = `http://${domain}`;
-  const clubURL = `http://${slug}.${domain}`;
-
+  const clubURL = `http://${slug}.${domain}`
+  
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -33,6 +33,11 @@ export default async function Layout({
   const club = await getClubBySlug(slug);
   if (!club) {
     return redirect(`${baseURL}/clubs`);
+  }
+
+  const userRole = await isClubAdmin(user.id, slug);
+  if (!userRole) {
+    return redirect("/clubs");
   }
 
   const userRole = await isClubAdmin(user.id, slug);

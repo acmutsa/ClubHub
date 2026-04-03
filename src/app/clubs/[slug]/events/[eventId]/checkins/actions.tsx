@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { checkins, events, membership } from "@/db/schema";
+import { getClubBySlug } from "@/lib/queries/club";
 
 type CheckinResult = {
   ok: boolean;
@@ -17,7 +18,6 @@ type CheckinResult = {
 };
 
 type CheckinPayload = {
-  clubId: string;
   slug: string;
   eventId: number;
   rating?: number;
@@ -69,7 +69,8 @@ export async function createCheckinAction(
     };
   }
 
-  if (event.clubId !== payload.clubId) {
+  const club = await getClubBySlug(payload.slug);
+  if (!club || event.clubId !== club.id) {
     return {
       ok: false,
       message: "That event does not belong to this club.",
@@ -79,7 +80,7 @@ export async function createCheckinAction(
   const membershipRow = await db.query.membership.findFirst({
     where: and(
       eq(membership.userId, session.user.id),
-      eq(membership.clubId, payload.clubId),
+      eq(membership.clubId, event.clubId),
     ),
   });
 
