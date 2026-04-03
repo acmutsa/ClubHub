@@ -25,9 +25,10 @@ type CheckinPayload = {
 };
 
 function normalizeRating(value: number | undefined): number | null {
+  if (value === undefined) return null;
   if (!Number.isInteger(value)) return null;
-  if ((value ?? 0) < 1 || (value ?? 0) > 5) return null;
-  return value ?? null;
+  if (value < 1 || value > 5) return null;
+  return value;
 }
 
 function normalizeFeedback(value: string | undefined): string | null {
@@ -140,10 +141,6 @@ export async function createCheckinAction(
       message: "You were already checked in. Your rating and feedback were updated.",
     };
   }
-
-  console.log("membershipRow", membershipRow);
-  console.log("membershipRow.id", membershipRow?.id);
-  console.log("typeof membershipRow.id", typeof membershipRow?.id);
 
   await db.insert(checkins).values({
     eventId: payload.eventId,

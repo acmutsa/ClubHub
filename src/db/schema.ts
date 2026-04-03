@@ -158,7 +158,7 @@ export const membershipRelationships = relations(
   ({ one, many }) => ({
     club: one(clubs, {
       fields: [membership.clubId],
-      references: [clubs.id],
+      references: [clubs.slug],
     }),
     user: one(user, {
       fields: [membership.userId],
@@ -203,7 +203,7 @@ export const checkinsRelationships = relations(checkins, ({ one }) => ({
   }),
   membership: one(membership, {
     fields: [checkins.membershipId],
-    references: [membership.id],
+    references: [membership.clubId],
   }),
 }));
 

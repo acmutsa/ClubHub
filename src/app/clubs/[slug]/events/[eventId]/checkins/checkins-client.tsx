@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Star } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Clock3, Star, Ticket } from "lucide-react";
 import { createCheckinAction } from "./actions";
 
 type CheckinStatus = "open" | "upcoming" | "closed";
@@ -110,58 +110,55 @@ export default function CheckinsClient({
     });
   }
 
-
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-
           <section className="rounded-3xl border border-zinc-200 bg-white shadow-sm">
             <div className="p-6 sm:p-8">
-
-              <div className="flex gap-6 items-start mb-6">
+              <div className="mb-6 flex items-start gap-6">
                 {event.imageUrl && (
                   <img
                     src={event.imageUrl}
                     alt={event.title}
-                    className="w-50 h-50 object-cover rounded-xl border"
+                    className="h-28 w-28 shrink-0 rounded-xl border object-cover"
                   />
-                )} 
+                )}
 
-                <div className="flex flex-col gap-2 flex-1">
+                <div className="flex flex-1 flex-col gap-2">
                   <div className="flex items-center justify-between gap-4">
-                    <h1 className="text-3xl sm:text-4xl font-semibold text-zinc-950">
+                    <h1 className="text-3xl font-semibold text-zinc-950 sm:text-4xl">
                       {event.title}
                     </h1>
 
-                    <div className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium ${statusConfig.className}`}>
+                    <div
+                      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium ${statusConfig.className}`}
+                    >
                       {statusConfig.label}
                     </div>
                   </div>
 
-                  <p className="text-zinc-600 max-w-2xl">
-                    {event.description}
-                  </p>
+                  <p className="max-w-2xl text-zinc-600">{event.description}</p>
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl bg-zinc-50 p-4">
-                  <p className="text-xs text-zinc-500 mb-1">Date</p>
+                  <p className="mb-1 text-xs text-zinc-500">Date</p>
                   <p className="font-semibold text-zinc-900">
                     {event.dateLabel}
                   </p>
                 </div>
 
                 <div className="rounded-xl bg-zinc-50 p-4">
-                  <p className="text-xs text-zinc-500 mb-1">Time</p>
+                  <p className="mb-1 text-xs text-zinc-500">Time</p>
                   <p className="font-semibold text-zinc-900">
                     {event.timeLabel}
                   </p>
                 </div>
 
                 <div className="rounded-xl bg-zinc-50 p-4">
-                  <p className="text-xs text-zinc-500 mb-1">Location</p>
+                  <p className="mb-1 text-xs text-zinc-500">Location</p>
                   <p className="font-semibold text-zinc-900">
                     {event.location}
                   </p>
@@ -170,12 +167,12 @@ export default function CheckinsClient({
             </div>
           </section>
 
-          <section className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-zinc-950 mb-2">
+          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-2 text-2xl font-semibold text-zinc-950">
               Check In
             </h2>
 
-            <p className="text-sm text-zinc-600 mb-6">
+            <p className="mb-6 text-sm text-zinc-600">
               Confirm your attendance and leave feedback.
             </p>
 
@@ -184,13 +181,15 @@ export default function CheckinsClient({
             </div>
 
             <div className="mb-6">
-              <p className="text-sm font-semibold mb-3">Rating</p>
+              <p className="mb-3 text-sm font-semibold">Rating</p>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => {
                   const active = value <= rating;
+
                   return (
                     <button
                       key={value}
+                      type="button"
                       onClick={() => setRating(value)}
                       className="transition hover:scale-105"
                     >
@@ -210,16 +209,17 @@ export default function CheckinsClient({
             <div className="mb-6">
               <textarea
                 value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
+                onChange={(e) => setFeedback(e.target.value.slice(0, 400))}
                 placeholder="Leave feedback..."
-                className="w-full rounded-xl border border-zinc-200 p-3 text-sm focus:border-zinc-400 outline-none"
+                className="w-full rounded-xl border border-zinc-200 p-3 text-sm outline-none focus:border-zinc-400"
               />
             </div>
 
             <button
+              type="button"
               onClick={handleCheckIn}
               disabled={!canAttemptCheckin || isPending}
-              className={`w-full h-12 rounded-xl font-semibold transition ${
+              className={`h-12 w-full rounded-xl font-semibold transition ${
                 !canAttemptCheckin || isPending
                   ? "bg-zinc-200 text-zinc-500"
                   : "bg-zinc-950 text-white hover:bg-zinc-800"
@@ -229,17 +229,17 @@ export default function CheckinsClient({
             </button>
 
             {checkedIn && (
-              <div className="mt-4 text-emerald-600 text-sm">
+              <div className="mt-4 text-sm text-emerald-600">
                 You’re checked in.
               </div>
             )}
 
             {message && (
-              <div className="mt-4 text-blue-600 text-sm">{message}</div>
+              <div className="mt-4 text-sm text-blue-600">{message}</div>
             )}
 
             {errorMessage && (
-              <div className="mt-4 text-red-600 text-sm">{errorMessage}</div>
+              <div className="mt-4 text-sm text-red-600">{errorMessage}</div>
             )}
           </section>
         </div>

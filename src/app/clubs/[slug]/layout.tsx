@@ -39,6 +39,12 @@ export default async function Layout({
   if (!userRole) {
     return redirect("/clubs");
   }
+
+  const userRole = await isClubAdmin(user.id, slug);
+  // if (!userRole) {
+  //   return redirect(${baseURL}/clubs);
+  // }
+
   const h = (await headers()).get("host") ?? "";
   const path = modifyBasePath(slug, h, "");
   console.log(path);
