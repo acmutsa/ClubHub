@@ -8,24 +8,29 @@ import { authAction } from "@/lib/safe-action";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { user as users } from "@/db/auth.schema";
+import { getClubBySlug } from "@/lib/queries/club";
 
 export const leaveClub = authAction
   .bindArgsSchemas<[slug: z.ZodString]>([z.string()])
   .action(async ({ bindArgsParsedInputs: [slug], ctx: { userId } }) => {
+    const club = await getClubBySlug(slug);
+    if (!club) throw new Error("Club not found");
     await db
       .delete(membership)
-      .where(and(eq(membership.userId, userId), eq(membership.slug, slug)));
+      .where(and(eq(membership.userId, userId), eq(membership.clubId, club.id)));
     revalidatePath("/clubs");
   });
 
 export const joinClub = authAction
   .bindArgsSchemas<[slug: z.ZodString]>([z.string()])
   .action(async ({ bindArgsParsedInputs: [slug], ctx: { userId } }) => {
+    const club = await getClubBySlug(slug);
+    if (!club) throw new Error("Club not found");
     await db
       .insert(membership)
       .values({
         userId,
-        slug,
+        clubId: club.id,
       })
       .onConflictDoNothing();
     revalidatePath("/clubs");
@@ -48,7 +53,7 @@ export const createClub = authAction
         });
         await tx.insert(membership).values({
           userId,
-          slug,
+          clubId,
           role: "super_admin",
         });
       });
@@ -79,7 +84,7 @@ export const transferOwnership = authAction
         .where(
           and(
             eq(membership.userId, newOwner.id),
-            eq(membership.slug, slug),
+            eq(membership.clubId, club.id),
           ),
         );
       if (!member) throw new Error("Error: User is not a member of this club");
@@ -95,7 +100,7 @@ export const transferOwnership = authAction
         .update(membership)
         .set({ role: "member" })
         .where(
-          and(eq(membership.userId, userId), eq(membership.slug, slug)),
+          and(eq(membership.userId, userId), eq(membership.clubId, club.id)),
         );
       // Change the new owner to become super_admin
       await db
@@ -104,7 +109,7 @@ export const transferOwnership = authAction
         .where(
           and(
             eq(membership.userId, newOwner.id),
-            eq(membership.slug, slug),
+            eq(membership.clubId, club.id),
           ),
         );
     },

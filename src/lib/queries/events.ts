@@ -8,6 +8,7 @@ import { events } from "@/db/schema";
 import { sql } from "drizzle-orm/sql";
 import type { AdminEventRow } from "@/lib/types/event"
 import { thumbnailStorage } from "@/lib/storage/thumbnails";
+import { getClubBySlug } from "@/lib/queries/club";
 
 export async function getClubEvents(slug: string) {
   const session = await auth.api.getSession({
@@ -20,8 +21,12 @@ export async function getClubEvents(slug: string) {
   if (!(await isClubAdmin(user.id, slug))) {
     unauthorized();
   }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return [];
+  }
   const clubEvents = await db.query.events.findMany({
-    where: (events, { eq }) => eq(events.slug, slug),
+    where: (events, { eq }) => eq(events.clubId, club.id),
     with: {
       club: true,
       eventTypes: true,
@@ -60,8 +65,12 @@ export async function getClubEventTypes(slug: string) {
   if (!(await isClubAdmin(user.id, slug))) {
     unauthorized();
   }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return [];
+  }
   const eventTypes = await db.query.eventTypes.findMany({
-    where: (eventTypes, { eq }) => eq(eventTypes.slug, slug),
+    where: (eventTypes, { eq }) => eq(eventTypes.clubId, club.id),
   });
   return eventTypes;
 }
@@ -92,9 +101,13 @@ export async function getClubEvent(slug: string, eventId: number) {
   if (!(await isClubAdmin(user.id, slug))) {
     unauthorized();
   }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return undefined;
+  }
   const event = await db.query.events.findFirst({
     where: (events, { eq, and }) =>
-      and(eq(events.slug, slug), eq(events.id, eventId)),
+      and(eq(events.clubId, club.id), eq(events.id, eventId)),
     with: {
       club: true,
       eventTypes: true,
@@ -129,10 +142,15 @@ export async function getMemberEvent(slug: string, eventId: number) {
     unauthorized();
   }
 
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return undefined;
+  }
+
   const event = await db.query.events.findFirst({
     where: (events, { eq, and }) =>
       and(
-        eq(events.slug, slug),
+        eq(events.clubId, club.id),
         eq(events.id, eventId),
         eq(events.hidden, false),
       ),

@@ -11,7 +11,7 @@ export default async function isClubAdmin(userId: string, slug: string) {
   const member = await db
     .select()
     .from(membership)
-    .where(and(eq(membership.userId, userId), eq(membership.slug, club.slug)));
+    .where(and(eq(membership.userId, userId), eq(membership.clubId, club.id)));
   if (member.length === 0) {
     return false;
   }

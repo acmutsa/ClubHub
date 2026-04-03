@@ -71,6 +71,13 @@
       "when": 1771718856414,
       "tag": "0009_chunky_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1775187157342,
+      "tag": "0010_sudden_kronos",
+      "breakpoints": true
     }
   ]
 }

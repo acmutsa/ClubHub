@@ -37,7 +37,7 @@ export default async function Page() {
     .select()
     .from(membership)
     .where(eq(membership.userId, user.id));
-  const memberClubIds = new Set(memberships.map((m) => m.slug));
+  const memberClubIds = new Set(memberships.map((m) => m.clubId));
 
   return (
     <>
@@ -63,7 +63,7 @@ export default async function Page() {
                   <TableCell>{club.name}</TableCell>
                   <TableCell>{club.description}</TableCell>
                   <TableCell className="whitespace-nowrap w-0">
-                    {memberClubIds.has(club.slug) ? (
+                    {memberClubIds.has(club.id) ? (
                       <LeaveClubButton slug={club.slug} />
                     ) : (
                       <JoinClubButton slug={club.slug} />
