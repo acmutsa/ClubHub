@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { getMemberEvents } from "@/lib/queries/events";
-
+import { format, isSameMonth, isSameYear } from "date-fns";
 type ClubEventWithRelations = Awaited<
   ReturnType<typeof getMemberEvents>
 >[number];
@@ -263,16 +263,19 @@ export default function Calendar({ events: rawEvents }: CalendarProps) {
 
   const weekLabel = useMemo(() => {
     const end = addDays(weekStart, 6);
-    const startStr = weekStart.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const endStr = end.toLocaleDateString("en-US", {
-      month: weekStart.getMonth() === end.getMonth() ? undefined : "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    return `${startStr} – ${endStr}`;
+    const now = new Date();
+
+    if (isSameMonth(weekStart, end)) {
+      const startStr = format(weekStart, "MMMM d");
+      const endStr = format(end, "d");
+      const yearStr = isSameYear(weekStart, now) ? "" : `, ${format(weekStart, "yyyy")}`;
+      return `${startStr} – ${endStr}${yearStr}`;
+    } else {
+      const startStr = format(weekStart, "MMMM d");
+      const endStr = format(end, "MMMM d");
+      const yearStr = (isSameYear(weekStart, now) && isSameYear(end, now)) ? "" : `, ${format(end, "yyyy")}`;
+      return `${startStr} – ${endStr}${yearStr}`;
+    }
   }, [weekStart]);
 
   const goToToday = () => setWeekStart(getWeekStart(new Date()));
@@ -586,7 +589,7 @@ export default function Calendar({ events: rawEvents }: CalendarProps) {
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
             <span className="text-xs font-medium tabular-nums flex-1">
-              {weekLabel}
+              {view === "week" ? weekLabel : format(weekStart, "MMMM yyyy")}
             </span>
 
             {/* View toggle buttons */}
