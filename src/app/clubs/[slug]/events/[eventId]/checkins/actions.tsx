@@ -157,6 +157,6 @@ export async function createCheckinAction(
     checkedIn: true,
     rating: normalizedRating ?? 0,
     feedback: normalizedFeedback ?? "",
-    message: "You have been checked in.",
+    message: "",
   };
 }

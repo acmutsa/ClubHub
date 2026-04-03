@@ -19,7 +19,7 @@ export default async function Layout({
   const domain = "localtest.me:3000";
   const baseURL = `http://${domain}`;
   const clubURL = `http://${slug}.${domain}`
-  
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -40,10 +40,6 @@ export default async function Layout({
     return redirect("/clubs");
   }
 
-  const userRole = await isClubAdmin(user.id, slug);
-  // if (!userRole) {
-  //   return redirect(${baseURL}/clubs);
-  // }
 
   const h = (await headers()).get("host") ?? "";
   const path = modifyBasePath(slug, h, "");
