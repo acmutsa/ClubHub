@@ -5,8 +5,8 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { checkins, clubs, events, membership } from "@/db/schema";
-import CheckinsClient from "./checkins-client";
 import { thumbnailStorage } from "@/lib/storage/thumbnails";
+import CheckinsClient from "./checkins-client";
 
 type PageProps = {
   params: Promise<{
@@ -113,22 +113,23 @@ export default async function CheckinsPage({ params }: PageProps) {
     now < checkinStart ? "upcoming" : now > checkinEnd ? "closed" : "open";
 
   const imageUrl = event.thumbnail?.url
-  ? event.thumbnail.url.startsWith("http")
-    ? event.thumbnail.url
-    : await thumbnailStorage.getThumbnailUrl(event.thumbnail.url)
-  : null;
+    ? event.thumbnail.url.startsWith("http")
+      ? event.thumbnail.url
+      : await thumbnailStorage.getThumbnailUrl(event.thumbnail.url)
+    : null;
 
   return (
     <CheckinsClient
       clubId={club.id}
+      slug={club.slug}
       event={{
         id: event.id,
         title: event.title,
-        description: event.description,
+        description: event.description ?? "",
         dateLabel: formattedDate,
         timeLabel: formattedTime,
         location: locationLabel,
-        points: event.points,
+        points: event.points ?? 0,
         imageUrl,
         checkinStatus,
       }}

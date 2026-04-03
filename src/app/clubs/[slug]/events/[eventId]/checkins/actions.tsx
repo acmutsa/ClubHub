@@ -18,15 +18,17 @@ type CheckinResult = {
 
 type CheckinPayload = {
   clubId: string;
+  slug: string;
   eventId: number;
   rating?: number;
   feedback?: string;
 };
 
 function normalizeRating(value: number | undefined): number | null {
+  if (value === undefined) return null;
   if (!Number.isInteger(value)) return null;
-  if ((value ?? 0) < 1 || (value ?? 0) > 5) return null;
-  return value ?? null;
+  if (value < 1 || value > 5) return null;
+  return value;
 }
 
 function normalizeFeedback(value: string | undefined): string | null {
@@ -77,7 +79,7 @@ export async function createCheckinAction(
   const membershipRow = await db.query.membership.findFirst({
     where: and(
       eq(membership.userId, session.user.id),
-      eq(membership.clubId, event.clubId),
+      eq(membership.clubId, payload.clubId),
     ),
   });
 
@@ -127,7 +129,7 @@ export async function createCheckinAction(
       .where(eq(checkins.id, existingCheckin.id));
 
     revalidatePath(
-      `/clubs/${payload.clubId}/events/${payload.eventId}/checkins`,
+      `/clubs/${payload.slug}/events/${payload.eventId}/checkins`,
     );
 
     return {
@@ -139,10 +141,6 @@ export async function createCheckinAction(
     };
   }
 
-  console.log("membershipRow", membershipRow);
-  console.log("membershipRow.id", membershipRow?.id);
-  console.log("typeof membershipRow.id", typeof membershipRow?.id);
-
   await db.insert(checkins).values({
     eventId: payload.eventId,
     membershipId: membershipRow.id,
@@ -151,7 +149,7 @@ export async function createCheckinAction(
     method: "manual",
   });
 
-  revalidatePath(`/clubs/${payload.clubId}/events/${payload.eventId}/checkins`);
+  revalidatePath(`/clubs/${payload.slug}/events/${payload.eventId}/checkins`);
 
   return {
     ok: true,
