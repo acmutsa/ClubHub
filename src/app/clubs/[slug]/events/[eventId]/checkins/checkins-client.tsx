@@ -110,215 +110,137 @@ export default function CheckinsClient({
     });
   }
 
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700">
-                  <Ticket className="h-4 w-4" />
-                  Event Check-In
-                </div>
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
 
-                <div>
-                  <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                    {event.title}
-                  </h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600 sm:text-base">
+          <section className="rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <div className="p-6 sm:p-8">
+
+              <div className="flex gap-6 items-start mb-6">
+                {event.imageUrl && (
+                  <img
+                    src={event.imageUrl}
+                    alt={event.title}
+                    className="w-50 h-50 object-cover rounded-xl border"
+                  />
+                )} 
+
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex items-center justify-between gap-4">
+                    <h1 className="text-3xl sm:text-4xl font-semibold text-zinc-950">
+                      {event.title}
+                    </h1>
+
+                    <div className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium ${statusConfig.className}`}>
+                      {statusConfig.label}
+                    </div>
+                  </div>
+
+                  <p className="text-zinc-600 max-w-2xl">
                     {event.description}
                   </p>
                 </div>
               </div>
 
-              <div
-                className={`inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium ${statusConfig.className}`}
-              >
-                {statusConfig.label}
-              </div>
-            </div>
-
-            {event.imageUrl ? (
-              <div className="mb-6 overflow-hidden rounded-3xl border border-zinc-200 bg-zinc-100">
-                <img
-                  src={event.imageUrl}
-                  alt={event.title}
-                  className="h-[260px] w-full object-cover"
-                />
-              </div>
-            ) : null}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-500">
-                  <CalendarDays className="h-4 w-4" />
-                  Date
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl bg-zinc-50 p-4">
+                  <p className="text-xs text-zinc-500 mb-1">Date</p>
+                  <p className="font-semibold text-zinc-900">
+                    {event.dateLabel}
+                  </p>
                 </div>
-                <p className="text-base font-semibold text-zinc-900">
-                  {event.dateLabel}
-                </p>
-              </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-500">
-                  <Clock3 className="h-4 w-4" />
-                  Time
+                <div className="rounded-xl bg-zinc-50 p-4">
+                  <p className="text-xs text-zinc-500 mb-1">Time</p>
+                  <p className="font-semibold text-zinc-900">
+                    {event.timeLabel}
+                  </p>
                 </div>
-                <p className="text-base font-semibold text-zinc-900">
-                  {event.timeLabel}
-                </p>
-              </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 sm:col-span-2">
-                <div className="mb-2 text-sm font-medium text-zinc-500">
-                  Location
+                <div className="rounded-xl bg-zinc-50 p-4">
+                  <p className="text-xs text-zinc-500 mb-1">Location</p>
+                  <p className="font-semibold text-zinc-900">
+                    {event.location}
+                  </p>
                 </div>
-                <p className="text-base font-semibold text-zinc-900">
-                  {event.location}
-                </p>
               </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 sm:col-span-2">
-                <div className="mb-2 text-sm font-medium text-zinc-500">
-                  Points
-                </div>
-                <p className="text-base font-semibold text-zinc-900">
-                  {event.points} points
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 rounded-3xl border border-zinc-200 bg-zinc-50 p-5">
-              <h3 className="text-lg font-semibold text-zinc-900">
-                Check-In Status
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-zinc-600">
-                {statusConfig.description}
-              </p>
-
-              {!viewerSignedIn ? (
-                <p className="mt-3 text-sm font-medium text-amber-700">
-                  You need to sign in before checking in.
-                </p>
-              ) : null}
-
-              {viewerSignedIn && !viewerCanCheckIn ? (
-                <p className="mt-3 text-sm font-medium text-amber-700">
-                  You need club membership before you can check in.
-                </p>
-              ) : null}
             </div>
           </section>
 
-          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+          <section className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
+            <h2 className="text-2xl font-semibold text-zinc-950 mb-2">
+              Check In
+            </h2>
+
+            <p className="text-sm text-zinc-600 mb-6">
+              Confirm your attendance and leave feedback.
+            </p>
+
+            <div className="mb-6 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-600">
+              {statusConfig.description}
+            </div>
+
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-                Complete Your Check-In
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-600">
-                Feedback is optional, but it helps improve future events.
-              </p>
+              <p className="text-sm font-semibold mb-3">Rating</p>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((value) => {
+                  const active = value <= rating;
+                  return (
+                    <button
+                      key={value}
+                      onClick={() => setRating(value)}
+                      className="transition hover:scale-105"
+                    >
+                      <Star
+                        className={`h-7 w-7 ${
+                          active
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-zinc-300"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="space-y-8">
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-sm leading-6 text-zinc-600">
-                  By checking in, you confirm your attendance for this event.
-                </p>
-              </div>
-
-              <div>
-                <label className="mb-3 block text-sm font-semibold text-zinc-900">
-                  Rating
-                </label>
-
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, 4, 5].map((value) => {
-                    const active = value <= rating;
-
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setRating(value)}
-                        className="rounded-full p-1 transition hover:scale-105"
-                        aria-label={`Rate ${value} star${value > 1 ? "s" : ""}`}
-                      >
-                        <Star
-                          className={`h-8 w-8 ${
-                            active
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-zinc-300"
-                          }`}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <p className="mt-3 text-sm text-zinc-500">
-                  {rating === 0
-                    ? "No rating selected"
-                    : `You selected ${rating} out of 5`}
-                </p>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="feedback"
-                  className="mb-3 block text-sm font-semibold text-zinc-900"
-                >
-                  Feedback
-                  <span className="ml-1 font-normal text-zinc-500">
-                    (Optional)
-                  </span>
-                </label>
-
-                <textarea
-                  id="feedback"
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value.slice(0, 400))}
-                  placeholder="What did you think about the event?"
-                  className="min-h-40 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white"
-                />
-
-                <div className="mt-2 text-right text-xs text-zinc-500">
-                  {feedback.length} / 400
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleCheckIn}
-                disabled={!canAttemptCheckin || isPending}
-                className={`inline-flex h-12 w-full items-center justify-center rounded-2xl px-5 text-sm font-semibold transition ${
-                  !canAttemptCheckin || isPending
-                    ? "cursor-not-allowed bg-zinc-200 text-zinc-500"
-                    : "bg-zinc-950 text-white hover:bg-zinc-800"
-                }`}
-              >
-                {buttonLabel}
-              </button>
-
-              {checkedIn ? (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-                  You’re checked in. Thanks for attending!
-                </div>
-              ) : null}
-
-              {message ? (
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
-                  {message}
-                </div>
-              ) : null}
-
-              {errorMessage ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                  {errorMessage}
-                </div>
-              ) : null}
+            <div className="mb-6">
+              <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Leave feedback..."
+                className="w-full rounded-xl border border-zinc-200 p-3 text-sm focus:border-zinc-400 outline-none"
+              />
             </div>
+
+            <button
+              onClick={handleCheckIn}
+              disabled={!canAttemptCheckin || isPending}
+              className={`w-full h-12 rounded-xl font-semibold transition ${
+                !canAttemptCheckin || isPending
+                  ? "bg-zinc-200 text-zinc-500"
+                  : "bg-zinc-950 text-white hover:bg-zinc-800"
+              }`}
+            >
+              {buttonLabel}
+            </button>
+
+            {checkedIn && (
+              <div className="mt-4 text-emerald-600 text-sm">
+                You’re checked in.
+              </div>
+            )}
+
+            {message && (
+              <div className="mt-4 text-blue-600 text-sm">{message}</div>
+            )}
+
+            {errorMessage && (
+              <div className="mt-4 text-red-600 text-sm">{errorMessage}</div>
+            )}
           </section>
         </div>
       </div>
