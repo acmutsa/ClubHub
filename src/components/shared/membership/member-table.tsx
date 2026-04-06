@@ -61,7 +61,7 @@ export default function MemberTable({ isAdmin, clubId }: ClubTableProps) {
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState({});
 
-    const columns = MemberColumns(isAdmin, setEditingMember, clubId);
+    const columns = MemberColumns(isAdmin, setEditingMember, clubId, refreshUsers);
 
     const table = useReactTable({
         data,

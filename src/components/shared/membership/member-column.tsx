@@ -7,7 +7,7 @@ import Link from "next/link"
 import type { MemberRow } from "@/lib/types/user"
 import { removeMember } from "@/actions/membership";
 // TODO allow remove actions for a user and possibly a link to change their role?
-export const MemberColumns = (isAdmin: boolean, setEditingUser: (user: MemberRow) => void, clubId: string): ColumnDef<MemberRow>[] => [
+export const MemberColumns = (isAdmin: boolean, setEditingUser: (user: MemberRow) => void, clubId: string, refreshUsers: () => void): ColumnDef<MemberRow>[] => [
     {
         accessorKey: "name",
         header: ({ column }) => {
@@ -104,7 +104,10 @@ export const MemberColumns = (isAdmin: boolean, setEditingUser: (user: MemberRow
                                 <Button variant="outline">Cancel</Button>
                             </DialogClose>
                             <DialogClose asChild>
-                                <Button variant="destructive" onClick={async () => await removeMember(clubId, user.id)}>
+                                <Button variant="destructive" onClick={async () => {
+                                    await removeMember(clubId, user.id);
+                                    refreshUsers();
+                                }}>
                                     Kick Member
                                 </Button>
                             </DialogClose>
