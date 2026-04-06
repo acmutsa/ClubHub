@@ -8,7 +8,15 @@ import { authAction } from "@/lib/safe-action";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { user as users } from "@/db/auth.schema";
+import { abort } from "process";
 
+export const removeMember = authAction
+  .bindArgsSchemas<[clubId: z.ZodString, userId: z.ZodString]>([z.string(), z.string()])
+  .action(async ({ bindArgsParsedInputs: [clubId, userId], ctx: { userId: ctxUserId } }) => {
+    await db.delete(membership)
+      .where(and(eq(membership.userId, userId), eq(membership.clubId, clubId)));
+    revalidatePath(`/admin/members/${clubId}`);
+  });
 export const leaveClub = authAction
   .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
   .action(async ({ bindArgsParsedInputs: [clubId], ctx: { userId } }) => {
@@ -34,7 +42,7 @@ export const joinClub = authAction
 export const createClub = authAction
   .bindArgsSchemas<
     [name: z.ZodString, description: z.ZodString, slug: z.ZodString,]
-  >([z.string().min(1, "Club Name Required"), z.string().min(1, "Description Required"), z.string().min(1,"Club Slug Required")])
+  >([z.string().min(1, "Club Name Required"), z.string().min(1, "Description Required"), z.string().min(1, "Club Slug Required")])
   .action(
     async ({ bindArgsParsedInputs: [name, description, slug], ctx: { userId } }) => {
       const clubId = randomUUID();

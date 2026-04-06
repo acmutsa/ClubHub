@@ -2,12 +2,42 @@
 
 import { db } from "@/db"
 import { user, membership, clubs } from "@/db/schema"
-import { sql, eq } from "drizzle-orm/sql";
+import { sql, eq, and, ne } from "drizzle-orm";
 import { unauthorized } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { AdminUserRow } from "@/lib/types/user";
+import { AdminUserRow, MemberRow } from "@/lib/types/user";
 
+export async function getAllClubMembersData(clubId: string): Promise<MemberRow[]> {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+    if (!session) {
+        unauthorized();
+    }
+    const rows = await db
+        .select({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: membership.role,
+            //need to extend for profile pictures eventually
+        })
+        .from(membership)
+        .innerJoin(user, eq(membership.userId, user.id))
+        .where(
+            and(
+                eq(membership.clubId, clubId),
+                ne(membership.role, "super_admin")
+            )
+        );
+
+    const members: MemberRow[] = rows.map((row) => ({
+        ...row,
+    }));
+
+    return members;
+}
 export async function getAllUsersData(): Promise<AdminUserRow[]> {
     const session = await auth.api.getSession({
         headers: await headers(),
@@ -48,7 +78,7 @@ export async function getAllUsersData(): Promise<AdminUserRow[]> {
         ...row,
         clubs: JSON.parse(row.clubs),
     }));
-    
+
     return users;
 }
 
@@ -73,9 +103,9 @@ export async function getRolesCounts() {
         .groupBy(user.role);
 
     const result = {
-    superAdminCount: 0,
-    adminCount: 0,
-    regularCount: 0,
+        superAdminCount: 0,
+        adminCount: 0,
+        regularCount: 0,
     };
 
     for (const row of rows) {
