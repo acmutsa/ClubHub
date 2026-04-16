@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5e94b7bd-1776-4c9a-93b3-21616f2080e8",
-  "prevId": "09c064f9-f2b7-4cd8-b5e3-69571c55a7ad",
+  "id": "6120421c-71a9-4785-93b5-bcaa1f25fa6d",
+  "prevId": "2b782e3f-3d39-4d84-a214-836aeedf531a",
   "tables": {
     "buildings": {
       "name": "buildings",
@@ -187,9 +187,31 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "clubs_slug_unique": {
+          "name": "clubs_slug_unique",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -601,20 +623,6 @@
             "clubId"
           ],
           "isUnique": true
-        },
-        "membership_user_idx": {
-          "name": "membership_user_idx",
-          "columns": [
-            "userId"
-          ],
-          "isUnique": false
-        },
-        "membership_club_idx": {
-          "name": "membership_club_idx",
-          "columns": [
-            "clubId"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -911,6 +919,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
         "email": {
           "name": "email",
           "type": "text",
@@ -1024,7 +1040,11 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {}
+    "columns": {
+      "\"event_types\".\"slug\"": "\"event_types\".\"clubId\"",
+      "\"events\".\"slug\"": "\"events\".\"clubId\"",
+      "\"membership\".\"slug\"": "\"membership\".\"clubId\""
+    }
   },
   "internal": {
     "indexes": {}

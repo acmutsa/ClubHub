@@ -59,14 +59,14 @@ export default async function Page() {
 
             <TableBody>
               {allClubs.map((club) => (
-                <TableRow key={club.id}>
+                <TableRow key={club.slug}>
                   <TableCell>{club.name}</TableCell>
                   <TableCell>{club.description}</TableCell>
                   <TableCell className="whitespace-nowrap w-0">
                     {memberClubIds.has(club.id) ? (
-                      <LeaveClubButton clubId={club.id} />
+                      <LeaveClubButton slug={club.slug} />
                     ) : (
-                      <JoinClubButton clubId={club.id} />
+                      <JoinClubButton slug={club.slug} />
                     )}
                   </TableCell>
                 </TableRow>

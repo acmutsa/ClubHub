@@ -42,7 +42,7 @@ export default async function NewEventPage({
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-7xl p-8">
           <NewEventForm
-            clubId={slug}
+            slug={slug}
             eventTypes={eventTypes}
             locations={locations}
             initialThumbnails={thumbnails}

@@ -74,7 +74,7 @@ type ThumbnailItem = {
 };
 
 interface NewEventFormProps {
-  clubId: string;
+  slug: string;
   eventTypes: EventType[];
   locations: Location[];
   initialThumbnails?: ThumbnailItem[];
@@ -82,7 +82,7 @@ interface NewEventFormProps {
 }
 
 export function NewEventForm({
-  clubId,
+  slug,
   eventTypes,
   locations,
   initialThumbnails = [],
@@ -138,7 +138,7 @@ export function NewEventForm({
   function onSubmit(values: EventInsertInput) {
     execute({
       ...values,
-      clubId,
+      slug,
     });
   }
 
@@ -245,7 +245,7 @@ export function NewEventForm({
         </CardHeader>
         <CardContent>
           <ThumbnailPicker
-            clubId={clubId}
+            slug={slug}
             initialThumbnails={initialThumbnails}
             value={form.watch("thumbnailId") ?? null}
             onChange={(thumbnailId) =>
