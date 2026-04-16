@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "next-safe-action/hooks";
@@ -100,6 +102,24 @@ export function NewEventForm({
       thumbnailId: null,
     },
   });
+
+  const start = form.watch("start");
+
+  useEffect(() => {
+    if (!start) return;
+
+    const end = new Date(start);
+    end.setHours(end.getHours() + 1);
+
+    const checkinStart = new Date(start);
+
+    const checkinEnd = new Date(checkinStart);
+    checkinEnd.setHours(checkinEnd.getHours() + 1);
+
+    form.setValue("end", end, { shouldValidate: true });
+    form.setValue("checkinStart", checkinStart, { shouldValidate: true });
+    form.setValue("checkinEnd", checkinEnd, { shouldValidate: true });
+  }, [start, form]);
 
   const { execute, isPending, result } = useAction(createEventAction, {
     onSuccess: () => {
