@@ -3,7 +3,7 @@ import { db } from "@/db/index";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { unauthorized } from "next/navigation";
-import isClubAdmin from "@/lib/membership";
+import { isClubAdmin } from "@/lib/membership";
 import { events } from "@/db/schema";
 import { sql } from "drizzle-orm/sql";
 import type { AdminEventRow } from "@/lib/types/event"
@@ -17,14 +17,18 @@ export async function getClubEvents(slug: string) {
   if (!session) {
     unauthorized();
   }
+  
   const user = session.user;
-  if (!(await isClubAdmin(user.id, slug))) {
-    unauthorized();
-  }
+
   const club = await getClubBySlug(slug);
   if (!club) {
     return [];
   }
+
+  if (!(await isClubAdmin(user.id, club.id))) {
+    unauthorized();
+  }
+
   const clubEvents = await db.query.events.findMany({
     where: (events, { eq }) => eq(events.clubId, club.id),
     with: {
@@ -61,14 +65,18 @@ export async function getClubEventTypes(slug: string) {
   if (!session) {
     unauthorized();
   }
+
   const user = session.user;
-  if (!(await isClubAdmin(user.id, slug))) {
-    unauthorized();
-  }
+  
   const club = await getClubBySlug(slug);
   if (!club) {
     return [];
   }
+
+  if (!(await isClubAdmin(user.id, club.id))) {
+    unauthorized();
+  }
+
   const eventTypes = await db.query.eventTypes.findMany({
     where: (eventTypes, { eq }) => eq(eventTypes.clubId, club.id),
   });
@@ -97,14 +105,18 @@ export async function getClubEvent(slug: string, eventId: number) {
   if (!session) {
     unauthorized();
   }
+
   const user = session.user;
-  if (!(await isClubAdmin(user.id, slug))) {
-    unauthorized();
-  }
+  
   const club = await getClubBySlug(slug);
   if (!club) {
     return undefined;
   }
+
+  if (!(await isClubAdmin(user.id, club.id))) {
+    unauthorized();
+  }
+  
   const event = await db.query.events.findFirst({
     where: (events, { eq, and }) =>
       and(eq(events.clubId, club.id), eq(events.id, eventId)),

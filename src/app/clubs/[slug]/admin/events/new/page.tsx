@@ -1,4 +1,4 @@
-import { NewEventForm } from "@/components/clubs/new-event-form";
+import { NewEventForm } from "@/components/clubs/admin/events/new-event-form";
 import { getClubEventTypes, getAllLocations } from "@/lib/queries/events";
 import { thumbnailStorage } from "@/lib/storage/thumbnails";
 

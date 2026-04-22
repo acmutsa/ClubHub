@@ -4,11 +4,12 @@ import { authAction } from "@/lib/safe-action";
 import { thumbnailStorage } from "@/lib/storage/thumbnails";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import isClubAdmin from "@/lib/membership";
+import { isClubAdmin } from "@/lib/membership";
 import { returnValidationErrors } from "next-safe-action";
 import { db } from "@/db/index";
 import { thumbnails } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getClubBySlug } from "@/lib/queries/club";
 
 // ─── List ────────────────────────────────────────────────────────────────────
 
@@ -21,7 +22,16 @@ export const listThumbnailsAction = authAction
   .action(async ({ parsedInput, ctx }) => {
     const { slug } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, slug))) {
+    const club = await getClubBySlug(slug);
+    if (!club) {
+      returnValidationErrors(z.null(), {
+        _errors: [
+          "Club not found",
+        ],
+      });
+    }
+
+    if (!(await isClubAdmin(ctx.userId, club.id))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to view thumbnails for this club",
@@ -53,7 +63,16 @@ export const getUploadUrlAction = authAction
   .action(async ({ parsedInput, ctx }) => {
     const { slug, contentType } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, slug))) {
+    const club = await getClubBySlug(slug);
+    if (!club) {
+      returnValidationErrors(z.null(), {
+        _errors: [
+          "Club not found",
+        ],
+      });
+    }
+
+    if (!(await isClubAdmin(ctx.userId, club.id))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to upload thumbnails for this club",
@@ -81,7 +100,16 @@ export const confirmUploadAction = authAction
   .action(async ({ parsedInput, ctx }) => {
     const { slug, key } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, slug))) {
+    const club = await getClubBySlug(slug);
+    if (!club) {
+      returnValidationErrors(z.null(), {
+        _errors: [
+          "Club not found",
+        ],
+      });
+    }
+
+    if (!(await isClubAdmin(ctx.userId, club.id))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to upload thumbnails for this club",
@@ -122,7 +150,16 @@ export const getOrCreateThumbnailAction = authAction
   .action(async ({ parsedInput, ctx }) => {
     const { slug, key } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, slug))) {
+    const club = await getClubBySlug(slug);
+    if (!club) {
+      returnValidationErrors(z.null(), {
+        _errors: [
+          "Club not found",
+        ],
+      });
+    }
+
+    if (!(await isClubAdmin(ctx.userId, club.id))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to manage thumbnails for this club",
@@ -160,7 +197,16 @@ export const deleteThumbnailAction = authAction
   .action(async ({ parsedInput, ctx }) => {
     const { slug, key } = parsedInput;
 
-    if (!(await isClubAdmin(ctx.userId, slug))) {
+    const club = await getClubBySlug(slug);
+    if (!club) {
+      returnValidationErrors(z.null(), {
+        _errors: [
+          "Club not found",
+        ],
+      });
+    }
+
+    if (!(await isClubAdmin(ctx.userId, club.id))) {
       returnValidationErrors(z.null(), {
         _errors: [
           "You do not have permission to delete thumbnails for this club",

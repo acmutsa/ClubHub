@@ -1,8 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getClub, getClubBySlug } from "@/lib/queries/club";
-import isClubAdmin from "@/lib/membership";
+import { getClubBySlug } from "@/lib/queries/club";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -10,8 +9,8 @@ import {
 } from "@/components/ui/sidebar";
 import { ClubAdminSidebar } from "@/components/clubs/admin/sidebar";
 import { unauthorized } from "next/navigation";
-import { isClubOwner } from "@/lib/membership";
-import { modifyBasePath } from "@/lib/routing/subdomain";
+import { isClubAdmin, getMemberRoles, isClubOwner } from "@/lib/membership";
+import { domain, baseURL } from "@/lib/url";
 
 export default async function Layout({
   params,
@@ -21,9 +20,7 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   const { slug } = await params;
-  const domain = "localtest.me:3000";
-  const baseURL = `http://${domain}`;
-  const clubURL = `http://${slug}.${domain}`
+  const clubURL = `http://${slug}.${domain}`;
   
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -34,12 +31,13 @@ export default async function Layout({
 
   const user = session.user;
 
-  if (!(await isClubAdmin(user.id, slug))) {
-    return unauthorized();
-  }
-
   const club = await getClubBySlug(slug);
   if (!club) {
+    return redirect(`${baseURL}/clubs`);
+  }
+
+  const isClubAdminUser = await isClubAdmin(user.id, club.id);
+  if (!isClubAdminUser) {
     return unauthorized();
   }
   

@@ -51,7 +51,7 @@ export async function getAllClubsData(): Promise<AdminClubRow[]> {
     id: clubs.id,
     name: clubs.name,
     description: clubs.description,
-    ownerId: clubs.owner,
+    ownerId: clubs.ownerId,
     ownerName: user.name,
     slug: clubs.slug,
     memberCount: sql<number>`(
@@ -66,7 +66,7 @@ export async function getAllClubsData(): Promise<AdminClubRow[]> {
     )`,
   })
   .from(clubs)
-  .innerJoin(user, eq(user.id, clubs.owner));
+  .innerJoin(user, eq(user.id, clubs.ownerId));
 
   return clubRows;
 }

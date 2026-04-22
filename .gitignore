@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .agent/
+
+# local sqlite db
+local.db
+local.db-shm
+local.db-wal

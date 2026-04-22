@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getMemberEvent } from "@/lib/queries/events";
-import { EventDetailView } from "@/components/clubs/event-detail-view";
+import { EventDetailView } from "@/components/clubs/events/event-detail-view";
 
 interface EventDetailsPageProps {
   params: Promise<{ slug: string; eventId: string }>;

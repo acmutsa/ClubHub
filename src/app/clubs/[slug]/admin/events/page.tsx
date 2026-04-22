@@ -1,20 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { DataTable } from "./data-table";
-import { columns } from "./columns";
+import { DataTable } from "@/components/clubs/admin/events/data-table";
+import { columns } from "@/components/clubs/admin/events/columns";
 import { Plus } from "lucide-react";
 import { getClubEvents, getClubEventTypes } from "@/lib/queries/events";
 import Link from "next/link";
-import { headers } from "next/headers";
-import { modifyBasePath } from "@/lib/routing/subdomain";
+import { domain } from "@/lib/url";
 
 export default async function Page({ params }: { params: { slug: string } }) {
   const { slug } = await params;
+  const clubURL = `http://${slug}.${domain}`;
+
   const [clubEvents, eventTypes] = await Promise.all([
     getClubEvents(slug),
     getClubEventTypes(slug),
   ]);
-
-  const h = (await headers()).get("host") ?? "";
 
   return (
     <>
@@ -29,7 +28,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
                 Manage and monitor your organizations events
               </p>
             </div>
-            <Link href={modifyBasePath(slug, h, "/admin/events/new")}>
+            <Link href={`${clubURL}/admin/events/new`}>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Event

@@ -5,9 +5,10 @@ import { authAction } from "@/lib/safe-action";
 import { eventInsertSchema } from "@/lib/validators/event";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import isClubAdmin from "@/lib/membership";
 import { returnValidationErrors } from "next-safe-action";
 import { getClubBySlug } from "@/lib/queries/club";
+import { hasClubPermission } from "@/lib/membership";
+import { adminPermissions } from "@/lib/types/club-admin";
 
 const createEventSchema = eventInsertSchema.safeExtend({
   slug: z.string().min(1, "Club ID is required"),
@@ -18,22 +19,20 @@ export const createEventAction = authAction
   .action(async ({ parsedInput, ctx }) => {
     const { userId } = ctx;
 
-    // Check if user is admin of the club
-    if (!(await isClubAdmin(userId, parsedInput.slug))) {
+    const club = await getClubBySlug(parsedInput.slug);
+    if (!club) {
+      returnValidationErrors(z.null(), {
+        _errors: ["Club not found"],
+      });
+    }
+
+    if (!(await hasClubPermission(userId, parsedInput.slug, adminPermissions.MANAGE_EVENTS))) {
       returnValidationErrors(z.null(), {
         _errors: ["You do not have permission to create events for this club"],
       });
     }
 
     try {
-      const club = await getClubBySlug(parsedInput.slug);
-      if (!club) {
-        returnValidationErrors(z.null(), {
-          _errors: ["Club not found"],
-        });
-        return;
-      }
-
       const { slug, ...eventData } = parsedInput;
       const newEvent = await db
         .insert(events)

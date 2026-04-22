@@ -7,7 +7,6 @@ import {
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.schema";
-import { membershipRoles } from "@/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
 
 
@@ -27,13 +26,54 @@ export const clubs = sqliteTable(
     id: text().primaryKey(),
     name: text().notNull(),
     description: text().notNull(),
-    owner: text().notNull(),
+    ownerId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
     slug: text().notNull(),
+    ...commonTimestamps,
   },
   (table) => ({
     slugUnique: uniqueIndex("clubs_slug_unique").on(table.slug),
+    ownerIdx: index("clubs_owner_idx").on(table.ownerId),
   }),
 );
+
+export const clubRoles = sqliteTable("club_roles", {
+  id: integer().primaryKey({ autoIncrement: true }),
+  clubId: text()
+    .notNull()
+    .references(() => clubs.id, { onDelete: "cascade" }),
+  name: text().notNull(),
+  permissions: integer().notNull(),
+  position: integer().notNull(),
+  isDefault: integer({ mode: "boolean" }).notNull().default(false),
+  ...commonTimestamps,
+}, (table) => ({
+  clubIdx: index("club_roles_club_idx").on(table.clubId),
+  uniqueRoleName: uniqueIndex("club_roles_name_unique").on(
+    table.clubId,
+    table.name
+  ),
+  oneDefaultPerClub: uniqueIndex("club_roles_one_default_per_club")
+    .on(table.clubId)
+    .where(sql`${table.isDefault} = 1`),
+}));
+
+export const membershipRole = sqliteTable("membership_role", {
+  id: integer().primaryKey({ autoIncrement: true }),
+  membershipId: integer()
+    .notNull()
+    .references(() => membership.id, { onDelete: "cascade" }),
+  roleId: integer()
+    .notNull()
+    .references(() => clubRoles.id, { onDelete: "cascade" }),
+}, (table) => ({
+  uniqueMembershipRole: uniqueIndex("membership_role_unique").on(table.membershipId, table.roleId),
+  membershipIdx: index("membership_role_membership_idx").on(
+    table.membershipId
+  ),
+  roleIdx: index("membership_role_role_idx").on(table.roleId),
+}));
 
 export const membership = sqliteTable(
   "membership",
@@ -45,15 +85,16 @@ export const membership = sqliteTable(
     clubId: text()
       .notNull()
       .references(() => clubs.id, { onDelete: "cascade" }),
-    role: text({ enum: membershipRoles }).notNull().default("member"),
+    joinedAt: integer({ mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userClubUnique: uniqueIndex("membership_user_club_unique").on(
       table.userId,
       table.clubId
     ),
+    userIdx: index("membership_user_idx").on(table.userId),
+    clubIdx: index("membership_club_idx").on(table.clubId),
   })
-
 );
 
 export const events = sqliteTable("events", {

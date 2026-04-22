@@ -5,7 +5,7 @@ import {
 import { auth } from "./auth";
 import { headers } from "next/headers";
 import { z } from "zod";
-import isClubAdmin from "./membership";
+import { isClubAdmin } from "./membership";
 
 export const publicAction = createSafeActionClient();
 
