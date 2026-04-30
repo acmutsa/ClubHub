@@ -16,7 +16,7 @@ export function proxy(request: NextRequest) {
   }
 
   const hostName = request.headers.get("host") || "";
-  const root = "localhost:3000";
+  const root = process.env.ROOT_DOMAIN || "localhost:3000";
 
   const sub = hostName.endsWith(root)
     ? hostName.replace(`.${root}`, "")
@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
 
   console.log("Subdomain", sub);
 
-  if (sub && sub !== "www" && sub !== "localhost:3000") {
+  if (sub && sub !== "www" && sub !== root) {
     url.pathname = `/clubs/${sub}${url.pathname}`;
     return NextResponse.rewrite(url);
   }
