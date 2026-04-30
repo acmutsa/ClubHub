@@ -17,9 +17,8 @@ export default async function isClubAdmin(userId: string, slug: string) {
   }
   return member[0].role === "admin" || member[0].role === "super_admin";
 }
-
-export async function isClubOwner(userId: string, clubId: string) {
-  const club = await db.select().from(clubs).where(eq(clubs.id, clubId));
+export async function isClubOwner(userId: string, slug: string) {
+  const club = await db.select().from(clubs).where(eq(clubs.slug, slug));
   if (club.length === 0) {
     return false;
   }

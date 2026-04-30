@@ -8,8 +8,9 @@ import { events } from "@/db/schema";
 import { sql } from "drizzle-orm/sql";
 import type { AdminEventRow } from "@/lib/types/event"
 import { thumbnailStorage } from "@/lib/storage/thumbnails";
+import { getClubBySlug } from "@/lib/queries/club";
 
-export async function getClubEvents(clubId: string) {
+export async function getClubEvents(slug: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -17,11 +18,15 @@ export async function getClubEvents(clubId: string) {
     unauthorized();
   }
   const user = session.user;
-  if (!(await isClubAdmin(user.id, clubId))) {
+  if (!(await isClubAdmin(user.id, slug))) {
     unauthorized();
   }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return [];
+  }
   const clubEvents = await db.query.events.findMany({
-    where: (events, { eq }) => eq(events.clubId, clubId),
+    where: (events, { eq }) => eq(events.clubId, club.id),
     with: {
       club: true,
       eventTypes: true,
@@ -49,7 +54,7 @@ export async function getClubEvents(clubId: string) {
   return resolved;
 }
 
-export async function getClubEventTypes(clubId: string) {
+export async function getClubEventTypes(slug: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -57,11 +62,15 @@ export async function getClubEventTypes(clubId: string) {
     unauthorized();
   }
   const user = session.user;
-  if (!(await isClubAdmin(user.id, clubId))) {
+  if (!(await isClubAdmin(user.id, slug))) {
     unauthorized();
   }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return [];
+  }
   const eventTypes = await db.query.eventTypes.findMany({
-    where: (eventTypes, { eq }) => eq(eventTypes.clubId, clubId),
+    where: (eventTypes, { eq }) => eq(eventTypes.clubId, club.id),
   });
   return eventTypes;
 }
@@ -81,7 +90,7 @@ export async function getAllLocations() {
   return locations;
 }
 
-export async function getClubEvent(clubId: string, eventId: number) {
+export async function getClubEvent(slug: string, eventId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -89,12 +98,16 @@ export async function getClubEvent(clubId: string, eventId: number) {
     unauthorized();
   }
   const user = session.user;
-  if (!(await isClubAdmin(user.id, clubId))) {
+  if (!(await isClubAdmin(user.id, slug))) {
     unauthorized();
+  }
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return undefined;
   }
   const event = await db.query.events.findFirst({
     where: (events, { eq, and }) =>
-      and(eq(events.clubId, clubId), eq(events.id, eventId)),
+      and(eq(events.clubId, club.id), eq(events.id, eventId)),
     with: {
       club: true,
       eventTypes: true,
@@ -121,7 +134,7 @@ export async function getClubEvent(clubId: string, eventId: number) {
  * Get event for member view (does not require admin privileges)
  * Excludes hidden events from being fetched
  */
-export async function getMemberEvent(clubId: string, eventId: number) {
+export async function getMemberEvent(slug: string, eventId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -129,10 +142,15 @@ export async function getMemberEvent(clubId: string, eventId: number) {
     unauthorized();
   }
 
+  const club = await getClubBySlug(slug);
+  if (!club) {
+    return undefined;
+  }
+
   const event = await db.query.events.findFirst({
     where: (events, { eq, and }) =>
       and(
-        eq(events.clubId, clubId),
+        eq(events.clubId, club.id),
         eq(events.id, eventId),
         eq(events.hidden, false),
       ),

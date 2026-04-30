@@ -57,12 +57,12 @@ export async function getAllClubsData(): Promise<AdminClubRow[]> {
     memberCount: sql<number>`(
       SELECT COUNT(*)
       FROM membership
-      WHERE membership.clubId = clubs.id
+      WHERE membership."clubId" = clubs.id
     )`,
     eventCount: sql<number>`(
       SELECT COUNT(*)
       FROM events
-      WHERE events.clubId = clubs.id
+      WHERE events."clubId" = clubs.id
     )`,
   })
   .from(clubs)

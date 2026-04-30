@@ -9,6 +9,7 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { user as users } from "@/db/auth.schema";
 import { abort } from "process";
+import { getClubBySlug } from "@/lib/queries/club";
 
 export const removeMember = authAction
   .bindArgsSchemas<[clubId: z.ZodString, userId: z.ZodString]>([z.string(), z.string()])
@@ -18,22 +19,26 @@ export const removeMember = authAction
     revalidatePath(`/admin/members/${clubId}`);
   });
 export const leaveClub = authAction
-  .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
-  .action(async ({ bindArgsParsedInputs: [clubId], ctx: { userId } }) => {
+  .bindArgsSchemas<[slug: z.ZodString]>([z.string()])
+  .action(async ({ bindArgsParsedInputs: [slug], ctx: { userId } }) => {
+    const club = await getClubBySlug(slug);
+    if (!club) throw new Error("Club not found");
     await db
       .delete(membership)
-      .where(and(eq(membership.userId, userId), eq(membership.clubId, clubId)));
+      .where(and(eq(membership.userId, userId), eq(membership.clubId, club.id)));
     revalidatePath("/clubs");
   });
 
 export const joinClub = authAction
-  .bindArgsSchemas<[clubId: z.ZodString]>([z.string()])
-  .action(async ({ bindArgsParsedInputs: [clubId], ctx: { userId } }) => {
+  .bindArgsSchemas<[slug: z.ZodString]>([z.string()])
+  .action(async ({ bindArgsParsedInputs: [slug], ctx: { userId } }) => {
+    const club = await getClubBySlug(slug);
+    if (!club) throw new Error("Club not found");
     await db
       .insert(membership)
       .values({
         userId,
-        clubId,
+        clubId: club.id,
       })
       .onConflictDoNothing();
     revalidatePath("/clubs");
@@ -61,17 +66,17 @@ export const createClub = authAction
         });
       });
       revalidatePath("/clubs");
-      return { clubId };
+      return { slug };
     },
   );
 
 export const transferOwnership = authAction
   .bindArgsSchemas<
-    [clubId: z.ZodString, email: z.ZodString]
+    [slug: z.ZodString, email: z.ZodString]
   >([z.string(), z.string().email()])
   .action(
-    async ({ bindArgsParsedInputs: [clubId, email], ctx: { userId } }) => {
-      const [club] = await db.select().from(clubs).where(eq(clubs.id, clubId));
+    async ({ bindArgsParsedInputs: [slug, email], ctx: { userId } }) => {
+      const [club] = await db.select().from(clubs).where(eq(clubs.slug, slug));
       if (!club || club.owner !== userId)
         throw new Error("Error: Not authorized");
 
@@ -87,7 +92,7 @@ export const transferOwnership = authAction
         .where(
           and(
             eq(membership.userId, newOwner.id),
-            eq(membership.clubId, clubId),
+            eq(membership.clubId, club.id),
           ),
         );
       if (!member) throw new Error("Error: User is not a member of this club");
@@ -96,14 +101,14 @@ export const transferOwnership = authAction
       await db
         .update(clubs)
         .set({ owner: newOwner.id })
-        .where(eq(clubs.id, clubId));
+        .where(eq(clubs.slug, slug));
 
       // Change old owner to become meber
       await db
         .update(membership)
         .set({ role: "member" })
         .where(
-          and(eq(membership.userId, userId), eq(membership.clubId, clubId)),
+          and(eq(membership.userId, userId), eq(membership.clubId, club.id)),
         );
       // Change the new owner to become super_admin
       await db
@@ -112,7 +117,7 @@ export const transferOwnership = authAction
         .where(
           and(
             eq(membership.userId, newOwner.id),
-            eq(membership.clubId, clubId),
+            eq(membership.clubId, club.id),
           ),
         );
     },

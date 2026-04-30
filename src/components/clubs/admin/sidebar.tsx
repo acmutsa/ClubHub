@@ -73,7 +73,7 @@ export const ClubAdminSidebar = ({
               </SidebarMenuItem>
               {isOwner && (
                 <SidebarMenuItem>
-                  <TransferOwnershipButton clubId={club.id} />
+                  <TransferOwnershipButton slug={club.slug} />
                 </SidebarMenuItem>
               )}
             </SidebarMenu>

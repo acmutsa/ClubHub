@@ -24,8 +24,8 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { Shield } from "lucide-react";
 
-export function JoinClubButton({ clubId }: { clubId: string }) {
-  const { execute, isPending } = useAction(joinClub.bind(null, clubId));
+export function JoinClubButton({ slug }: { slug: string }) {
+  const { execute, isPending } = useAction(joinClub.bind(null, slug));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,8 +41,8 @@ export function JoinClubButton({ clubId }: { clubId: string }) {
   );
 }
 
-export function LeaveClubButton({ clubId }: { clubId: string }) {
-  const { execute, isPending } = useAction(leaveClub.bind(null, clubId));
+export function LeaveClubButton({ slug }: { slug: string }) {
+  const { execute, isPending } = useAction(leaveClub.bind(null, slug));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -177,7 +177,7 @@ export function CreateClubButton() {
   );
 }
 
-export function TransferOwnershipButton({ clubId }: { clubId: string }) {
+export function TransferOwnershipButton({ slug }: { slug: string }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -193,7 +193,7 @@ export function TransferOwnershipButton({ clubId }: { clubId: string }) {
     setIsPending(true);
     setError(null);
     try {
-      await transferOwnership(clubId, email);
+      await transferOwnership(slug, email);
       setOpen(false);
       setEmail("");
       setStep("input");

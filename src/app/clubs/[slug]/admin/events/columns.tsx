@@ -60,7 +60,7 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
         <div className="relative h-12 w-20 overflow-hidden rounded-md bg-muted">
           {thumbnail ? (
             <Image
-              src={thumbnail.url}
+              src={thumbnail.url ?? ""}
               alt={row.original.title}
               fill
               className="object-cover"

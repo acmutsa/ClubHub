@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "next-safe-action/hooks";
@@ -72,7 +74,7 @@ type ThumbnailItem = {
 };
 
 interface NewEventFormProps {
-  clubId: string;
+  slug: string;
   eventTypes: EventType[];
   locations: Location[];
   initialThumbnails?: ThumbnailItem[];
@@ -80,7 +82,7 @@ interface NewEventFormProps {
 }
 
 export function NewEventForm({
-  clubId,
+  slug,
   eventTypes,
   locations,
   initialThumbnails = [],
@@ -101,6 +103,24 @@ export function NewEventForm({
     },
   });
 
+  const start = form.watch("start");
+
+  useEffect(() => {
+    if (!start) return;
+
+    const end = new Date(start);
+    end.setHours(end.getHours() + 1);
+
+    const checkinStart = new Date(start);
+
+    const checkinEnd = new Date(checkinStart);
+    checkinEnd.setHours(checkinEnd.getHours() + 1);
+
+    form.setValue("end", end, { shouldValidate: true });
+    form.setValue("checkinStart", checkinStart, { shouldValidate: true });
+    form.setValue("checkinEnd", checkinEnd, { shouldValidate: true });
+  }, [start, form]);
+
   const { execute, isPending, result } = useAction(createEventAction, {
     onSuccess: () => {
       router.push(`/admin/events`);
@@ -118,7 +138,7 @@ export function NewEventForm({
   function onSubmit(values: EventInsertInput) {
     execute({
       ...values,
-      clubId,
+      slug,
     });
   }
 
@@ -225,7 +245,7 @@ export function NewEventForm({
         </CardHeader>
         <CardContent>
           <ThumbnailPicker
-            clubId={clubId}
+            slug={slug}
             initialThumbnails={initialThumbnails}
             value={form.watch("thumbnailId") ?? null}
             onChange={(thumbnailId) =>
