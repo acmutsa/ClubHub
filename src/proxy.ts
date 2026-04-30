@@ -4,7 +4,7 @@ import { getSessionCookie } from "better-auth/cookies";
 
 // This function can be marked `async` if using `await` inside
 export function proxy(request: NextRequest) {
-  //if path starts w api
+  // Read the current request URL for auth redirects and subdomain-based rewrites.
   const url = request.nextUrl;
 
   const sessionCookie = getSessionCookie(request);
