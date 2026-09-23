@@ -31,17 +31,17 @@ import {
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface DataTableProps<TData, TValue> {
+interface EventDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   eventTypes?: { id: number; name: string; color: string }[];
 }
 
-export function DataTable<TData, TValue>({
+export function EventDataTable<TData, TValue>({
   columns,
   data,
   eventTypes = [],
-}: DataTableProps<TData, TValue>) {
+}: EventDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");

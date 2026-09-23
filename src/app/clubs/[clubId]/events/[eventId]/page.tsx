@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getMemberEvent } from "@/lib/queries/events";
-import { EventDetailView } from "@/components/clubs/event-detail-view";
+import { getVisibleClubEventById } from "../../queries";
+import { EventDetailView } from "./components/event-detail-view";
 
 interface EventDetailsPageProps {
   params: Promise<{ clubId: string; eventId: string }>;
@@ -16,7 +16,7 @@ export default async function EventDetailsPage({
     notFound();
   }
 
-  const event = await getMemberEvent(clubId, eventIdNumber);
+  const event = await getVisibleClubEventById(clubId, eventIdNumber);
 
   if (!event) {
     notFound();

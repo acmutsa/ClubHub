@@ -11,12 +11,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { AdminSelectClub } from "@/lib/types/club";
+import { AdminClub } from "@/lib/types/club";
 import { Calendar, Home, Users } from "lucide-react";
 import Link from "next/link";
 
 interface ClubAdminSidebarProps {
-  club: AdminSelectClub;
+  club: AdminClub;
   className?: string;
 }
 

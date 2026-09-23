@@ -1,15 +1,8 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { getClub } from "@/lib/queries/club";
-import isClubAdmin from "@/lib/membership";
-import {
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarInset,
-} from "@/components/ui/sidebar";
-import { ClubAdminSidebar } from "@/components/clubs/admin/sidebar";
-import { unauthorized } from "next/navigation";
+import { ClubAdminSidebar } from "./components/club-admin-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { requireAuthContext } from "@/lib/auth/get-auth-context";
+import { matchesClubRoute } from "@/lib/club-context/get-club-context";
+import { forbidden, notFound } from "next/navigation";
 
 export default async function Layout({
   params,
@@ -19,30 +12,20 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const { clubId } = await params;
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return redirect("/sign-in");
-  }
-  const user = session.user;
-  if (!(await isClubAdmin(user.id, clubId))) {
-    return unauthorized();
-  }
+  const context = await requireAuthContext();
 
-  const club = await getClub(clubId);
-  if (!club) {
-    return unauthorized();
-  }
+  if (!matchesClubRoute(context.club, clubId)) notFound();
+  const isClubAdmin =
+    context.membership.role === "ADMIN" ||
+    context.membership.role === "SUPER_ADMIN";
+
+  if (!isClubAdmin) forbidden();
 
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={club} className="relative" />
+      <ClubAdminSidebar club={context.club} className="relative" />
       <SidebarInset>
-        <main>
-          {/* <SidebarTrigger /> */}
-          {children}
-        </main>
+        <main>{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

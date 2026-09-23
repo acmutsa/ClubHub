@@ -1,10 +1,9 @@
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { getClub } from "@/lib/queries/club";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import isClubAdmin from "@/lib/membership";
+import Navbar from "@/components/navbar";
+import { requireAuthContext } from "@/lib/auth/get-auth-context";
+import { matchesClubRoute } from "@/lib/club-context/get-club-context";
+import { notFound } from "next/navigation";
+
 export default async function Layout({
   children,
   params,
@@ -13,32 +12,24 @@ export default async function Layout({
   params: Promise<{ clubId: string }>;
 }>) {
   const { clubId } = await params;
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    return redirect("/sign-in");
-  }
-  const user = session.user;
+  const context = await requireAuthContext();
 
-  const userRole = await isClubAdmin(user.id, clubId);
-  if (!userRole) {
-    return redirect("/clubs");
-  }
+  if (!matchesClubRoute(context.club, clubId)) notFound();
 
-  const club = await getClub(clubId);
-  if (!club) {
-    return redirect("/clubs");
-  }
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar
-        clubName={club.name}
+        clubName={context.club.name}
         clubId={clubId}
-        userType={userRole ? "admin" : "member"}
+        userType={
+          context.membership.role === "ADMIN" ||
+          context.membership.role === "SUPER_ADMIN"
+            ? "admin"
+            : "member"
+        }
       />
       <main className="flex-1">{children}</main>
-      <Footer clubId={clubId} clubName={club.name} />
+      <Footer clubId={clubId} clubName={context.club.name} />
     </div>
   );
 }

@@ -37,7 +37,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,} from "@/components/ui/select";
-interface DataTableProps<TData, TValue> {
+interface MemberDataTableProps<TData, TValue> {
     
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -46,7 +46,7 @@ interface DataTableProps<TData, TValue> {
 export default function MemberDataTable<TData, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: MemberDataTableProps<TData, TValue>) {
  const [sorting, setSorting] = useState<SortingState>([]);
  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
  const [globalFilter, setGlobalFilter] = useState("")

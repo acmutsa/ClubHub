@@ -3,14 +3,14 @@ import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export type Member = {
+export type ClubMember = {
   id: string
   name: string
   email: string
   role: string
 }
 
-export const memberColumns: ColumnDef<Member>[] = [
+export const memberColumns: ColumnDef<ClubMember>[] = [
   {
     accessorKey: "name",
     enableGlobalFilter:true,

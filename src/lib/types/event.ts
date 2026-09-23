@@ -1,8 +1,8 @@
 import { z } from "zod";
 import {
-  adminEventSelectSchema,
-  baseEventSelectSchema,
+  adminEventSchema,
+  eventSchema,
 } from "@/lib/validators/event";
 
-export type SelectEvent = z.infer<typeof baseEventSelectSchema>;
-export type AdminSelectEvent = z.infer<typeof adminEventSelectSchema>;
+export type Event = z.infer<typeof eventSchema>;
+export type AdminEvent = z.infer<typeof adminEventSchema>;

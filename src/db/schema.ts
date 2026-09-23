@@ -3,8 +3,9 @@ import {
   text,
   primaryKey,
   integer,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
-import { user } from "./auth.schema";
+import { user } from "@/lib/auth/schema";
 import { membershipRoles } from "@/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
 
@@ -18,14 +19,20 @@ const commonTimestamps = {
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
 };
 
-export const clubs = sqliteTable("clubs", {
-  id: text().primaryKey(),
-  name: text().notNull(),
-  description: text().notNull(),
-});
+export const clubs = sqliteTable(
+  "clubs",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    description: text().notNull(),
+    ownerId: text("owner").notNull(),
+    slug: text().notNull(),
+  },
+  (table) => [uniqueIndex("clubs_slug_unique").on(table.slug)],
+);
 
-export const membership = sqliteTable(
-  "membership",
+export const memberships = sqliteTable(
+  "memberships",
   {
     userId: text()
       .notNull()
@@ -33,7 +40,7 @@ export const membership = sqliteTable(
     clubId: text()
       .notNull()
       .references(() => clubs.id, { onDelete: "cascade" }),
-    role: text({ enum: membershipRoles }).notNull().default("member"),
+    role: text({ enum: membershipRoles }).notNull().default("MEMBER"),
   },
   (table) => [primaryKey({ columns: [table.userId, table.clubId] })]
 );
@@ -45,10 +52,10 @@ export const events = sqliteTable("events", {
     .references(() => clubs.id, { onDelete: "cascade" }),
   title: text().notNull(),
   description: text().notNull(),
-  start: integer({ mode: "timestamp" }).notNull(),
-  end: integer({ mode: "timestamp" }).notNull(),
-  checkinStart: integer({ mode: "timestamp" }).notNull(),
-  checkinEnd: integer({ mode: "timestamp" }).notNull(),
+  startAt: integer({ mode: "timestamp" }).notNull(),
+  endAt: integer({ mode: "timestamp" }).notNull(),
+  checkInStartAt: integer({ mode: "timestamp" }).notNull(),
+  checkInEndAt: integer({ mode: "timestamp" }).notNull(),
   createdBy: text().references(() => user.id, { onDelete: "set null" }),
   updatedBy: text().references(() => user.id, { onDelete: "set null" }),
   thumbnailId: integer()
@@ -104,7 +111,7 @@ export const thumbnails = sqliteTable("thumbnails", {
 
 export const clubsRelationships = relations(clubs, ({ one, many }) => ({
   events: many(events),
-  membership: many(membership),
+  memberships: many(memberships),
   eventTypes: many(eventTypes),
 }));
 
@@ -165,4 +172,4 @@ export const thumbnailsRelationships = relations(
   })
 );
 
-export * from "./auth.schema";
+export * from "@/lib/auth/schema";

@@ -1,26 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import Link from "next/link";
+import { requireAuthContext } from "@/lib/auth/get-auth-context";
 
-export default async function Page({ params }: { params: { clubId: string } }) {
-  const { clubId } = await params;
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export default async function Page() {
+  const context = await requireAuthContext();
 
   return (
     <div>
-      <h2>Club {clubId}</h2>
-      {session?.user ? (
-        <>
-          <p>Session: {session.user?.email}</p>
-        </>
-      ) : (
-        <Link href="/sign-in">
-          <Button>Sign In</Button>
-        </Link>
-      )}
+      <h2>{context.club.name}</h2>
+      <p>Session: {context.user.email}</p>
     </div>
   );
 }

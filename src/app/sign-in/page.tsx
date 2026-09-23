@@ -1,9 +1,22 @@
 import { GalleryVerticalEnd } from "lucide-react";
-
-import SignInForm from "@/components/sign-in-form";
 import Image from "next/image";
 
-export default function SignInPage() {
+import SignInForm from "@/components/sign-in-form";
+import { getSafeCallbackUrl } from "@/lib/auth/sign-in-redirect";
+import { getAppSurface } from "@/lib/club-context/get-club-context";
+
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  const surface = await getAppSurface();
+  const safeCallbackUrl = getSafeCallbackUrl(
+    callbackUrl,
+    surface === "landing" ? undefined : surface,
+  );
+
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
@@ -17,7 +30,7 @@ export default function SignInPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <SignInForm />
+            <SignInForm callbackUrl={safeCallbackUrl} />
           </div>
         </div>
       </div>

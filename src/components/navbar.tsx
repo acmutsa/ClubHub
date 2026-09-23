@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { requireCurrentUser } from "@/lib/auth/current-user";
 import { Button } from "./ui/button";
 import { UserIcon } from "lucide-react";
 import SignOutButton from "./sign-out-button";
@@ -11,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { DropdownSwitcher } from "./ThemeSwitcher";
+import { ThemeSwitcher } from "./theme-switcher";
 interface NavbarProps {
   clubName: string;
   clubId: string;
@@ -24,13 +22,7 @@ export default async function Navbar({
   clubId,
   userType,
 }: NavbarProps) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect("/sign-in");
-  }
+  await requireCurrentUser();
 
   return (
     <header className="h-16 bg-background border-b border-border">
@@ -76,7 +68,7 @@ export default async function Navbar({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <DropdownSwitcher />
+                <ThemeSwitcher />
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <SignOutButton />

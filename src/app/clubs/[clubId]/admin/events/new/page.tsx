@@ -1,5 +1,5 @@
-import { NewEventForm } from "@/components/clubs/new-event-form";
-import { getClubEventTypes, getAllLocations } from "@/lib/queries/events";
+import { NewEventForm } from "./components/new-event-form";
+import { listClubEventTypes, listLocations } from "../../../queries";
 
 export default async function NewEventPage({
   params,
@@ -9,8 +9,8 @@ export default async function NewEventPage({
   const { clubId } = await params;
 
   const [eventTypes, locations] = await Promise.all([
-    getClubEventTypes(clubId),
-    getAllLocations(),
+    listClubEventTypes(clubId),
+    listLocations(),
   ]);
 
   return (

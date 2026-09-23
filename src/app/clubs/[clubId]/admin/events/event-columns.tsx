@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminSelectEvent } from "@/lib/types/event";
+import { AdminEvent } from "@/lib/types/event";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -49,7 +49,7 @@ function SortableHeader({
   );
 }
 
-export const columns: ColumnDef<AdminSelectEvent>[] = [
+export const eventColumns: ColumnDef<AdminEvent>[] = [
   {
     accessorKey: "thumbnail",
     header: "Thumbnail",
@@ -111,12 +111,12 @@ export const columns: ColumnDef<AdminSelectEvent>[] = [
     },
   },
   {
-    accessorKey: "start",
+    accessorKey: "startAt",
     header: ({ column }) => (
       <SortableHeader column={column}>Date & Time</SortableHeader>
     ),
     cell: ({ row }) => {
-      const startDate = row.original.start;
+      const startDate = row.original.startAt;
       return (
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4" />

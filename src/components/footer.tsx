@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Github, Twitter, Linkedin, Instagram } from "lucide-react";
-import CreatedWithCK from "./created-with-ck";
+import CreatedWithClubHub from "./created-with-clubhub";
 
 interface FooterProps {
   clubId: string;
@@ -19,7 +19,7 @@ export default function Footer({ clubId, clubName }: FooterProps) {
               A registered student organization @ Example University.
             </p>
 
-            <CreatedWithCK />
+            <CreatedWithClubHub />
           </div>
 
           <div className="space-y-3">

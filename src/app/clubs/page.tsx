@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireCurrentUser } from "@/lib/auth/current-user";
 import SignOutButton from "@/components/sign-out-button";
 
 import {
@@ -14,30 +13,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { db } from "@/db/index";
-import { membership, clubs } from "@/db/schema";
+import { memberships, clubs } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import {
   JoinClubButton,
   LeaveClubButton,
   CreateClubButton,
-} from "@/components/shared/membership/buttons";
+} from "./components/club-membership-actions";
 
 export default async function Page() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/sign-in");
-  }
-  const user = session.user;
+  const user = await requireCurrentUser();
   const allClubs = await db.select().from(clubs);
-  const memberships = await db
+  const userMemberships = await db
     .select()
-    .from(membership)
-    .where(eq(membership.userId, user.id));
-  const memberClubIds = new Set(memberships.map((m) => m.clubId));
+    .from(memberships)
+    .where(eq(memberships.userId, user.id));
+  const memberClubIds = new Set(userMemberships.map((m) => m.clubId));
 
   return (
     <>

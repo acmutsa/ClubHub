@@ -1,15 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { DataTable } from "./data-table";
-import { columns } from "./columns";
+import { EventDataTable } from "./event-data-table";
+import { eventColumns } from "./event-columns";
 import { Plus } from "lucide-react";
-import { getClubEvents, getClubEventTypes } from "@/lib/queries/events";
+import { listClubEvents, listClubEventTypes } from "../../queries";
 import Link from "next/link";
 
 export default async function Page({ params }: { params: { clubId: string } }) {
   const { clubId } = await params;
   const [clubEvents, eventTypes] = await Promise.all([
-    getClubEvents(clubId),
-    getClubEventTypes(clubId),
+    listClubEvents(clubId),
+    listClubEventTypes(clubId),
   ]);
 
   return (
@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: { clubId: string } }) {
                 Events
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Manage and monitor your organizations events
+                Manage and monitor your club&apos;s events
               </p>
             </div>
             <Link href={`/admin/events/new`}>
@@ -35,8 +35,8 @@ export default async function Page({ params }: { params: { clubId: string } }) {
         </div>
       </div>
       <div className="mx-auto max-w-7xl p-4">
-        <DataTable
-          columns={columns}
+        <EventDataTable
+          columns={eventColumns}
           data={clubEvents}
           eventTypes={eventTypes}
         />

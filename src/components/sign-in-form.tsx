@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/client";
 import { useRouter } from 'next/navigation';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -15,9 +15,10 @@ const signInSchema = z.object({
 });
 
 export default function SignInForm({
+  callbackUrl,
   className,
   ...props
-}: React.ComponentProps<"form">) {
+}: React.ComponentProps<"form"> & { callbackUrl: string }) {
 
 
   const router = useRouter();
@@ -32,15 +33,18 @@ export default function SignInForm({
 
 
   async function onSubmit(values: z.infer<typeof signInSchema>) {
-    const res = await authClient.signIn.email(values);
+    const res = await authClient.signIn.email({
+      ...values,
+      callbackURL: callbackUrl,
+    });
     if(res.error){
-      let message = res.error.message || "Something went wrong";
+      const message = res.error.message || "Something went wrong";
       form.setError("root", { message });
       return;
     }
-    router.push("/");
-    
-  }
+    router.push(callbackUrl);
+    router.refresh();
+}
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">

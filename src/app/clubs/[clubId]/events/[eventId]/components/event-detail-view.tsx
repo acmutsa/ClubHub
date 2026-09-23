@@ -29,10 +29,10 @@ interface EventDetailViewProps {
     id: number;
     title: string;
     description: string;
-    start: Date;
-    end: Date;
-    checkinStart: Date;
-    checkinEnd: Date;
+    startAt: Date;
+    endAt: Date;
+    checkInStartAt: Date;
+    checkInEndAt: Date;
     points: number;
     hidden: boolean;
     club: {
@@ -80,8 +80,8 @@ function formatTime(date: Date): string {
   }).format(date);
 }
 
-function formatTimeRange(start: Date, end: Date): string {
-  return `${formatTime(start)} - ${formatTime(end)}`;
+function formatTimeRange(startAt: Date, endAt: Date): string {
+  return `${formatTime(startAt)} - ${formatTime(endAt)}`;
 }
 
 export function EventDetailView({ event }: EventDetailViewProps) {
@@ -89,8 +89,8 @@ export function EventDetailView({ event }: EventDetailViewProps) {
   const calendarEvent = {
     title: event.title,
     description: event.description,
-    start: event.start,
-    end: event.end,
+    start: event.startAt,
+    end: event.endAt,
     location: event.location
       ? `${event.location.building.name}, ${event.location.name} (${event.location.building.code} ${event.location.roomNumber})`
       : undefined,
@@ -186,11 +186,11 @@ export function EventDetailView({ event }: EventDetailViewProps) {
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="size-4" />
-                  <span>{formatDate(event.start)}</span>
+                  <span>{formatDate(event.startAt)}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Clock className="size-4" />
-                  <span>{formatTimeRange(event.start, event.end)}</span>
+                  <span>{formatTimeRange(event.startAt, event.endAt)}</span>
                 </div>
                 {event.location && (
                   <div className="flex items-center gap-1.5">
@@ -224,7 +224,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                   <div>
                     <p className="font-medium">Check-in opens</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatTime(event.checkinStart)}
+                      {formatTime(event.checkInStartAt)}
                     </p>
                   </div>
                 </div>
@@ -235,7 +235,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                   <div>
                     <p className="font-medium">Event starts</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatTime(event.start)}
+                      {formatTime(event.startAt)}
                     </p>
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                   <div>
                     <p className="font-medium">Event ends</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatTime(event.end)}
+                      {formatTime(event.endAt)}
                     </p>
                   </div>
                 </div>
@@ -267,7 +267,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Date</p>
-                      <p className="font-medium">{formatDate(event.start)}</p>
+                      <p className="font-medium">{formatDate(event.startAt)}</p>
                     </div>
                   </div>
 
@@ -278,7 +278,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                     <div>
                       <p className="text-sm text-muted-foreground">Time</p>
                       <p className="font-medium">
-                        {formatTimeRange(event.start, event.end)}
+                        {formatTimeRange(event.startAt, event.endAt)}
                       </p>
                     </div>
                   </div>

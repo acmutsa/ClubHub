@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-export default function CreatedWithCK() {
+export default function CreatedWithClubHub() {
     return (
         <div className="flex flex-row gap-2 p-2 bg-foreground rounded-lg">
             <Image src="/assets/logo.png" alt="ClubKit Logo" width={25} height={25} />

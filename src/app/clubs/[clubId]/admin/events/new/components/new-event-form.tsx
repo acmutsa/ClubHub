@@ -1,18 +1,18 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { type FieldPath, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAction } from "next-safe-action/hooks";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
-  eventInsertBaseSchema,
-  type EventInsertInput,
+  createEventFormSchema,
+  type CreateEventInput,
 } from "@/lib/validators/event";
-import { createEventAction } from "@/actions/events";
+import { createEventAction } from "@/app/clubs/[clubId]/admin/events/actions";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,8 +79,8 @@ export function NewEventForm({
 }: NewEventFormProps) {
   const router = useRouter();
 
-  const form = useForm<EventInsertInput>({
-    resolver: zodResolver(eventInsertBaseSchema),
+  const form = useForm<CreateEventInput>({
+    resolver: zodResolver(createEventFormSchema),
     mode: "onSubmit",
     defaultValues: {
       title: "",
@@ -91,24 +91,32 @@ export function NewEventForm({
     },
   });
 
-  const { execute, isPending, result } = useAction(createEventAction, {
-    onSuccess: () => {
-      router.push(`/clubs/${clubId}/admin/events`);
-    },
-    onError: () => {
-      console.log(result);
-      // toast({
-      //   title: "Error",
-      //   description: "An error occurred while creating the event.",
-      //   variant: "destructive",
-      // });
-    },
-  });
+  const [isPending, startTransition] = useTransition();
+  const [actionResult, setActionResult] = useState<
+    Awaited<ReturnType<typeof createEventAction>> | null
+  >(null);
 
-  function onSubmit(values: EventInsertInput) {
-    execute({
-      ...values,
-      clubId,
+  function onSubmit(values: CreateEventInput) {
+    setActionResult(null);
+
+    startTransition(async () => {
+      const result = await createEventAction(values);
+      setActionResult(result);
+
+      if (result.ok) {
+        router.push(`/clubs/${clubId}/admin/events`);
+        return;
+      }
+
+      for (const [field, messages] of Object.entries(
+        result.error.fieldErrors ?? {},
+      )) {
+        const message = messages?.[0];
+
+        if (message) {
+          form.setError(field as FieldPath<CreateEventInput>, { message });
+        }
+      }
     });
   }
 
@@ -118,10 +126,10 @@ export function NewEventForm({
       className={cn("space-y-8", className)}
     >
       {/* Root Error */}
-      {result?.validationErrors?._errors && (
+      {actionResult && !actionResult.ok && (
         <div className="rounded-md bg-destructive/10 border border-destructive p-4">
           <p className="text-destructive text-sm font-medium">
-            {result.validationErrors._errors.join(", ")}
+            {actionResult.error.message}
           </p>
         </div>
       )}
@@ -217,25 +225,25 @@ export function NewEventForm({
               <Field>
                 <FieldLabel>Start Date & Time</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("start")}
+                  value={form.watch("startAt")}
                   onChange={(date) =>
-                    form.setValue("start", date, { shouldValidate: true })
+                    form.setValue("startAt", date, { shouldValidate: true })
                   }
-                  error={!!form.formState.errors.start}
+                  error={!!form.formState.errors.startAt}
                 />
-                <FieldError>{form.formState.errors.start?.message}</FieldError>
+                <FieldError>{form.formState.errors.startAt?.message}</FieldError>
               </Field>
 
               <Field>
                 <FieldLabel>End Date & Time</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("end")}
+                  value={form.watch("endAt")}
                   onChange={(date) =>
-                    form.setValue("end", date, { shouldValidate: true })
+                    form.setValue("endAt", date, { shouldValidate: true })
                   }
-                  error={!!form.formState.errors.end}
+                  error={!!form.formState.errors.endAt}
                 />
-                <FieldError>{form.formState.errors.end?.message}</FieldError>
+                <FieldError>{form.formState.errors.endAt?.message}</FieldError>
               </Field>
             </div>
 
@@ -243,34 +251,34 @@ export function NewEventForm({
               <Field>
                 <FieldLabel>Check-in Start</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("checkinStart")}
+                  value={form.watch("checkInStartAt")}
                   onChange={(date) =>
-                    form.setValue("checkinStart", date, {
+                    form.setValue("checkInStartAt", date, {
                       shouldValidate: true,
                     })
                   }
-                  error={!!form.formState.errors.checkinStart}
+                  error={!!form.formState.errors.checkInStartAt}
                 />
                 <FieldDescription>
                   When attendees can start checking in
                 </FieldDescription>
                 <FieldError>
-                  {form.formState.errors.checkinStart?.message}
+                  {form.formState.errors.checkInStartAt?.message}
                 </FieldError>
               </Field>
 
               <Field>
                 <FieldLabel>Check-in End</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("checkinEnd")}
+                  value={form.watch("checkInEndAt")}
                   onChange={(date) =>
-                    form.setValue("checkinEnd", date, { shouldValidate: true })
+                    form.setValue("checkInEndAt", date, { shouldValidate: true })
                   }
-                  error={!!form.formState.errors.checkinEnd}
+                  error={!!form.formState.errors.checkInEndAt}
                 />
                 <FieldDescription>When check-in closes</FieldDescription>
                 <FieldError>
-                  {form.formState.errors.checkinEnd?.message}
+                  {form.formState.errors.checkInEndAt?.message}
                 </FieldError>
               </Field>
             </div>
@@ -367,7 +375,7 @@ export function NewEventForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push(`/admin/events`)}
+          onClick={() => router.push(`/clubs/${clubId}/admin/events`)}
         >
           Cancel
         </Button>
@@ -439,7 +447,8 @@ function DateTimePicker({ value, onChange, error }: DateTimePickerProps) {
         type="time"
         id="time-picker"
         step="1"
-        defaultValue="10:30:00"
+        value={value ? format(value, "HH:mm:ss") : ""}
+        onChange={handleTimeChange}
         className={cn(
           "w-[120px] bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none",
           error && "border-destructive focus-visible:ring-destructive"

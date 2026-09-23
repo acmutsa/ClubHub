@@ -50,6 +50,20 @@
       "when": 1765924012375,
       "tag": "0006_foamy_obadiah_stane",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1790182327151,
+      "tag": "0007_rename_event_timestamp_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1790189778822,
+      "tag": "0008_restore-club-slug",
+      "breakpoints": true
     }
   ]
 }

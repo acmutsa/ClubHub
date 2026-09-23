@@ -5,7 +5,7 @@ import { seed } from "drizzle-seed";
 import * as schema from "@/db/schema";
 import { defaults as d } from "@/../clubhub.config";
 
-const { verification, ...seedSchema } = schema;
+const { verification, platformRoles, ...seedSchema } = schema;
 
 async function main() {
   const db = drizzle({
@@ -64,8 +64,8 @@ async function main() {
       columns: {
         title: f.companyName(),
         description: f.loremIpsum(),
-        start: f.date({ minDate: "2024-01-01", maxDate: "2025-12-31" }),
-        end: f.date({ minDate: "2024-01-01", maxDate: "2025-12-31" }), // Note: Logic for end > start isn't strictly enforced by simple generator, but good enough for seed
+        startAt: f.date({ minDate: "2024-01-01", maxDate: "2025-12-31" }),
+        endAt: f.date({ minDate: "2024-01-01", maxDate: "2025-12-31" }), // Note: Logic for endAt > startAt isn't strictly enforced by simple generator, but good enough for seed
         points: f.int({ minValue: 10, maxValue: 100 }),
         hidden: f.boolean(),
       },
@@ -89,14 +89,14 @@ async function main() {
         }),
       },
     },
-    membership: {
+    memberships: {
       columns: {
         role: f.weightedRandom([
-          { weight: 0.8, value: f.valuesFromArray({ values: ["member"] }) },
-          { weight: 0.15, value: f.valuesFromArray({ values: ["admin"] }) },
+          { weight: 0.8, value: f.valuesFromArray({ values: ["MEMBER"] }) },
+          { weight: 0.15, value: f.valuesFromArray({ values: ["ADMIN"] }) },
           {
             weight: 0.05,
-            value: f.valuesFromArray({ values: ["super_admin"] }),
+            value: f.valuesFromArray({ values: ["SUPER_ADMIN"] }),
           },
         ]),
       },
