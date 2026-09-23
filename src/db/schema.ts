@@ -5,7 +5,7 @@ import {
   integer,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
-import { user } from "@/lib/auth/schema";
+import { user } from "@/db/auth-schema";
 import { membershipRoles } from "@/lib/types/membership";
 import { sql, relations } from "drizzle-orm";
 
