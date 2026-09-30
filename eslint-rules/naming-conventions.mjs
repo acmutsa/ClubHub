@@ -6,7 +6,7 @@ const CONSTANT_CASE = /^[A-Z][A-Z0-9_]*$/
 const ACTION_NAME = /^[a-z][A-Za-z0-9]*Action$/
 const QUERY_NAME = /^(?:get|find|list)[A-Z][A-Za-z0-9]*$/
 const SCHEMA_NAME = /^[a-z][A-Za-z0-9]*Schema$/
-const KEBAB_CASE_FILE = /^[a-z0-9]+(?:-[a-z0-9]+)*\.(?:ts|tsx)$/
+const KEBAB_CASE_FILE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.(?:test|spec))?\.(?:ts|tsx)$/
 
 function reportName(context, node, name, expected) {
   context.report({

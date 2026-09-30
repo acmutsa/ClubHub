@@ -1,0 +1,10 @@
+services:
+  db:
+    image: ghcr.io/tursodatabase/libsql-server:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - libsql-data:/var/lib/sqld
+
+volumes:
+  libsql-data:

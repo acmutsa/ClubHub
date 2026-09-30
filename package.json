@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -12,6 +14,8 @@
     "db:seed": "tsx ./src/db/seed.ts",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "guide:dev": "vitepress build guidelines && vitepress dev guidelines",
     "guide:build": "vitepress build guidelines",
     "guide:preview": "vitepress preview guidelines"
@@ -69,6 +73,7 @@
     "tsx": "^4.20.5",
     "tw-animate-css": "^1.3.8",
     "typescript": "^5",
-    "vitepress": "2.0.0-alpha.20"
+    "vitepress": "2.0.0-alpha.20",
+    "vitest": "^5.0.2"
   }
 }
