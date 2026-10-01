@@ -20,6 +20,12 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "mysql", "sqlite"
   }),
+  advanced: {
+    database: {
+      // UUIDs so user ids pass idSchema like every other table's id
+      generateId: () => crypto.randomUUID(),
+    },
+  },
   trustedOrigins: [
     "https://*.localhost:3000","http://*.localhost:3000"
   ]

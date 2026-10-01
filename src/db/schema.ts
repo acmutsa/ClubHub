@@ -49,7 +49,8 @@ export const userProfiles = sqliteTable("user_profiles", {
   expectedGraduationDate: integer("expected_graduation_date", { mode: "timestamp" }).notNull(),
   major: text("major").notNull(),
   resumeFileId: text("resume_file_id").references(() => files.id, { onDelete: "set null" }),
-  country: text("country").notNull(),
+  // 2-letter code from countries in constants.ts, e.g. "US"
+  country: text("country", { length: 2 }).notNull(),
   race: text("race", { mode: "json" }).$type<string[]>().notNull(),
   gender: text("gender").notNull(),
   ethnicity: text("ethnicity").notNull(),
@@ -112,9 +113,9 @@ export const clubRoles = sqliteTable( "club_roles", {
     clubId: text("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     description: text("description"),
-    permission: text("permission").notNull(),
+    permissions: text("permissions", { mode: "json" }).$type<string[]>().notNull(),
     color: text("color").notNull().default("#71717a"),
-    // Member and Admin: cannot be deleted or renamed
+    // MEMBER and ADMIN: cannot be deleted or renamed
     isSystem: integer("is_system", { mode: "boolean" }).notNull().default(false),
     ...timestamps,
   },
@@ -145,6 +146,8 @@ export const clubMemberships = sqliteTable( "club_memberships", {
       columns: [table.clubId, table.roleId],
       foreignColumns: [clubRoles.clubId, clubRoles.id],
     }).onDelete("no action"),
+    // inactive_at is set only while the membership is inactive
+    check("club_memberships_inactive_at", sql`(${table.status} = 'active' AND ${table.inactiveAt} IS NULL) OR (${table.status} = 'inactive' AND ${table.inactiveAt} IS NOT NULL)`),
   ],
 );
 
@@ -193,9 +196,9 @@ export const addresses = sqliteTable("addresses", {
   id: uuid("id").primaryKey(),
   street: text("street").notNull(),
   city: text("city").notNull(),
-  state: text("state"),
+  state: text("state", { length: 2 }),
   postalCode: text("postal_code"),
-  country: text("country",  { length: 70 }),
+  country: text("country", { length: 2 }),
 });
 
 export const events = sqliteTable( "events", {
@@ -291,6 +294,10 @@ export const notificationLogs = sqliteTable( "notification_logs", {
   },
   (table) => [
     index("notification_logs_event_idx").on(table.eventId),
+    // Only one waiting attempt per user and event; finished attempts (sent/failed/skipped) stay as history
+    uniqueIndex("notification_logs_one_queued_unique")
+      .on(table.eventId, table.userId)
+      .where(sql`${table.status} = 'queued'`),
   ],
 );
 

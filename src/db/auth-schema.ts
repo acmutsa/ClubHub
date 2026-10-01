@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
-// Platform-wide roles (e.g. MEMBER, ADMIN, SUPER_ADMIN); user.role must be one of these rows
+// Platform-wide roles (e.g. MEMBER, ADMIN); user.role must be one of these rows
 export const globalRoles = sqliteTable("global_roles", {
   role: text("role").primaryKey(),
 });

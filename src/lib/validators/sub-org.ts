@@ -3,12 +3,14 @@ import { z } from "zod";
 import { subOrgs } from "@/db/schema";
 import { idSchema } from "@/lib/validators/common";
 
-// Sub-Org
+
 export const subOrgSchema = createSelectSchema(subOrgs);
 
-// The server sets clubId from the club context
 export const createSubOrgSchema = z.object({
+  clubId: idSchema,
   name: z.string().trim().min(1, "Name is required").max(100, "Name is too long"),
-  description: z.string().trim().max(1000, "Description is too long").nullable(),
+  description: z.string().trim().min(1, "Description is required").max(1000, "Description is too long"),
   logoFileId: idSchema.nullable(),
 });
+
+export const updateSubOrgSchema = createSubOrgSchema.omit({ clubId: true }).partial();
