@@ -1,11 +1,16 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/libsql";
-import { seed } from "drizzle-seed";
 
-import * as schema from "@/db/schema";
-import { defaults as d } from "@/../clubhub.config";
+import { clubRoles, clubs, globalRoles } from "@/db/schema";
+import { permission } from "@/config/constants";
 
-const { verification, platformRoles, ...seedSchema } = schema;
+
+const GLOBAL_ROLES = ["MEMBER", "ADMIN"];
+
+const SYSTEM_CLUB_ROLES = [
+  { name: "MEMBER", description: "Default role for club members", permissions: ["overview"], color: "#71717a" },
+  { name: "ADMIN", description: "Full access to the club", permissions: [...permission], color: "#3b82f6" },
+];
 
 async function main() {
   const db = drizzle({
@@ -15,93 +20,15 @@ async function main() {
     },
   });
 
-  await seed(db, seedSchema).refine((f) => ({
-    clubs: {
-      isUnique: true,
-      count: 5,
-      columns: {
-        id: f.uuid(),
-        name: f.companyName(),
-        description: f.loremIpsum(),
-      },
-      with: {
-        eventTypes: 4,
-        events: 10,
-      },
-    },
-    buildings: {
-      columns: {
-        name: f.valuesFromArray({ values: d.buildings.map((b) => b.name) }),
-        code: f.valuesFromArray({ values: d.buildings.map((b) => b.code) }),
-      },
-      with: {
-        locations: 5,
-      },
-    },
-    locations: {
-      columns: {
-        name: f.lastName(),
-        roomNumber: f.number({
-          minValue: 1,
-          maxValue: 5,
-          precision: 1000,
-          isUnique: false,
-        }),
-      },
-    },
-    eventTypes: {
-      columns: {
-        name: f.valuesFromArray({
-          values: d.eventTypes.map((e) => e.name),
-        }),
-        color: f.valuesFromArray({
-          values: d.eventTypes.map((e) => e.color),
-        }),
-        requiredPoints: f.int({ minValue: 0, maxValue: 50 }),
-      },
-    },
-    events: {
-      columns: {
-        title: f.companyName(),
-        description: f.loremIpsum(),
-        startAt: f.date({ minDate: "2024-01-01", maxDate: "2025-12-31" }),
-        endAt: f.date({ minDate: "2024-01-01", maxDate: "2025-12-31" }), // Note: Logic for endAt > startAt isn't strictly enforced by simple generator, but good enough for seed
-        points: f.int({ minValue: 10, maxValue: 100 }),
-        hidden: f.boolean(),
-      },
-    },
-    thumbnails: {
-      columns: {
-        url: f.valuesFromArray({
-          values: [
-            "https://api.dicebear.com/9.x/glass/svg?seed=Felix",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Aneka",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Mark",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Jasmine",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Robert",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Olivia",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Emma",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Noah",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Oliver",
-            "https://api.dicebear.com/9.x/glass/svg?seed=Isabella",
-            "https://api.dicebear.com/9.x/glass/svg?seed=William",
-          ],
-        }),
-      },
-    },
-    memberships: {
-      columns: {
-        role: f.weightedRandom([
-          { weight: 0.8, value: f.valuesFromArray({ values: ["MEMBER"] }) },
-          { weight: 0.15, value: f.valuesFromArray({ values: ["ADMIN"] }) },
-          {
-            weight: 0.05,
-            value: f.valuesFromArray({ values: ["SUPER_ADMIN"] }),
-          },
-        ]),
-      },
-    },
-  }));
+  await db.insert(globalRoles).values(GLOBAL_ROLES.map((role) => ({ role }))).onConflictDoNothing();
+
+  const existingClubs = await db.select({ id: clubs.id }).from(clubs);
+  if (existingClubs.length > 0) {
+    await db
+      .insert(clubRoles)
+      .values(existingClubs.flatMap((club) => SYSTEM_CLUB_ROLES.map((role) => ({ ...role, clubId: club.id, isSystem: true }))))
+      .onConflictDoNothing();
+  }
 }
 
 main();

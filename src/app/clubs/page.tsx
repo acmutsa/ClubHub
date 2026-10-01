@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { db } from "@/db/index";
-import { memberships, clubs } from "@/db/schema";
+import { clubMemberships, clubs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import {
   JoinClubButton,
@@ -26,8 +26,8 @@ export default async function Page() {
   const allClubs = await db.select().from(clubs);
   const userMemberships = await db
     .select()
-    .from(memberships)
-    .where(eq(memberships.userId, user.id));
+    .from(clubMemberships)
+    .where(eq(clubMemberships.userId, user.id));
   const memberClubIds = new Set(userMemberships.map((m) => m.clubId));
 
   return (

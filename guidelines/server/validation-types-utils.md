@@ -139,26 +139,15 @@ This prevents the schema and type from drifting. Import the schema where runtime
 
 Do not create a second hand-written interface with the same fields. Two owners eventually disagree about nullability or a renamed column.
 
-## Membership roles
+## Club roles
 
-`types/membership.ts` defines the accepted values once:
+Club roles are rows in the `clubRoles` table, not a fixed list in code. Each membership points to one with `roleId`, and each role has its own `permissions`. `MEMBER` and `ADMIN` are seeded system roles (`isSystem: true`) that cannot be deleted or renamed; clubs can add their own.
 
-```ts
-export const membershipRoles = [
-  "MEMBER",
-  "ADMIN",
-  "SUPER_ADMIN",
-] as const
-
-export const membershipRoleSchema = z.enum(membershipRoles)
-export type MembershipRole = z.infer<typeof membershipRoleSchema>
-```
-
-The constant works for select options and database checks. The schema validates runtime input. The type gives autocomplete and compile-time checks.
+Check what a role allows instead of comparing its name:
 
 ```ts
-export function canManageClub(role: MembershipRole) {
-  return role === "ADMIN" || role === "SUPER_ADMIN"
+export function canManageEvents(role: ClubRole) {
+  return role.permissions.includes("events")
 }
 ```
 
