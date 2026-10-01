@@ -19,11 +19,12 @@ These are custom ClubHub wrappers. The `next-safe-action` package appears in `pa
 | --- | --- | --- |
 | `auth/client.ts` | Creates the Better Auth browser client and exports sign-in, sign-out, sign-up, and session helpers | Client components |
 | `auth/server.ts` | Configures Better Auth and its Drizzle adapter | Server code and the auth route |
-| `auth/schema.ts` | Defines Better Auth tables for users, sessions, accounts, and verification | Database schema setup |
 | `auth/current-user.ts` | Reads the current session and exposes optional or required user helpers | Server components, queries, and context builders |
 | `auth/get-auth-context.ts` | Aliases optional and required club context | Club-scoped server routes |
 | `auth/permissions.ts` | Names club and platform permission string types | Action and context signatures |
 | `auth/sign-in-redirect.ts` | Builds a safe sign-in callback and redirects unauthenticated requests | Required server context |
+
+The Better Auth tables (`user`, `session`, `account`, `verification`) live in `src/db/auth-schema.ts` and are re-exported from `src/db/schema.ts`.
 
 `requireAuthContext()` sounds general, but its implementation returns club context. Do not use it on a landing or platform page just because the viewer must be signed in. Use `requireCurrentUser()` there, or `requirePlatformContext()` for platform administration.
 

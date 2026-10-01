@@ -3,6 +3,12 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 export const auth = betterAuth({
+  user: {
+    additionalFields: {
+      role: { type: "string", required: false, defaultValue: "MEMBER", input: false },
+      deletedAt: { type: "date", required: false, input: false },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     async sendResetPassword(data, request) {

@@ -1,5 +1,10 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
+// Platform-wide roles (e.g. MEMBER, ADMIN, SUPER_ADMIN); user.role must be one of these rows
+export const globalRoles = sqliteTable("global_roles", {
+  role: text("role").primaryKey(),
+});
+
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -8,6 +13,10 @@ export const user = sqliteTable("user", {
     .default(false)
     .notNull(),
   image: text("image"),
+  role: text("role")
+    .notNull()
+    .default("MEMBER")
+    .references(() => globalRoles.role, { onDelete: "restrict", onUpdate: "cascade" }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .defaultNow()
     .notNull(),
@@ -15,6 +24,8 @@ export const user = sqliteTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  // Soft delete: the row stays for stats and history
+  deletedAt: integer("deleted_at", { mode: "timestamp" }),
 });
 
 export const session = sqliteTable("session", {
