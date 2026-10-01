@@ -6,7 +6,6 @@ import { hexColorSchema, idSchema, paginationSchema } from "@/lib/validators/com
 
 
 export const clubSchema = createSelectSchema(clubs);
-export const adminClubSchema = clubSchema.extend({});
 
 export const createClubSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name is too long"),

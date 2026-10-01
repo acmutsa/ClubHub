@@ -41,7 +41,7 @@ Context is built from headers set by `src/proxy.ts`. Read [context and auth](/se
 
 `validators/club.ts`, `validators/event.ts`, and `validators/location.ts` build Zod schemas from Drizzle tables. Event validation also defines create-form rules and cross-field date checks.
 
-The files under `types` infer TypeScript types from those schemas. `types/membership.ts` is slightly different because it defines the role values and their schema in the same file.
+The files under `types` infer TypeScript types from those schemas. Related tables share a file: `types/club.ts` also holds membership, role, social link, and sponsor types, and `types/event.ts` also holds category, check-in, and notification log types.
 
 Use inferred types when a type truly mirrors a schema. Write a separate type when the shape has a different owner, such as a view model returned by a query.
 
