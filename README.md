@@ -3,11 +3,25 @@ Reimagining the best parts of ClubKit as a multi-tenant SaaS application. A plat
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+pnpm install
+cp .env.example .env   # fill in BETTER_AUTH_SECRET
+pnpm db:up             # local libSQL server on :8080 (docker compose)
+pnpm db:migrate
+pnpm db:seed           # optional
 pnpm dev
 ```
+
+Stop the database with `pnpm db:down` (data persists in the `libsql-data` volume; add `-v` to wipe it).
+
+## Tests
+
+```bash
+pnpm test         # run once
+pnpm test:watch   # watch mode
+```
+
+Tests live next to the code as `*.test.ts` under `src/`.
 
 ## Test Multi-tenant Subdomain
 
