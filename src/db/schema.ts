@@ -131,6 +131,7 @@ export const clubMemberships = sqliteTable( "club_memberships", {
     userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     clubId: text("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
     roleId: text("role_id").notNull(),
+    title: text("title").notNull().default("Member"),
     applicationStatus: text("application_status", { length: 10, enum: ["pending", "approved", "suspended"] }).notNull().default("approved"),
     status: text("status", { length: 10, enum: ["active", "inactive"] }).notNull().default("active"),
     inactiveAt: integer("inactive_at", { mode: "timestamp" }),
