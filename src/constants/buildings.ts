@@ -1,5 +1,4 @@
-export const defaults = {
-  buildings: [
+export const buildings =  [
     // Parking garages and related
     { name: "Bauerle Road Garage", code: "BRG" },
     { name: "Tobin Avenue Garage", code: "TAG" },
@@ -54,12 +53,26 @@ export const defaults = {
     { name: "Rowdy Campus Store", code: "RCS" },
     { name: "Rowdy the Roadrunner Statue", code: "RRS" },
     { name: "Sombrilla Fountain and Plaza", code: "SFP" },
-  ],
-  eventTypes: [
-    { name: "General Meeting", code: "GM", color: "#22c55e" }, // Green
-    { name: "Workshop", code: "WS", color: "#3b82f6" }, // Blue
-    { name: "Social", code: "SOC", color: "#f97316" }, // Orange
-    { name: "Fundraiser", code: "FUND", color: "#eab308" }, // Yellow
-    // { name: "Hackathon", code: "HACK", color: "#a855f7" }, // Purple
-  ],
-} as const;
+    // Downtown 
+    { name: "Bill Miller Plaza", code: "BMP" },
+    { name: "Durango Building", code: "DB" },
+    { name: "Buena Vista Building", code: "BV" },
+    { name: "Frio St. Building", code: "FS" },
+    { name: "San Pedro 1",code: "SP1" },
+    { name: "San Pedro 2",code: "SP2" },
+    { name: "Monterey Building", code: "MB" },
+    // Southwest Campus
+    { name: "Club Giraud" , code: "CGB" },
+    { name: "Coates Chapel", code: "COA" },
+    { name: "McAllister Ceramics Building", code: "MCB" },
+    { name: "McNutt Welcome Center", code: "MWC" },
+    { name: "Negley Building", code: "NEG" },
+    { name: "One Riverwalk Place", code: "ORP" },
+    { name: "John L. Santikos Building", code: "SAN" },
+    { name: "Tobin Building", code: "TOB" },
+    { name: "Urschel Administration Building", code: "UAB" },
+    { name: "YMCA Building", code: "YMC" },
+
+
+
+] as const;

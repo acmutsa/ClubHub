@@ -1,5 +1,4 @@
-/** Club permissions are independent from platform permissions. */
-export type ClubPermissionType = string;
+import type { Permission } from "@/constants/permissions";
 
-/** Platform permissions govern platform-wide administration. */
+export type ClubPermissionType = Permission;
 export type PlatformPermissionType = string;

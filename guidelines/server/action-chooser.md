@@ -20,7 +20,7 @@ export const updateEventTitleAction = createSafeAction(
       eventId: z.string().min(1),
       title: z.string().trim().min(1).max(200),
     }),
-    permission: "events.update",
+    permission: Permission.EVENTS_EDIT,
   },
   async ({ eventId, title }, context) => {
     const isAdmin =
@@ -54,7 +54,7 @@ export const updateEventTitleAction = createSafeAction(
 Both IDs appear in the update condition. That tenant filter matters even though the page already loaded club context.
 
 ::: danger Permission is not enforced yet
-The `permission` option is accepted but intentionally ignored in the current implementation. Passing `permission: "events.update"` documents intent only. Keep an explicit role or permission check inside the handler until club permission enforcement is implemented.
+The `permission` option is accepted but intentionally ignored in the current implementation. Passing `permission: Permission.EVENTS_EDIT` documents intent only. Keep an explicit role or permission check inside the handler until club permission enforcement is implemented.
 :::
 
 ## Signed-in work without club scope
