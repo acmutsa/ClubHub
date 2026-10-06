@@ -9,7 +9,7 @@ import { MEMBER_ROLE_POSITION, OWNER_ROLE_POSITION } from "@/constants/role-posi
 const GLOBAL_ROLES = ["USER", "ADMIN"];
 
 const SYSTEM_CLUB_ROLES = [
-  { name: "MEMBER", description: "Default role for club members", permissions: [Permission.DASHBOARD_VIEW], color: "#71717a", position: MEMBER_ROLE_POSITION },
+  { name: "MEMBER", description: "Default role for club members", permissions: [], color: "#71717a", position: MEMBER_ROLE_POSITION },
   { name: "OWNER", description: "Full access to the club", permissions: ALL_PERMISSIONS, color: "#3b82f6", position: OWNER_ROLE_POSITION },
 ];
 
