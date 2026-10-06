@@ -147,7 +147,7 @@ Check what a role allows instead of comparing its name:
 
 ```ts
 export function canManageEvents(role: ClubRole) {
-  return role.permissions.includes("events")
+  return role.permissions.includes(Permission.EVENTS_EDIT)
 }
 ```
 
@@ -155,19 +155,26 @@ When the same role rule appears in several server files, move it to a clearly na
 
 ## Permission types
 
-`ClubPermissionType` and `PlatformPermissionType` are string aliases right now. They document intent but do not catch a misspelling such as `event.create` versus `events.create`.
+Club permissions are the `Permission` enum in `src/constants/permissions.ts`, and `ClubPermissionType` is an alias for it. Always reference a member such as `Permission.EVENTS_CREATE`; a string literal like `"events.create"` does not type-check, so a misspelling such as `event.create` cannot slip through. The `clubRoles.permissions` column is typed as `Permission[]`, and `createClubRoleSchema` rejects any value outside the enum.
 
-A future permission catalog can use constants:
+`PERMISSION_META` holds the label, description, and category of each permission for the roles page. It `satisfies Record<Permission, PermissionMeta>`, so adding an enum member without its metadata is a type error:
 
 ```ts
-export const platformPermissions = [
-  "clubs.review",
-  "clubs.approve",
-  "clubs.reject",
-] as const
+import { Permission, PERMISSION_META } from "@/constants/permissions"
 
-export type PlatformPermissionType =
-  (typeof platformPermissions)[number]
+PERMISSION_META[Permission.EVENTS_CREATE].label // "Create events"
+```
+
+Name new permissions `area.action`, matching the existing values.
+
+`PlatformPermissionType` is still a string alias. A future platform catalog can follow the same pattern:
+
+```ts
+export enum PlatformPermission {
+  CLUBS_REVIEW = "clubs.review",
+  CLUBS_APPROVE = "clubs.approve",
+  CLUBS_REJECT = "clubs.reject",
+}
 ```
 
 Do this when the permission names settle. A partial catalog that omits active permissions causes more confusion than the current string type.

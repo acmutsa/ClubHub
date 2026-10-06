@@ -1,7 +1,7 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { clubs } from "@/db/schema";
-import { clubCategories } from "@/config/constants";
+import { clubCategories } from "@/constants/club-categories";
 import { hexColorSchema, idSchema, paginationSchema } from "@/lib/validators/common";
 
 

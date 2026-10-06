@@ -1,7 +1,8 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { addresses } from "@/db/schema";
-import { countries, usStates } from "@/config/constants";
+import { countries } from "@/constants/countries";
+import { usStates } from "@/constants/us-states";
 
 // The database stores the 2-letter country and state 
 const countryCodes = countries.map((country) => country.code);

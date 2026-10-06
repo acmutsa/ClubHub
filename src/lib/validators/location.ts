@@ -1,7 +1,7 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { locations } from "@/db/schema";
-import { buildings } from "@/config/constants";
+import { buildings } from "@/constants/buildings";
 
 const buildingNames = buildings.map((building) => building.name);
 const buildingCodes = buildings.map((building) => building.code);

@@ -2,14 +2,14 @@ import "dotenv/config";
 import { drizzle } from "drizzle-orm/libsql";
 
 import { clubRoles, clubs, globalRoles } from "@/db/schema";
-import { permission } from "@/config/constants";
+import { ALL_PERMISSIONS, Permission } from "@/constants/permissions";
 
 
-const GLOBAL_ROLES = ["MEMBER", "ADMIN"];
+const GLOBAL_ROLES = ["USER", "ADMIN"];
 
 const SYSTEM_CLUB_ROLES = [
-  { name: "MEMBER", description: "Default role for club members", permissions: ["overview"], color: "#71717a" },
-  { name: "ADMIN", description: "Full access to the club", permissions: [...permission], color: "#3b82f6" },
+  { name: "MEMBER", description: "Default role for club members", permissions: [Permission.DASHBOARD_VIEW], color: "#71717a" },
+  { name: "OWNER", description: "Full access to the club", permissions: ALL_PERMISSIONS, color: "#3b82f6" },
 ];
 
 async function main() {

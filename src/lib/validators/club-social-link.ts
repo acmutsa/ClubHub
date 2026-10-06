@@ -1,7 +1,7 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { clubSocialLinks } from "@/db/schema";
-import { socialPlatform } from "@/config/constants";
+import { socialPlatform } from "@/constants/social-platforms";
 import { idSchema } from "@/lib/validators/common";
 
 

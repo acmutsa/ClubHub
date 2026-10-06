@@ -1,15 +1,11 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { userProfiles } from "@/db/schema";
-import {
-  countries,
-  ethnicityOptions,
-  genderOptions,
-  majorOptions,
-  raceOptions,
-  schoolOptions,
-  shirtSizeOptions,
-} from "@/config/constants";
+import { countries } from "@/constants/countries";
+import { ethnicityOptions, genderOptions, raceOptions } from "@/constants/demographics";
+import { majorOptions } from "@/constants/majors";
+import { schoolOptions } from "@/constants/schools";
+import { shirtSizeOptions } from "@/constants/shirt-sizes";
 import { idSchema, paginationSchema } from "@/lib/validators/common";
 
 

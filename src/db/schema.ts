@@ -10,6 +10,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { user } from "@/db/auth-schema";
+import type { Permission } from "@/constants/permissions";
 import { sql, relations } from "drizzle-orm";
 
 
@@ -113,9 +114,9 @@ export const clubRoles = sqliteTable( "club_roles", {
     clubId: text("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     description: text("description"),
-    permissions: text("permissions", { mode: "json" }).$type<string[]>().notNull(),
+    permissions: text("permissions", { mode: "json" }).$type<Permission[]>().notNull(),
     color: text("color").notNull().default("#71717a"),
-    // MEMBER and ADMIN: cannot be deleted or renamed
+    // MEMBER and OWNER: cannot be deleted or renamed
     isSystem: integer("is_system", { mode: "boolean" }).notNull().default(false),
     ...timestamps,
   },

@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
-// Platform-wide roles (e.g. MEMBER, ADMIN); user.role must be one of these rows
+// Platform-wide roles (e.g. USER, ADMIN); user.role must be one of these rows
 export const globalRoles = sqliteTable("global_roles", {
   role: text("role").primaryKey(),
 });
@@ -15,7 +15,7 @@ export const user = sqliteTable("user", {
   image: text("image"),
   role: text("role")
     .notNull()
-    .default("MEMBER")
+    .default("USER")
     .references(() => globalRoles.role, { onDelete: "restrict", onUpdate: "cascade" }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .defaultNow()
