@@ -2,6 +2,7 @@ import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { clubRoles } from "@/db/schema";
 import { Permission } from "@/constants/permissions";
+import { MEMBER_ROLE_POSITION, OWNER_ROLE_POSITION } from "@/constants/role-positions";
 import { hexColorSchema, idSchema } from "@/lib/validators/common";
 
 
@@ -13,8 +14,10 @@ export const createClubRoleSchema = z.object({
   description: z.string().trim().max(500, "Description is too long").nullable(),
   permissions: z.array(z.enum(Permission, { message: "Select a permission" })).min(1, "Select at least one permission"),
   color: hexColorSchema,
+  // Custom roles sit strictly between MEMBER and OWNER
+  position: z.number().int("Position must be a whole number").gt(MEMBER_ROLE_POSITION, "Position must be above Member").lt(OWNER_ROLE_POSITION, "Position must be below Owner"),
 });
 
-// System roles (MEMBER, OWNER) cannot be renamed
+// System roles (MEMBER, OWNER) cannot be renamed or moved
 export const updateClubRoleSchema = createClubRoleSchema.omit({ clubId: true }).partial();
 

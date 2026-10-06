@@ -116,6 +116,8 @@ export const clubRoles = sqliteTable( "club_roles", {
     description: text("description"),
     permissions: text("permissions", { mode: "json" }).$type<Permission[]>().notNull(),
     color: text("color").notNull().default("#71717a"),
+    // higher outranks lower; a member can only act on members whose role is below their own
+    position: integer("position").notNull().default(0),
     // MEMBER and OWNER: cannot be deleted or renamed
     isSystem: integer("is_system", { mode: "boolean" }).notNull().default(false),
     ...timestamps,
@@ -125,6 +127,8 @@ export const clubRoles = sqliteTable( "club_roles", {
     unique("check_club_roles_unique").on(table.clubId, table.name),
     // role can only be used in its own club
     unique("check_club_roles_club_id_unique").on(table.clubId, table.id),
+    index("club_roles_position_idx").on(table.clubId, table.position),
+    check("club_roles_position", sql`${table.position} >= 0`),
   ],
 );
 
