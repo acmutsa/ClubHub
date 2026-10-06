@@ -132,11 +132,24 @@ export const clubRoles = sqliteTable( "club_roles", {
   ],
 );
 
+
+export const clubTitles = sqliteTable( "club_titles", {
+    id: uuid("id").primaryKey(),
+    clubId: text("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    ...timestamps,
+  },
+
+  (table) => [
+    unique("check_club_titles_unique").on(table.clubId, table.name),
+  ],
+);
+
 export const clubMemberships = sqliteTable( "club_memberships", {
     userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     clubId: text("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
     roleId: text("role_id").notNull(),
-    title: text("title").notNull().default("Member"),
+    titleId: text("title_id").notNull(),
     applicationStatus: text("application_status", { length: 10, enum: ["pending", "approved", "suspended"] }).notNull().default("approved"),
     status: text("status", { length: 10, enum: ["active", "inactive"] }).notNull().default("active"),
     inactiveAt: integer("inactive_at", { mode: "timestamp" }),
@@ -147,10 +160,13 @@ export const clubMemberships = sqliteTable( "club_memberships", {
   (table) => [
     primaryKey({ columns: [table.userId, table.clubId] }),
     index("club_member_idx").on(table.clubId, table.userId),
-    // the role must belong to the same club.
     foreignKey({
       columns: [table.clubId, table.roleId],
       foreignColumns: [clubRoles.clubId, clubRoles.id],
+    }).onDelete("no action"),
+    foreignKey({
+      columns: [table.clubId, table.titleId],
+      foreignColumns: [clubTitles.clubId, clubTitles.id],
     }).onDelete("no action"),
     // inactive_at is set only while the membership is inactive
     check("club_memberships_inactive_at", sql`(${table.status} = 'active' AND ${table.inactiveAt} IS NULL) OR (${table.status} = 'inactive' AND ${table.inactiveAt} IS NOT NULL)`),
@@ -341,6 +357,7 @@ export const clubsRelationships = relations(clubs, ({ one, many }) => ({
   socialLinks: many(clubSocialLinks),
   sponsors: many(clubSponsors),
   roles: many(clubRoles),
+  titles: many(clubTitles),
   memberships: many(clubMemberships),
   subOrgs: many(subOrgs),
   eventCategories: many(eventCategories),
@@ -364,10 +381,17 @@ export const clubRolesRelationships = relations(clubRoles, ({ one, many }) => ({
   memberships: many(clubMemberships),
 }));
 
+export const clubTitlesRelationships = relations(clubTitles, ({ one, many }) => ({
+  club: one(clubs, { fields: [clubTitles.clubId], references: [clubs.id] }),
+
+  memberships: many(clubMemberships),
+}));
+
 export const clubMembershipsRelationships = relations(clubMemberships, ({ one }) => ({
   user: one(user, { fields: [clubMemberships.userId], references: [user.id] }),
   club: one(clubs, { fields: [clubMemberships.clubId], references: [clubs.id] }),
   role: one(clubRoles, { fields: [clubMemberships.roleId], references: [clubRoles.id] }),
+  title: one(clubTitles, { fields: [clubMemberships.titleId], references: [clubTitles.id] }),
 }));
 
 export const subOrgsRelationships = relations(subOrgs, ({ one, many }) => ({

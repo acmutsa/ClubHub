@@ -28,6 +28,11 @@ import {
   createClubSponsorSchema,
   updateClubSponsorSchema,
 } from "@/lib/validators/club-sponsor";
+import {
+  clubTitleSchema,
+  createClubTitleSchema,
+  updateClubTitleSchema,
+} from "@/lib/validators/club-title";
 
 // Club
 export type Club = z.infer<typeof clubSchema>;
@@ -57,3 +62,8 @@ export type UpdateClubSocialLinkInput = z.infer<typeof updateClubSocialLinkSchem
 export type ClubSponsor = z.infer<typeof clubSponsorSchema>;
 export type CreateClubSponsorInput = z.infer<typeof createClubSponsorSchema>;
 export type UpdateClubSponsorInput = z.infer<typeof updateClubSponsorSchema>;
+
+// Club title
+export type ClubTitle = z.infer<typeof clubTitleSchema>;
+export type CreateClubTitleInput = z.infer<typeof createClubTitleSchema>;
+export type UpdateClubTitleInput = z.infer<typeof updateClubTitleSchema>;

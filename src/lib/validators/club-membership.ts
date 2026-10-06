@@ -13,14 +13,14 @@ export const createClubMembershipSchema = z.object({
 export const insertClubMembershipSchema = createClubMembershipSchema.extend({
   userId: idSchema,
   roleId: idSchema,
-  title: z.string().trim().max(100, "Title is too long").default("Member"),
+  titleId: idSchema.nullable().default(null),
 });
 
 export const updateClubMembershipSchema = z.object({
   roleId: idSchema,
   applicationStatus: z.enum(clubMemberships.applicationStatus.enumValues),
   status: z.enum(clubMemberships.status.enumValues),
-  title: z.string().trim().max(100, "Title is too long").default("Member"),
+  titleId: idSchema.nullable(),
   inactiveAt: z.date({ message: "Inactive date must be a date" }).nullable(),
 }).partial()
   .refine((membership) => membership.inactiveAt === undefined || membership.status !== undefined, { message: "Status is required when setting the inactive date", path: ["status"] })
