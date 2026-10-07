@@ -22,8 +22,7 @@ export default async function Layout({
         clubName={context.club.name}
         clubId={clubId}
         userType={
-          context.membership.role === "ADMIN" ||
-          context.membership.role === "SUPER_ADMIN"
+          context.permissions.length > 0
             ? "admin"
             : "member"
         }

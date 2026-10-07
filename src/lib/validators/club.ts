@@ -7,6 +7,11 @@ import { hexColorSchema, idSchema, paginationSchema } from "@/lib/validators/com
 
 export const clubSchema = createSelectSchema(clubs);
 
+export const createClubFormSchema = z.object({
+  name: z.string().trim().min(1, "Club name is required.").max(100),
+  description: z.string().trim().min(1, "Description is required.").max(2000),
+});
+
 export const createClubSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name is too long"),
   slug: z.string().trim().min(1, "Slug is required").max(100, "Slug is too long").regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and single hyphens"),

@@ -10,7 +10,7 @@ export default async function NewEventPage({
 
   const [eventTypes, locations] = await Promise.all([
     listClubEventTypes(clubId),
-    listLocations(),
+    listLocations(clubId),
   ]);
 
   return (

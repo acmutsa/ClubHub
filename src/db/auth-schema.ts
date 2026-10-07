@@ -1,9 +1,15 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+import { GLOBAL_ROLES } from "@/constants/roles";
 
-// Platform-wide roles (e.g. USER, ADMIN); user.role must be one of these rows
-export const globalRoles = sqliteTable("global_roles", {
-  role: text("role").primaryKey(),
-});
+const timestamps = {
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`).$onUpdate(() => new Date()),
+};
+
+const softDelete = {
+  deletedAt: integer("deleted_at", { mode: "timestamp" }).default(sql`NULL`),
+};
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -13,36 +19,23 @@ export const user = sqliteTable("user", {
     .default(false)
     .notNull(),
   image: text("image"),
-  role: text("role")
+  role: text("role", { enum: GLOBAL_ROLES })
     .notNull()
-    .default("USER")
-    .references(() => globalRoles.role, { onDelete: "restrict", onUpdate: "cascade" }),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .defaultNow()
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-  // Soft delete: the row stays for stats and history
-  deletedAt: integer("deleted_at", { mode: "timestamp" }),
+    .default("USER"),
+  ...timestamps,
+  ...softDelete,
 });
 
 export const session = sqliteTable("session", {
   id: text("id").primaryKey(),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
   token: text("token").notNull().unique(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .defaultNow()
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  ...timestamps,
 });
 
 export const account = sqliteTable("account", {
@@ -63,12 +56,8 @@ export const account = sqliteTable("account", {
   }),
   scope: text("scope"),
   password: text("password"),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .defaultNow()
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
+  ...timestamps,
+  ...softDelete,
 });
 
 export const verification = sqliteTable("verification", {
@@ -76,11 +65,5 @@ export const verification = sqliteTable("verification", {
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .defaultNow()
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
+  ...timestamps, 
 });

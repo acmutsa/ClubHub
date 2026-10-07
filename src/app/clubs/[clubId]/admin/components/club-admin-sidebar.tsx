@@ -11,17 +11,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { AdminClub } from "@/lib/types/club";
+import { Permission } from "@/constants/permissions";
 import { Calendar, Home, Users } from "lucide-react";
 import Link from "next/link";
 
 interface ClubAdminSidebarProps {
-  club: AdminClub;
+  permissions: Permission[];
   className?: string;
 }
 
 export const ClubAdminSidebar = ({
-  club,
+  permissions,
   className,
 }: ClubAdminSidebarProps) => {
   return (
@@ -36,28 +36,36 @@ export const ClubAdminSidebar = ({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/admin`}>
+                  <Link href="/admin">
                     <Home />
                     <span>Overview</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
+              {permissions.includes(Permission.MEMBERS_VIEW) && <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/admin/members`}>
+                  <Link href="/admin/members">
                     <Users />
                     <span>Members</span>
                   </Link>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
+              </SidebarMenuItem>}
+              {permissions.includes(Permission.EVENTS_CREATE) && !permissions.includes(Permission.EVENTS_VIEW) && <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/admin/events`}>
+                  <Link href="/admin/events/new">
+                    <Calendar />
+                    <span>New event</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>}
+              {permissions.includes(Permission.EVENTS_VIEW) && <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/admin/events">
                     <Calendar />
                     <span>Events</span>
                   </Link>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
+              </SidebarMenuItem>}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

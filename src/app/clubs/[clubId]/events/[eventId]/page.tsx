@@ -10,13 +10,11 @@ export default async function EventDetailsPage({
   params,
 }: EventDetailsPageProps) {
   const { clubId, eventId } = await params;
-  const eventIdNumber = parseInt(eventId, 10);
-
-  if (isNaN(eventIdNumber)) {
+  if (!eventId) {
     notFound();
   }
 
-  const event = await getVisibleClubEventById(clubId, eventIdNumber);
+  const event = await getVisibleClubEventById(clubId, eventId);
 
   if (!event) {
     notFound();
