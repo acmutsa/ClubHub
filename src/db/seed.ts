@@ -1,8 +1,9 @@
-import "dotenv/config";
 import { drizzle } from "drizzle-orm/libsql";
 
+import { env } from "@/env";
+
 import { clubRoles, clubs, globalRoles } from "@/db/schema";
-import { ALL_PERMISSIONS, Permission } from "@/constants/permissions";
+import { ALL_PERMISSIONS } from "@/constants/permissions";
 import { MEMBER_ROLE_POSITION, OWNER_ROLE_POSITION } from "@/constants/role-positions";
 
 
@@ -16,8 +17,8 @@ const SYSTEM_CLUB_ROLES = [
 async function main() {
   const db = drizzle({
     connection: {
-      url: process.env.TURSO_DATABASE_URL!,
-      authToken: process.env.TURSO_AUTH_TOKEN!,
+      url: env.TURSO_DATABASE_URL,
+      authToken: env.TURSO_AUTH_TOKEN,
     },
   });
 
