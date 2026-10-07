@@ -15,15 +15,13 @@ export default async function Layout({
   const context = await requireAuthContext();
 
   if (!matchesClubRoute(context.club, clubId)) notFound();
-  const isClubAdmin =
-    context.membership.role === "ADMIN" ||
-    context.membership.role === "SUPER_ADMIN";
+  const isClubAdmin = context.permissions.length > 0;
 
   if (!isClubAdmin) forbidden();
 
   return (
     <SidebarProvider>
-      <ClubAdminSidebar club={context.club} className="relative" />
+      <ClubAdminSidebar permissions={context.permissions} className="relative" />
       <SidebarInset>
         <main>{children}</main>
       </SidebarInset>

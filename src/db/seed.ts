@@ -1,17 +1,8 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/libsql";
 
-import { clubRoles, clubs, globalRoles } from "@/db/schema";
-import { ALL_PERMISSIONS, Permission } from "@/constants/permissions";
-import { MEMBER_ROLE_POSITION, OWNER_ROLE_POSITION } from "@/constants/role-positions";
-
-
-const GLOBAL_ROLES = ["USER", "ADMIN"];
-
-const SYSTEM_CLUB_ROLES = [
-  { name: "MEMBER", description: "Default role for club members", permissions: [], color: "#71717a", position: MEMBER_ROLE_POSITION },
-  { name: "OWNER", description: "Full access to the club", permissions: ALL_PERMISSIONS, color: "#3b82f6", position: OWNER_ROLE_POSITION },
-];
+import { clubRoles, clubTitles, clubs } from "@/db/schema";
+import { SYSTEM_CLUB_ROLES } from "@/constants/roles";
 
 async function main() {
   const db = drizzle({
@@ -21,14 +12,13 @@ async function main() {
     },
   });
 
-  await db.insert(globalRoles).values(GLOBAL_ROLES.map((role) => ({ role }))).onConflictDoNothing();
-
   const existingClubs = await db.select({ id: clubs.id }).from(clubs);
   if (existingClubs.length > 0) {
     await db
       .insert(clubRoles)
-      .values(existingClubs.flatMap((club) => SYSTEM_CLUB_ROLES.map((role) => ({ ...role, clubId: club.id, isSystem: true }))))
+      .values(existingClubs.flatMap((club) => SYSTEM_CLUB_ROLES.map((role) => ({ ...role, permissions: [...role.permissions], clubId: club.id }))))
       .onConflictDoNothing();
+    await db.insert(clubTitles).values(existingClubs.map((club) => ({ clubId: club.id, name: "Member" }))).onConflictDoNothing();
   }
 }
 

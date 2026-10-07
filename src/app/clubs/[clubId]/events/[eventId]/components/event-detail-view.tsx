@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Calendar,
   Clock,
@@ -24,44 +25,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface EventDetailViewProps {
-  event: {
-    id: number;
-    title: string;
-    description: string;
-    startAt: Date;
-    endAt: Date;
-    checkInStartAt: Date;
-    checkInEndAt: Date;
-    points: number;
-    hidden: boolean;
-    club: {
-      id: string;
-      name: string;
-      description: string;
-    };
-    eventTypes: {
-      id: number;
-      name: string;
-      description: string;
-      color: string;
-    };
-    location: {
-      id: number;
-      name: string;
-      roomNumber: string;
-      building: {
-        id: number;
-        name: string;
-        code: string;
-      };
-    } | null;
-    thumbnail: {
-      id: number;
-      url: string;
-    } | null;
-  };
-}
+import type { AdminEvent } from "@/lib/types/event";
+
+type EventDetailViewProps = { event: AdminEvent };
 
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -89,10 +55,10 @@ export function EventDetailView({ event }: EventDetailViewProps) {
   const calendarEvent = {
     title: event.title,
     description: event.description,
-    start: event.startAt,
-    end: event.endAt,
+    start: event.startsAt,
+    end: event.endsAt,
     location: event.location
-      ? `${event.location.building.name}, ${event.location.name} (${event.location.building.code} ${event.location.roomNumber})`
+      ? `${event.location.building}, ${event.location.roomName ?? event.location.roomNumber} (${event.location.code} ${event.location.roomNumber})`
       : undefined,
   };
 
@@ -125,12 +91,12 @@ export function EventDetailView({ event }: EventDetailViewProps) {
       <main className="mx-auto max-w-6xl px-4 py-8 md:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
-          <Link href={`/`} className="transition-colors hover:text-foreground">
+          <Link href="/" className="transition-colors hover:text-foreground">
             {event.club.name}
           </Link>
           <ChevronRight className="size-4" />
           <Link
-            href={`/events`}
+            href="/events"
             className="transition-colors hover:text-foreground"
           >
             Events
@@ -142,13 +108,14 @@ export function EventDetailView({ event }: EventDetailViewProps) {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="space-y-8 lg:col-span-2">
-            {/* Hero Image */}
+            {/* Event thumbnail */}
             <div className="relative aspect-video overflow-hidden rounded-xl border bg-muted">
               {event.thumbnail ? (
-                <img
-                  src={event.thumbnail.url}
-                  alt={event.title}
-                  className="h-full w-full object-cover"
+                <Image
+                  src="/event-thumbnail-placeholder.svg"
+                  alt={`Thumbnail preview for ${event.title}`}
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
@@ -163,12 +130,12 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                 <Badge
                   variant="outline"
                   style={{
-                    backgroundColor: `${event.eventTypes.color}15`,
-                    color: event.eventTypes.color,
-                    borderColor: `${event.eventTypes.color}40`,
+                    backgroundColor: `${event.category.color}15`,
+                    color: event.category.color,
+                    borderColor: `${event.category.color}40`,
                   }}
                 >
-                  {event.eventTypes.name}
+                  {event.category.name}
                 </Badge>
                 {event.points > 0 && (
                   <Badge variant="secondary" className="gap-1">
@@ -186,17 +153,17 @@ export function EventDetailView({ event }: EventDetailViewProps) {
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="size-4" />
-                  <span>{formatDate(event.startAt)}</span>
+                  <span>{formatDate(event.startsAt)}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Clock className="size-4" />
-                  <span>{formatTimeRange(event.startAt, event.endAt)}</span>
+                  <span>{formatTimeRange(event.startsAt, event.endsAt)}</span>
                 </div>
                 {event.location && (
                   <div className="flex items-center gap-1.5">
                     <MapPin className="size-4" />
                     <span>
-                      {event.location.building.code} {event.location.roomNumber}
+                      {event.location.code} {event.location.roomNumber}
                     </span>
                   </div>
                 )}
@@ -224,7 +191,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                   <div>
                     <p className="font-medium">Check-in opens</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatTime(event.checkInStartAt)}
+                      {formatTime(event.checkinStartsAt)}
                     </p>
                   </div>
                 </div>
@@ -235,7 +202,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                   <div>
                     <p className="font-medium">Event starts</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatTime(event.startAt)}
+                      {formatTime(event.startsAt)}
                     </p>
                   </div>
                 </div>
@@ -246,7 +213,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                   <div>
                     <p className="font-medium">Event ends</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatTime(event.endAt)}
+                      {formatTime(event.endsAt)}
                     </p>
                   </div>
                 </div>
@@ -267,7 +234,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Date</p>
-                      <p className="font-medium">{formatDate(event.startAt)}</p>
+                      <p className="font-medium">{formatDate(event.startsAt)}</p>
                     </div>
                   </div>
 
@@ -278,7 +245,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                     <div>
                       <p className="text-sm text-muted-foreground">Time</p>
                       <p className="font-medium">
-                        {formatTimeRange(event.startAt, event.endAt)}
+                        {formatTimeRange(event.startsAt, event.endsAt)}
                       </p>
                     </div>
                   </div>
@@ -291,7 +258,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                       <p className="text-sm text-muted-foreground">Location</p>
                       {event.location ? (
                         <p className="font-medium">
-                          {event.location.building.name}, {event.location.name}
+                          {event.location.building}, {event.location.roomName ?? event.location.roomNumber}
                         </p>
                       ) : (
                         <p className="text-muted-foreground">TBA</p>

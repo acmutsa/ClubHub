@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { getClubEventById } from "@/app/clubs/[clubId]/queries";
 import {
   createEventFormSchema,
   eventFiltersSchema,
@@ -26,6 +27,7 @@ import {
 
 // Event
 export type Event = z.infer<typeof eventSchema>;
+export type AdminEvent = NonNullable<Awaited<ReturnType<typeof getClubEventById>>>;
 export type CreateEventInput = z.infer<typeof createEventFormSchema>;
 export type InsertEventInput = z.infer<typeof insertEventFormSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;

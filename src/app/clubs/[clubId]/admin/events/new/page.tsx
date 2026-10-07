@@ -10,7 +10,7 @@ export default async function NewEventPage({
 
   const [eventTypes, locations] = await Promise.all([
     listClubEventTypes(clubId),
-    listLocations(),
+    listLocations(clubId),
   ]);
 
   return (
@@ -33,7 +33,6 @@ export default async function NewEventPage({
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-7xl p-8">
           <NewEventForm
-            clubId={clubId}
             eventTypes={eventTypes}
             locations={locations}
           />

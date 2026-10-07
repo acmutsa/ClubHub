@@ -13,14 +13,14 @@ export const createClubMembershipSchema = z.object({
 export const insertClubMembershipSchema = createClubMembershipSchema.extend({
   userId: idSchema,
   roleId: idSchema,
-  titleId: idSchema.nullable().default(null),
+  titleId: idSchema,
 });
 
 export const updateClubMembershipSchema = z.object({
   roleId: idSchema,
   applicationStatus: z.enum(clubMemberships.applicationStatus.enumValues),
   status: z.enum(clubMemberships.status.enumValues),
-  titleId: idSchema.nullable(),
+  titleId: idSchema,
   inactiveAt: z.date({ message: "Inactive date must be a date" }).nullable(),
 }).partial()
   .refine((membership) => membership.inactiveAt === undefined || membership.status !== undefined, { message: "Status is required when setting the inactive date", path: ["status"] })
@@ -35,4 +35,3 @@ export const clubMembershipFiltersSchema = paginationSchema.extend({
   sortBy: z.enum(["name", "role"]).default("name"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });
-
