@@ -4,20 +4,21 @@ import { type FieldPath, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import type { InsertEventInput } from "@/lib/types/event";
+import type { z } from "zod";
 import {
-  createEventFormSchema,
-  type CreateEventInput,
+  insertEventFormSchema,
 } from "@/lib/validators/event";
 import { createEventAction } from "@/app/clubs/[clubId]/admin/events/actions";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 // import { toast } from "sonner";
 
@@ -49,19 +50,17 @@ import {
 } from "@/components/ui/card";
 
 interface EventType {
-  id: number;
+  id: string;
   name: string;
   color: string;
 }
 
 interface Location {
-  id: number;
-  name: string;
+  id: string;
   roomNumber: string;
-  building: {
-    name: string;
-    code: string;
-  };
+  roomName: string | null;
+  building: string;
+  code: string;
 }
 
 interface NewEventFormProps {
@@ -79,14 +78,16 @@ export function NewEventForm({
 }: NewEventFormProps) {
   const router = useRouter();
 
-  const form = useForm<CreateEventInput>({
-    resolver: zodResolver(createEventFormSchema),
+  const form = useForm<z.input<typeof insertEventFormSchema>, unknown, InsertEventInput>({
+    resolver: zodResolver(insertEventFormSchema),
     mode: "onSubmit",
     defaultValues: {
       title: "",
       description: "",
       points: 0,
-      hidden: false,
+      subOrgId: null,
+      addressId: null,
+      thumbnailFileId: null,
       locationId: null,
     },
   });
@@ -96,7 +97,7 @@ export function NewEventForm({
     Awaited<ReturnType<typeof createEventAction>> | null
   >(null);
 
-  function onSubmit(values: CreateEventInput) {
+  function onSubmit(values: InsertEventInput) {
     setActionResult(null);
 
     startTransition(async () => {
@@ -104,7 +105,7 @@ export function NewEventForm({
       setActionResult(result);
 
       if (result.ok) {
-        router.push(`/clubs/${clubId}/admin/events`);
+        router.push("/admin/events");
         return;
       }
 
@@ -114,7 +115,7 @@ export function NewEventForm({
         const message = messages?.[0];
 
         if (message) {
-          form.setError(field as FieldPath<CreateEventInput>, { message });
+          form.setError(field as FieldPath<z.input<typeof insertEventFormSchema>>, { message });
         }
       }
     });
@@ -174,18 +175,18 @@ export function NewEventForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="eventTypeId">Event Type</FieldLabel>
+              <FieldLabel htmlFor="categoryId">Event Type</FieldLabel>
               <Select
                 onValueChange={(value) =>
-                  form.setValue("eventTypeId", parseInt(value), {
+                  form.setValue("categoryId", value, {
                     shouldValidate: true,
                   })
                 }
               >
                 <SelectTrigger
-                  id="eventTypeId"
+                  id="categoryId"
                   className={cn(
-                    form.formState.errors.eventTypeId &&
+                    form.formState.errors.categoryId &&
                       "border-destructive focus-visible:ring-destructive"
                   )}
                 >
@@ -206,7 +207,7 @@ export function NewEventForm({
                 </SelectContent>
               </Select>
               <FieldError>
-                {form.formState.errors.eventTypeId?.message}
+                {form.formState.errors.categoryId?.message}
               </FieldError>
             </Field>
           </FieldGroup>
@@ -225,25 +226,25 @@ export function NewEventForm({
               <Field>
                 <FieldLabel>Start Date & Time</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("startAt")}
+                  value={form.watch("startsAt")}
                   onChange={(date) =>
-                    form.setValue("startAt", date, { shouldValidate: true })
+                    form.setValue("startsAt", date, { shouldValidate: true })
                   }
-                  error={!!form.formState.errors.startAt}
+                  error={!!form.formState.errors.startsAt}
                 />
-                <FieldError>{form.formState.errors.startAt?.message}</FieldError>
+                <FieldError>{form.formState.errors.startsAt?.message}</FieldError>
               </Field>
 
               <Field>
                 <FieldLabel>End Date & Time</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("endAt")}
+                  value={form.watch("endsAt")}
                   onChange={(date) =>
-                    form.setValue("endAt", date, { shouldValidate: true })
+                    form.setValue("endsAt", date, { shouldValidate: true })
                   }
-                  error={!!form.formState.errors.endAt}
+                  error={!!form.formState.errors.endsAt}
                 />
-                <FieldError>{form.formState.errors.endAt?.message}</FieldError>
+                <FieldError>{form.formState.errors.endsAt?.message}</FieldError>
               </Field>
             </div>
 
@@ -251,34 +252,34 @@ export function NewEventForm({
               <Field>
                 <FieldLabel>Check-in Start</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("checkInStartAt")}
+                  value={form.watch("checkinStartsAt")}
                   onChange={(date) =>
-                    form.setValue("checkInStartAt", date, {
+                    form.setValue("checkinStartsAt", date, {
                       shouldValidate: true,
                     })
                   }
-                  error={!!form.formState.errors.checkInStartAt}
+                  error={!!form.formState.errors.checkinStartsAt}
                 />
                 <FieldDescription>
                   When attendees can start checking in
                 </FieldDescription>
                 <FieldError>
-                  {form.formState.errors.checkInStartAt?.message}
+                  {form.formState.errors.checkinStartsAt?.message}
                 </FieldError>
               </Field>
 
               <Field>
                 <FieldLabel>Check-in End</FieldLabel>
                 <DateTimePicker
-                  value={form.watch("checkInEndAt")}
+                  value={form.watch("checkinEndsAt")}
                   onChange={(date) =>
-                    form.setValue("checkInEndAt", date, { shouldValidate: true })
+                    form.setValue("checkinEndsAt", date, { shouldValidate: true })
                   }
-                  error={!!form.formState.errors.checkInEndAt}
+                  error={!!form.formState.errors.checkinEndsAt}
                 />
                 <FieldDescription>When check-in closes</FieldDescription>
                 <FieldError>
-                  {form.formState.errors.checkInEndAt?.message}
+                  {form.formState.errors.checkinEndsAt?.message}
                 </FieldError>
               </Field>
             </div>
@@ -302,7 +303,7 @@ export function NewEventForm({
                 onValueChange={(value) =>
                   form.setValue(
                     "locationId",
-                    value === "none" ? null : parseInt(value),
+                    value === "none" ? null : value,
                     { shouldValidate: true }
                   )
                 }
@@ -317,8 +318,8 @@ export function NewEventForm({
                       key={location.id}
                       value={location.id.toString()}
                     >
-                      {location.building.code} {location.roomNumber} -{" "}
-                      {location.name}
+                      {location.code} {location.roomNumber} -{" "}
+                      {location.roomName ?? location.roomNumber}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -328,44 +329,25 @@ export function NewEventForm({
               </FieldDescription>
             </Field>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Field>
-                <FieldLabel htmlFor="points">Points</FieldLabel>
-                <Input
-                  id="points"
-                  type="number"
-                  min={0}
-                  {...form.register("points", { valueAsNumber: true })}
-                  className={cn(
-                    form.formState.errors.points &&
-                      "border-destructive focus-visible:ring-destructive"
-                  )}
+            <Field>
+              <FieldLabel>Thumbnail</FieldLabel>
+              <div className="flex items-center gap-4 rounded-md border border-dashed p-3">
+                <Image
+                  src="/event-thumbnail-placeholder.svg"
+                  alt="Event thumbnail placeholder"
+                  width={160}
+                  height={90}
+                  className="rounded object-cover"
                 />
-                <FieldDescription>
-                  Points awarded for attending this event
-                </FieldDescription>
-                <FieldError>{form.formState.errors.points?.message}</FieldError>
-              </Field>
+                <FieldDescription>Thumbnail upload is coming soon.</FieldDescription>
+              </div>
+            </Field>
 
-              <Field
-                orientation="horizontal"
-                className="items-center justify-between rounded-lg border p-4"
-              >
-                <div className="space-y-0.5">
-                  <FieldLabel htmlFor="hidden">Hidden Event</FieldLabel>
-                  <FieldDescription>
-                    Hidden events won&apos;t appear to members
-                  </FieldDescription>
-                </div>
-                <Switch
-                  id="hidden"
-                  checked={form.watch("hidden")}
-                  onCheckedChange={(checked) =>
-                    form.setValue("hidden", checked)
-                  }
-                />
-              </Field>
-            </div>
+            <Field>
+              <FieldLabel htmlFor="points">Points</FieldLabel>
+              <Input id="points" type="number" min={0} {...form.register("points", { valueAsNumber: true })} />
+              <FieldError>{form.formState.errors.points?.message}</FieldError>
+            </Field>
           </FieldGroup>
         </CardContent>
       </Card>
@@ -375,7 +357,7 @@ export function NewEventForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push(`/clubs/${clubId}/admin/events`)}
+          onClick={() => router.push("/admin/events")}
         >
           Cancel
         </Button>

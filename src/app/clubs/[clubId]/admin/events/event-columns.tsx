@@ -1,21 +1,12 @@
 "use client";
 
-import { AdminEvent } from "@/lib/types/event";
+import type { AdminEvent } from "@/lib/types/event";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import {
-  Calendar,
-  MapPin,
-  Eye,
-  EyeOff,
-  ImageIcon,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
-import Image from "next/image";
+import { Calendar, MapPin, ImageIcon, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 // Sortable column header component
@@ -60,8 +51,8 @@ export const eventColumns: ColumnDef<AdminEvent>[] = [
         <div className="relative h-12 w-20 overflow-hidden rounded-md bg-muted">
           {thumbnail ? (
             <Image
-              src={thumbnail.url}
-              alt={row.original.title}
+              src="/event-thumbnail-placeholder.svg"
+              alt={`Thumbnail preview for ${row.original.title}`}
               fill
               className="object-cover"
             />
@@ -88,14 +79,14 @@ export const eventColumns: ColumnDef<AdminEvent>[] = [
     ),
   },
   {
-    accessorKey: "eventTypes",
+    accessorKey: "category",
     header: "Type",
     filterFn: (row, id, value) => {
-      const eventType = row.original.eventTypes;
+      const eventType = row.original.category;
       return String(eventType.id) === value;
     },
     cell: ({ row }) => {
-      const eventType = row.original.eventTypes;
+      const eventType = row.original.category;
       return (
         <Badge
           variant="outline"
@@ -111,12 +102,12 @@ export const eventColumns: ColumnDef<AdminEvent>[] = [
     },
   },
   {
-    accessorKey: "startAt",
+    accessorKey: "startsAt",
     header: ({ column }) => (
       <SortableHeader column={column}>Date & Time</SortableHeader>
     ),
     cell: ({ row }) => {
-      const startDate = row.original.startAt;
+      const startDate = row.original.startsAt;
       return (
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4" />
@@ -137,7 +128,7 @@ export const eventColumns: ColumnDef<AdminEvent>[] = [
       return (
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="h-4 w-4" />
-          <span>{location.name}</span>
+          <span>{location.building} {location.roomNumber}</span>
         </div>
       );
     },
@@ -153,32 +144,6 @@ export const eventColumns: ColumnDef<AdminEvent>[] = [
         <Badge variant="secondary" className="font-mono">
           {points} pts
         </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "hidden",
-    header: ({ column }) => (
-      <SortableHeader column={column}>Status</SortableHeader>
-    ),
-    filterFn: (row, id, value) => {
-      const isHidden = row.getValue(id) as boolean;
-      if (value === "visible") return !isHidden;
-      if (value === "hidden") return isHidden;
-      return true;
-    },
-    cell: ({ row }) => {
-      const isHidden = row.getValue("hidden") as boolean;
-      return isHidden ? (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <EyeOff className="h-4 w-4" />
-          <span>Hidden</span>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 text-green-600">
-          <Eye className="h-4 w-4" />
-          <span>Visible</span>
-        </div>
       );
     },
   },
