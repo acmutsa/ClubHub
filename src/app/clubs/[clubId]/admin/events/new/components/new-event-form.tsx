@@ -64,14 +64,12 @@ interface Location {
 }
 
 interface NewEventFormProps {
-  clubId: string;
   eventTypes: EventType[];
   locations: Location[];
   className?: string;
 }
 
 export function NewEventForm({
-  clubId,
   eventTypes,
   locations,
   className,
