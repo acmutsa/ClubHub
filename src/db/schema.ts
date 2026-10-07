@@ -284,6 +284,29 @@ export const checkIns = sqliteTable( "check_ins",{
   ],
 );
 
+export const eventPasses = sqliteTable( "event_passes", {
+    id: uuid("id").primaryKey(),
+    token: uuid("token").notNull().unique(),
+    userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    clubId: text("club_id").notNull().references(() => clubs.id, { onDelete: "cascade" }),
+    eventId: text("event_id").notNull(),
+    checkInId: text("check_in_id").references(() => checkIns.id, { onDelete: "set null" }),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+    usedAt: integer("used_at", { mode: "timestamp" }),
+    expiryDate: integer("expiry_date", { mode: "timestamp" }).notNull(), 
+  },
+  (table) => [
+    unique("check_event_passes_user_event_unique").on(table.userId, table.eventId),
+    foreignKey({
+      columns: [table.clubId, table.eventId],
+      foreignColumns: [events.clubId, events.id],
+    }).onDelete("cascade"),
+    index("event_passes_club_idx").on(table.clubId),
+    index("event_passes_event_idx").on(table.eventId),
+    index("event_passes_user_idx").on(table.userId),
+  ],
+);
+
 export const semesters = sqliteTable(
   "semesters",
   {
@@ -334,6 +357,7 @@ export const userRelationships = relations(user, ({ one, many }) => ({
   uploadedFiles: many(files),
   createdClubs: many(clubs),
   checkIns: many(checkIns, { relationName: "checkInUser" }),
+  eventPasses: many(eventPasses),
   recordedCheckIns: many(checkIns, { relationName: "checkInStaff" }),
   createdEvents: many(events, { relationName: "eventCreator" }),
   updatedEvents: many(events, { relationName: "eventUpdater" }),
@@ -364,6 +388,7 @@ export const clubsRelationships = relations(clubs, ({ one, many }) => ({
   events: many(events),
   semesters: many(semesters),
   checkIns: many(checkIns),
+  eventPasses: many(eventPasses),
 }));
 
 export const clubSocialLinksRelationships = relations(clubSocialLinks, ({ one }) => ({
@@ -424,6 +449,7 @@ export const eventsRelationships = relations(events, ({ one, many }) => ({
   updater: one(user, { fields: [events.updatedById], references: [user.id], relationName: "eventUpdater" }),
 
   checkIns: many(checkIns),
+  eventPasses: many(eventPasses),
   notificationLogs: many(notificationLogs),
 }));
 
@@ -432,6 +458,15 @@ export const checkInsRelationships = relations(checkIns, ({ one }) => ({
   event: one(events, { fields: [checkIns.eventId], references: [events.id] }),
   user: one(user, { fields: [checkIns.userId], references: [user.id], relationName: "checkInUser" }),
   checkedInBy: one(user, { fields: [checkIns.checkedInById], references: [user.id], relationName: "checkInStaff" }),
+
+  eventPass: one(eventPasses),
+}));
+
+export const eventPassesRelationships = relations(eventPasses, ({ one }) => ({
+  user: one(user, { fields: [eventPasses.userId], references: [user.id] }),
+  club: one(clubs, { fields: [eventPasses.clubId], references: [clubs.id] }),
+  event: one(events, { fields: [eventPasses.eventId], references: [events.id] }),
+  checkIn: one(checkIns, { fields: [eventPasses.checkInId], references: [checkIns.id] }),
 }));
 
 export const semestersRelationships = relations(semesters, ({ one }) => ({
