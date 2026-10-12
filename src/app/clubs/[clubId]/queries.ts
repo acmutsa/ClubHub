@@ -1,98 +1,56 @@
+import { and, eq, isNull } from "drizzle-orm";
 import { forbidden, notFound } from "next/navigation";
 
-import { db } from "@/db/index";
+import { Permission } from "@/constants/permissions";
+import { db } from "@/db";
+import { eventCategories, events } from "@/db/schema";
 import { requireAuthContext } from "@/lib/auth/get-auth-context";
 import { matchesClubRoute } from "@/lib/club-context/get-club-context";
 
-async function requireClubMember(clubId: string) {
-  const context = await requireAuthContext();
-
-  if (!matchesClubRoute(context.club, clubId)) notFound();
-
-  return context;
-}
-
-async function requireClubAdmin(clubId: string) {
-  const context = await requireClubMember(clubId);
-  const isClubAdmin =
-    context.membership.role === "ADMIN" ||
-    context.membership.role === "SUPER_ADMIN";
-
-  if (!isClubAdmin) forbidden();
-
-  return context;
-}
-
 export async function listClubEvents(clubId: string) {
-  const context = await requireClubAdmin(clubId);
+  const context = await requireAuthContext();
+  if (!matchesClubRoute(context.club, clubId)) notFound();
+  if (!context.hasPermission(Permission.EVENTS_VIEW)) forbidden();
 
   return db.query.events.findMany({
-    where: (events, { eq }) => eq(events.clubId, context.clubId),
-    with: {
-      club: true,
-      eventTypes: true,
-      location: true,
-      thumbnail: true,
-    },
+    where: and(eq(events.clubId, context.clubId), isNull(events.deletedAt)),
+    with: { club: true, category: true, location: true, thumbnail: true },
   });
 }
 
 export async function listClubEventTypes(clubId: string) {
-  const context = await requireClubAdmin(clubId);
-
-  return db.query.eventTypes.findMany({
-    where: (eventTypes, { eq }) => eq(eventTypes.clubId, context.clubId),
+  const context = await requireAuthContext();
+  if (!matchesClubRoute(context.club, clubId)) notFound();
+  if (!context.hasPermission(Permission.EVENTS_VIEW) && !context.hasPermission(Permission.EVENTS_CREATE)) forbidden();
+  return db.query.eventCategories.findMany({
+    where: and(eq(eventCategories.clubId, context.clubId), isNull(eventCategories.deletedAt)),
   });
 }
 
-export async function listLocations() {
-  await requireAuthContext();
+export async function listLocations(clubId: string) {
+  const context = await requireAuthContext();
+  if (!matchesClubRoute(context.club, clubId)) notFound();
+  if (!context.hasPermission(Permission.EVENTS_CREATE)) forbidden();
 
-  return db.query.locations.findMany({
-    with: {
-      building: true,
-    },
-  });
+  return db.query.locations.findMany();
 }
 
-export async function getClubEventById(clubId: string, eventId: number) {
-  const context = await requireClubAdmin(clubId);
+export async function getClubEventById(clubId: string, eventId: string) {
+  const context = await requireAuthContext();
+  if (!matchesClubRoute(context.club, clubId)) notFound();
+  if (!context.hasPermission(Permission.EVENTS_VIEW)) forbidden();
 
   return db.query.events.findFirst({
-    where: (events, { eq, and }) =>
-      and(eq(events.clubId, context.clubId), eq(events.id, eventId)),
-    with: {
-      club: true,
-      eventTypes: true,
-      location: {
-        with: {
-          building: true,
-        },
-      },
-      thumbnail: true,
-    },
+    where: and(eq(events.clubId, context.clubId), eq(events.id, eventId), isNull(events.deletedAt)),
+    with: { club: true, category: true, location: true, thumbnail: true },
   });
 }
 
-export async function getVisibleClubEventById(clubId: string, eventId: number) {
-  const context = await requireClubMember(clubId);
-
+export async function getVisibleClubEventById(clubId: string, eventId: string) {
+  const context = await requireAuthContext();
+  if (!matchesClubRoute(context.club, clubId)) notFound();
   return db.query.events.findFirst({
-    where: (events, { eq, and }) =>
-      and(
-        eq(events.clubId, context.clubId),
-        eq(events.id, eventId),
-        eq(events.hidden, false),
-      ),
-    with: {
-      club: true,
-      eventTypes: true,
-      location: {
-        with: {
-          building: true,
-        },
-      },
-      thumbnail: true,
-    },
+    where: and(eq(events.clubId, context.clubId), eq(events.id, eventId), isNull(events.deletedAt)),
+    with: { club: true, category: true, location: true, thumbnail: true },
   });
 }

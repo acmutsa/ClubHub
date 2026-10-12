@@ -7,6 +7,7 @@ import type {
   ActionResult,
 } from "@/lib/actions/create-safe-action";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { SafeActionError } from "@/lib/actions/create-safe-action";
 
 export type AuthenticatedActionContext = {
   user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
@@ -65,6 +66,9 @@ export function createAuthenticatedSafeAction<TSchema extends z.ZodType, TResult
         data: await handler(parsedInput.data, { user, ipAddress }),
       };
     } catch (error) {
+      if (error instanceof SafeActionError) {
+        return { ok: false, error: { code: error.code, message: error.message, fieldErrors: error.fieldErrors } };
+      }
       console.error("Authenticated action failed.", { error, userId });
 
       return {

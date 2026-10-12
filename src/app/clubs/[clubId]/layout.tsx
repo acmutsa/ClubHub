@@ -20,16 +20,14 @@ export default async function Layout({
     <div className="flex flex-col min-h-screen">
       <Navbar
         clubName={context.club.name}
-        clubId={clubId}
         userType={
-          context.membership.role === "ADMIN" ||
-          context.membership.role === "SUPER_ADMIN"
+          context.permissions.length > 0
             ? "admin"
             : "member"
         }
       />
       <main className="flex-1">{children}</main>
-      <Footer clubId={clubId} clubName={context.club.name} />
+      <Footer clubName={context.club.name} />
     </div>
   );
 }
