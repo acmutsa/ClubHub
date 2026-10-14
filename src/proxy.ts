@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const AUTH_PATHS = ["/sign-in", "/sign-up"];
+const REWRITE_EXCLUDED_PATHS = ["/sign-in", "/sign-up", "/registration"];
 const LOCAL_ROOT_HOST = "localhost:3000";
 
 function getSubdomain(host: string) {
@@ -29,7 +29,9 @@ export function proxy(request: NextRequest) {
   const subdomain = getSubdomain(host);
   const pathClubId = getClubIdFromPath(url.pathname);
   const hasClubScope = Boolean(subdomain ?? pathClubId);
-  const isAuthPath = AUTH_PATHS.includes(url.pathname);
+  const isRewriteExcludedPath = REWRITE_EXCLUDED_PATHS.some(
+    (path) => url.pathname === path || url.pathname.startsWith(`${path}/`),
+  );
   const requestHeaders = new Headers(request.headers);
 
   requestHeaders.set("x-current-path", originalPath);
@@ -53,7 +55,7 @@ export function proxy(request: NextRequest) {
     requestHeaders.delete("x-club-slug");
   }
 
-  if (subdomain && !isAuthPath) {
+  if (subdomain && !isRewriteExcludedPath) {
     url.pathname = `/clubs/${subdomain}${url.pathname}`;
     return NextResponse.rewrite(url, {
       request: { headers: requestHeaders },

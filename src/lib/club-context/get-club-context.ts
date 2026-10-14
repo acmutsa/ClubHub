@@ -4,7 +4,7 @@ import { forbidden, notFound } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { clubs, memberships } from "@/db/schema";
+import { clubs } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import type { ClubPermissionType } from "@/lib/auth/permissions";
 import { redirectToSignIn } from "@/lib/auth/sign-in-redirect";
