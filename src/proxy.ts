@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const AUTH_PATHS = ["/sign-in", "/sign-up"];
+const AUTH_PATHS = ["/sign-in", "/sign-up", "/registration"];
 const LOCAL_ROOT_HOST = "localhost:3000";
 
 function getSubdomain(host: string) {

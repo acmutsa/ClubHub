@@ -12,10 +12,9 @@ export default async function SignInPage({
 }) {
   const { callbackUrl } = await searchParams;
   const surface = await getAppSurface();
-  const safeCallbackUrl = getSafeCallbackUrl(
-    callbackUrl,
-    surface === "landing" ? undefined : surface,
-  );
+  const safeCallbackUrl = callbackUrl
+    ? getSafeCallbackUrl(callbackUrl, surface === "landing" ? undefined : surface)
+    : "/registration";
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
