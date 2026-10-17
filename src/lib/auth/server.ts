@@ -11,11 +11,13 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    async sendResetPassword(data, request) {
-
-            // Send an email to the user with a link to reset their password
-
-        },
+    async sendResetPassword({ url }) {
+      // Send an email to the user with a link to reset their password=
+      console.log("Password reset link: \n", url);
+    },
+    onPasswordReset: async ({ user }) => {
+      console.log(`Password for user ${user.email} has been reset.`);
+    },
   },
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "mysql", "sqlite"
@@ -27,7 +29,7 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    "https://*.localhost:3000","http://*.localhost:3000"
+    "https://*.localhost:3000", "http://*.localhost:3000"
   ]
 });
 
