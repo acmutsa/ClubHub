@@ -23,9 +23,9 @@ export default function SignInForm({
 
   const router = useRouter();
   const form = useForm<z.infer<typeof signInSchema>>({
-    resolver:zodResolver(signInSchema),
+    resolver: zodResolver(signInSchema),
     mode: "onTouched",
-    defaultValues:{
+    defaultValues: {
       email: "",
       password: "",
     }
@@ -37,14 +37,14 @@ export default function SignInForm({
       ...values,
       callbackURL: callbackUrl,
     });
-    if(res.error){
+    if (res.error) {
       const message = res.error.message || "Something went wrong";
       form.setError("root", { message });
       return;
     }
     router.push(callbackUrl);
     router.refresh();
-}
+  }
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
@@ -65,20 +65,20 @@ export default function SignInForm({
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
             <a
-              href="#"
+              href="/password/"
               className="ml-auto text-sm underline-offset-4 hover:underline"
             >
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required {...form.register("password")} className={cn(form.formState.errors.password && "border-red-500 focus-visible:ring-red-500")}/>
+          <Input id="password" type="password" required {...form.register("password")} className={cn(form.formState.errors.password && "border-red-500 focus-visible:ring-red-500")} />
           {form.formState.errors.password && (
             <p className="text-red-500 text-sm">{form.formState.errors.password.message}</p>
           )}
         </div>
         {form.formState.errors.root && (
-        <p className="text-red-500 text-sm">{form.formState.errors.root.message}</p>
-      )}
+          <p className="text-red-500 text-sm">{form.formState.errors.root.message}</p>
+        )}
         <Button type="submit" className="w-full">
           Sign in
         </Button>
