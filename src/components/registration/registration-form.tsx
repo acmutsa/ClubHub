@@ -36,6 +36,8 @@ import {
 import { registrationFormSchema, type RegistrationFormValues } from "./registration-schema";
 import { submitRegistrationAction } from "@/app/registration/actions";
 import { majorOptions } from "@/constants/majors";
+import { collegeDepartments, getDepartmentMajorOptions } from "@/constants/department-majors";
+import { raceOptions } from "@/constants/demographics";
 
 export default function RegistrationForm({
     callbackUrl,
@@ -46,10 +48,6 @@ export default function RegistrationForm({
     const [reviewValues, setReviewValues] = useState<RegistrationFormValues | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [majorQuery, setMajorQuery] = useState("");
-    const normalizedMajorQuery = majorQuery.trim().toLocaleLowerCase();
-    const filteredMajorOptions = majorOptions.filter((major) =>
-        major.toLocaleLowerCase().includes(normalizedMajorQuery),
-    );
     const router = useRouter();
     const { data: session } = authClient.useSession();
     const email = session?.user?.email;
@@ -75,6 +73,16 @@ export default function RegistrationForm({
             smsReminder: false,
         }
     });
+    const selectedCollege = completeForm.watch("college");
+    const selectedDepartment = completeForm.watch("department");
+    const departmentOptions = collegeDepartments[selectedCollege] ?? [];
+    const departmentMajorOptions = selectedDepartment
+        ? getDepartmentMajorOptions(selectedDepartment)
+        : majorOptions;
+    const normalizedMajorQuery = majorQuery.trim().toLocaleLowerCase();
+    const filteredMajorOptions = departmentMajorOptions.filter((major) =>
+        major.toLocaleLowerCase().includes(normalizedMajorQuery),
+    );
     const stepHeadingRef = useRef<HTMLHeadingElement>(null);
     const previousStep = useRef(step);
 
@@ -292,18 +300,56 @@ export default function RegistrationForm({
                             </select>
                             {completeForm.formState.errors.gender && <FieldError id="gender-error" errors={[completeForm.formState.errors.gender]} />}
                             </Field>
-                            <Field data-invalid={!!completeForm.formState.errors.race}>
-                            <Label htmlFor="race">Race</Label>
-                            <select id="race" aria-invalid={!!completeForm.formState.errors.race} aria-describedby={completeForm.formState.errors.race ? "race-error" : undefined} {...completeForm.register("race")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.race && "border-red-500 focus-visible:ring-red-500")}>
-                                <option value="White">White</option>
-                                <option value="Black or African American">Black or African American</option>
-                                <option value="Asian">Asian</option>
-                                <option value="Native American">Native American</option>
-                                <option value="Pacific Islander">Pacific Islander</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            {completeForm.formState.errors.race && <FieldError id="race-error" errors={[completeForm.formState.errors.race]} />}
-                            </Field>
+                            <Controller
+                                name="race"
+                                control={completeForm.control}
+                                render={({ field,fieldState }) => (
+                               <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel htmlFor="race">Race</FieldLabel>
+                                <Combobox
+                                    items={raceOptions}
+                                    value={field.value || null}
+                                    onValueChange={(value) => {
+                                        const selectedRace = value ?? "";
+                                        field.onChange(selectedRace);
+                                        setMajorQuery(selectedRace);
+                                    }}
+                                    onInputValueChange={(value, details) => {
+                                        setMajorQuery(value);
+                                        if (details.reason === "input-change" || details.reason === "input-clear") {
+                                            field.onChange("");
+                                        }
+                                    }}
+                                    autoHighlight
+                                >
+                                    <ComboboxInput
+                                        id="race"
+                                        className="w-full"
+                                        placeholder="Type to search races..."
+                                        showTrigger
+                                        showClear
+                                        aria-invalid={fieldState.invalid}
+                                        aria-describedby={fieldState.error ? "race-error" : "race-hint"}
+                                    >
+                                        <ComboboxContent>
+                                            <ComboboxEmpty>No matches found.</ComboboxEmpty>
+                                            <ComboboxList>
+                                                {raceOptions.map((race) => (
+                                                    <ComboboxItem key={race} value={race}>
+                                                        {race}
+                                                    </ComboboxItem>
+                                                ))}
+                                            </ComboboxList>
+                                        </ComboboxContent>
+                                    </ComboboxInput>
+                                </Combobox>
+                                <p id="race-hint" className="text-muted-foreground text-sm">
+                                    Type to search, then select from the suggestions.
+                                </p>
+                                {completeForm.formState.errors.race && <FieldError id="race-error" errors={[completeForm.formState.errors.race]} />}
+                                </Field> 
+                                )}
+                            />
                             <Field data-invalid={!!completeForm.formState.errors.ethnicity}>
                             <Label htmlFor="ethnicity">Ethnicity</Label>
                             <select id="ethnicity" aria-invalid={!!completeForm.formState.errors.ethnicity} aria-describedby={completeForm.formState.errors.ethnicity ? "ethnicity-error" : undefined} {...completeForm.register("ethnicity")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.ethnicity && "border-red-500 focus-visible:ring-red-500")}>
@@ -348,7 +394,14 @@ export default function RegistrationForm({
                             </Field>
                             <Field data-invalid={!!completeForm.formState.errors.college}>
                             <Label htmlFor="college">College</Label>
-                            <select id="college" aria-invalid={!!completeForm.formState.errors.college} aria-describedby={completeForm.formState.errors.college ? "college-error" : undefined} {...completeForm.register("college")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.college && "border-red-500 focus-visible:ring-red-500")}>
+                            <select id="college" aria-invalid={!!completeForm.formState.errors.college} aria-describedby={completeForm.formState.errors.college ? "college-error" : undefined} {...completeForm.register("college", {
+                                onChange: () => {
+                                    completeForm.setValue("department", "");
+                                    completeForm.setValue("major", "");
+                                    completeForm.clearErrors(["department", "major"]);
+                                    setMajorQuery("");
+                                },
+                            })} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.college && "border-red-500 focus-visible:ring-red-500")}>
                                 <option value="">Select your college</option>
                                 <option value="Carlos Alvarez College of Business">Carlos Alvarez College of Business</option>
                                 <option value="Education and Human Development">Education and Human Development</option>
@@ -360,6 +413,31 @@ export default function RegistrationForm({
                                 <option value="Honors College">Honors College</option>
                             </select>
                             {completeForm.formState.errors.college && <FieldError id="college-error" errors={[completeForm.formState.errors.college]} />}
+                            </Field>
+                            <Field data-invalid={!!completeForm.formState.errors.department}>
+                                <Label htmlFor="department">Department</Label>
+                                <select
+                                    id="department"
+                                    aria-invalid={!!completeForm.formState.errors.department}
+                                    aria-describedby={completeForm.formState.errors.department ? "department-error" : undefined}
+                                    disabled={!selectedCollege}
+                                    {...completeForm.register("department", {
+                                        onChange: () => {
+                                            completeForm.setValue("major", "");
+                                            completeForm.clearErrors("major");
+                                            setMajorQuery("");
+                                        },
+                                    })}
+                                    className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.department && "border-red-500 focus-visible:ring-red-500")}
+                                >
+                                    <option value="">Select your department</option>
+                                    {departmentOptions.map((department) => (
+                                        <option key={department} value={department}>{department}</option>
+                                    ))}
+                                </select>
+                                {completeForm.formState.errors.department && (
+                                    <FieldError id="department-error" errors={[completeForm.formState.errors.department]} />
+                                )}
                             </Field>
                             <Controller
                                 name="major"
@@ -382,12 +460,13 @@ export default function RegistrationForm({
                                                     field.onChange("");
                                                 }
                                             }}
+                                            disabled={!selectedDepartment}
                                             autoHighlight
                                         >
                                             <ComboboxInput
                                                 id="major"
                                                 className="w-full"
-                                                placeholder="Type to search majors..."
+                                                placeholder={selectedDepartment ? "Type to search majors..." : "Select a department first"}
                                                 showTrigger
                                                 showClear
                                                 aria-invalid={fieldState.invalid}
@@ -412,20 +491,6 @@ export default function RegistrationForm({
                                     </Field>
                                 )}
                             />
-                            <Field data-invalid={!!completeForm.formState.errors.department}>
-                                <Label htmlFor="department">Department</Label>
-                                <Input
-                                    id="department"
-                                    type="text"
-                                    aria-invalid={!!completeForm.formState.errors.department}
-                                    aria-describedby={completeForm.formState.errors.department ? "department-error" : undefined}
-                                    {...completeForm.register("department")}
-                                    className={cn(completeForm.formState.errors.department && "border-red-500 focus-visible:ring-red-500")}
-                                />
-                                {completeForm.formState.errors.department && (
-                                    <FieldError id="department-error" errors={[completeForm.formState.errors.department]} />
-                                )}
-                            </Field>
                             <Field data-invalid={!!completeForm.formState.errors.expectedGraduationDate}>
                                 <Label htmlFor="expectedGraduationDate">Expected Graduation Date</Label>
                                 <Input id="expectedGraduationDate" type="date" aria-invalid={!!completeForm.formState.errors.expectedGraduationDate} aria-describedby={completeForm.formState.errors.expectedGraduationDate ? "expected-graduation-error" : undefined} {...completeForm.register("expectedGraduationDate")} className={cn(completeForm.formState.errors.expectedGraduationDate && "border-red-500 focus-visible:ring-red-500")} />

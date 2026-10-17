@@ -26,8 +26,6 @@ export const genderOptions = [
 	"Male",
 	"Female",
 	"Non-binary",
-	"Transgender Man",
-	"Transgender Woman",
 	"Other",
 	"Prefer Not To Say",
 ] as const;

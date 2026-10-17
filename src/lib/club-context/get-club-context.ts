@@ -55,10 +55,10 @@ async function buildClubContext(
   }
 
   const membership =
-    (await db.query.memberships.findFirst({
+    (await db.query.membership.findFirst({
       where: and(
-        eq(memberships.clubId, club.id),
-        eq(memberships.userId, user.id),
+        eq(membership.clubId, club.id),
+        eq(membership.userId, user.id),
       ),
     })) ?? null;
 
