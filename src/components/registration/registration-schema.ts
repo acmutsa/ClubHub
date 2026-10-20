@@ -1,29 +1,37 @@
 import * as z from "zod";
+
+import { countries } from "@/constants/countries";
+import {
+  ethnicityOptions,
+  genderOptions,
+  raceOptions,
+} from "@/constants/demographics";
 import { majorOptions } from "@/constants/majors";
+import { shirtSizeOptions } from "@/constants/shirt-sizes";
+
+const countryCodes = countries.map((country) => country.code);
 
 export const registrationFormSchema = z.object({
   classification: z.enum(
     ["Freshman", "Sophomore", "Junior", "Senior", "Graduate"],
     { error: "Please select your class year" },
   ),
-  gender: z.enum(
-    ["Male", "Female", "Non-Binary", "Prefer Not to Say"],
-    { error: "Please select your gender" },
-  ),
-  race: z.enum(
-    [
-      "White",
-      "Black or African American",
-      "Asian",
-      "Native American",
-      "Pacific Islander",
-      "Other",
-    ],
-    { error: "Please select your race/ethnicity" },
-  ),
-  ethnicity: z.enum(["Hispanic", "Non-Hispanic"], {
+  gender: z.enum(genderOptions, { error: "Please select your gender" }),
+  race: z.enum(raceOptions, { error: "Please select your race/ethnicity" }),
+  ethnicity: z.enum(ethnicityOptions, {
     error: "Please select your ethnicity",
   }),
+  phoneNumber: z
+    .string()
+    .trim()
+    .regex(/^\d{10}$/, "Phone number must be 10 digits"),
+  pronouns: z.string().trim().min(1, "Please enter your pronouns").max(50),
+  birthDate: z
+    .string()
+    .date("Please enter your date of birth")
+    .refine((date) => new Date(date) < new Date(), "Birth date must be in the past"),
+  country: z.enum(countryCodes, { error: "Please select your country" }),
+  shirtSize: z.enum(shirtSizeOptions, { error: "Please select a shirt size" }),
   major: z
     .string()
     .refine(
@@ -48,10 +56,43 @@ export const registrationFormSchema = z.object({
   }),
   expectedGraduationDate: z
     .string()
-    .min(1, { message: "Please enter your expected graduation date" }),
+    .date("Please enter your expected graduation date")
+    .refine(
+      (date) => new Date(date) > new Date(),
+      "Expected graduation date must be in the future",
+    ),
   emailReminder: z.boolean(),
   phoneReminder: z.boolean(),
   smsReminder: z.boolean(),
+});
+
+export const registrationDraftSchema = z.object({
+  step: z.number().int().min(1).max(6),
+  values: z.object({
+    classification: z.enum(["Freshman", "Sophomore", "Junior", "Senior", "Graduate"]).optional(),
+    gender: z.enum(genderOptions).optional(),
+    race: z.enum(raceOptions).optional(),
+    ethnicity: z.enum(ethnicityOptions).optional(),
+    phoneNumber: z.string().optional(),
+    pronouns: z.string().optional(),
+    birthDate: z.string().optional(),
+    country: z.enum(countryCodes).optional(),
+    shirtSize: z.enum(shirtSizeOptions).optional(),
+    major: z.string().optional(),
+    college: z.string().optional(),
+    department: z.string().optional(),
+    account: z
+      .object({
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        email: z.string().optional(),
+      })
+      .optional(),
+    expectedGraduationDate: z.string().optional(),
+    emailReminder: z.boolean().optional(),
+    phoneReminder: z.boolean().optional(),
+    smsReminder: z.boolean().optional(),
+  }),
 });
 
 export type RegistrationFormValues = z.infer<typeof registrationFormSchema>;
