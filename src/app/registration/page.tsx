@@ -51,7 +51,7 @@ export default async function RegistrationPage({
         Tell us a little about yourself.
       </p>
 
-      <RegistrationForm callbackUrl={returnUrl} />
+      <RegistrationForm />
     </main>
   );
 }

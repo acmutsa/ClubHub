@@ -48,12 +48,12 @@ import {
 } from "@/constants/demographics";
 import { countries } from "@/constants/countries";
 import { shirtSizeOptions } from "@/constants/shirt-sizes";
+import { Calendar } from "../ui/calendar";
 
 export default function RegistrationForm({
-    callbackUrl,
     className,
     ...props
-}: React.ComponentProps<"form"> & { callbackUrl: string }) {
+}: React.ComponentProps<"form">) {
     const [step, setStep] = useState(1);
     const [reviewValues, setReviewValues] = useState<RegistrationFormValues | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,6 +105,10 @@ export default function RegistrationForm({
 
     const totalSteps = 6;
     const progress = (step / totalSteps) * 100;
+    const nextMonth = new Date();
+    nextMonth.setDate(1);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    const minimumGraduationMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
 
     useEffect(() => {
         if (previousStep.current !== step) {
@@ -128,12 +132,17 @@ export default function RegistrationForm({
                 const parsedDraft = registrationDraftSchema.safeParse(JSON.parse(savedDraft));
                 if (parsedDraft.success) {
                     const currentValues = completeForm.getValues();
+                    const draftValues = parsedDraft.data.values;
                     completeForm.reset({
                         ...currentValues,
-                        ...parsedDraft.data.values,
+                        ...draftValues,
+                        expectedGraduationDate:
+                            draftValues.expectedGraduationDate?.match(/^\d{4}-\d{2}-\d{2}$/)
+                                ? draftValues.expectedGraduationDate.slice(0, 7)
+                                : draftValues.expectedGraduationDate ?? currentValues.expectedGraduationDate,
                         account: {
                             ...currentValues.account,
-                            ...parsedDraft.data.values.account,
+                            ...draftValues.account,
                         },
                     });
                     setStep(parsedDraft.data.step);
@@ -213,7 +222,7 @@ export default function RegistrationForm({
                         console.error("Could not remove the completed registration draft.", error);
                     }
                 }
-                router.push(callbackUrl || "/clubs");
+                router.push("/");
                 router.refresh();
                 return;
             }
@@ -453,8 +462,32 @@ export default function RegistrationForm({
                                 {completeForm.formState.errors.pronouns && <FieldError id="pronouns-error" errors={[completeForm.formState.errors.pronouns]} />}
                             </Field>
                             <Field data-invalid={!!completeForm.formState.errors.birthDate}>
-                                <Label htmlFor="birthDate">Date of birth</Label>
-                                <Input id="birthDate" type="date" aria-invalid={!!completeForm.formState.errors.birthDate} aria-describedby={completeForm.formState.errors.birthDate ? "birth-date-error" : undefined} {...completeForm.register("birthDate")} />
+                                <Label id="birthDate-label">Date of birth</Label>
+                                <Controller
+                                    control={completeForm.control}
+                                    name="birthDate"
+                                    render={({ field }) => (
+                                        <Calendar
+                                            id="birthDate"
+                                            aria-labelledby="birthDate-label"
+                                            aria-describedby={completeForm.formState.errors.birthDate ? "birth-date-error" : undefined}
+                                            aria-invalid={!!completeForm.formState.errors.birthDate}
+                                            mode="single"
+                                            selected={field.value ? new Date(`${field.value}T00:00:00`) : undefined}
+                                            onSelect={(date) => {
+                                                field.onChange(
+                                                    date
+                                                        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+                                                        : "",
+                                                );
+                                            }}
+                                            captionLayout="dropdown"
+                                            numberOfMonths={1}
+                                            disabled={{ after: new Date() }}
+                                            className="rounded-lg border"
+                                        />
+                                    )}
+                                />
                                 {completeForm.formState.errors.birthDate && <FieldError id="birth-date-error" errors={[completeForm.formState.errors.birthDate]} />}
                             </Field>
                             <Field data-invalid={!!completeForm.formState.errors.country}>
@@ -609,8 +642,8 @@ export default function RegistrationForm({
                                 )}
                             />
                             <Field data-invalid={!!completeForm.formState.errors.expectedGraduationDate}>
-                                <Label htmlFor="expectedGraduationDate">Expected Graduation Date</Label>
-                                <Input id="expectedGraduationDate" type="date" aria-invalid={!!completeForm.formState.errors.expectedGraduationDate} aria-describedby={completeForm.formState.errors.expectedGraduationDate ? "expected-graduation-error" : undefined} {...completeForm.register("expectedGraduationDate")} className={cn(completeForm.formState.errors.expectedGraduationDate && "border-red-500 focus-visible:ring-red-500")} />
+                                <Label htmlFor="expectedGraduationDate">Expected Graduation Month</Label>
+                                <Input id="expectedGraduationDate" type="month" min={minimumGraduationMonth} aria-invalid={!!completeForm.formState.errors.expectedGraduationDate} aria-describedby={completeForm.formState.errors.expectedGraduationDate ? "expected-graduation-error" : undefined} {...completeForm.register("expectedGraduationDate")} className={cn(completeForm.formState.errors.expectedGraduationDate && "border-red-500 focus-visible:ring-red-500")} />
                                 {completeForm.formState.errors.expectedGraduationDate && <FieldError id="expected-graduation-error" errors={[completeForm.formState.errors.expectedGraduationDate]} />}
                             </Field>
                           </div>
@@ -755,7 +788,7 @@ export default function RegistrationForm({
                                         {reviewValues.classification} · {reviewValues.major} · {reviewValues.department} · {reviewValues.college}
                                     </dd>
                                     <dd className="text-muted-foreground">
-                                        Expected graduation: {reviewValues.expectedGraduationDate}
+                                        Expected graduation: {new Date(`${reviewValues.expectedGraduationDate}-01T00:00:00`).toLocaleString(undefined, { month: "long", year: "numeric" })}
                                     </dd>
                                 </div>
                                 <div>
