@@ -37,7 +37,7 @@ export const submitRegistrationAction = actionClient
       birthDate: new Date(`${parsedInput.birthDate}T00:00:00.000Z`),
       school: "The University of Texas at San Antonio",
       expectedGraduationDate: new Date(
-        `${parsedInput.expectedGraduationDate}T00:00:00.000Z`,
+        `${parsedInput.expectedGraduationDate}-01T00:00:00.000Z`,
       ),
       major: parsedInput.major,
       country: parsedInput.country,
