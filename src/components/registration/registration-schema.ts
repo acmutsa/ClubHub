@@ -11,6 +11,11 @@ import { shirtSizeOptions } from "@/constants/shirt-sizes";
 
 const countryCodes = countries.map((country) => country.code);
 
+function getCurrentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export const registrationFormSchema = z.object({
   classification: z.enum(
     ["Freshman", "Sophomore", "Junior", "Senior", "Graduate"],
@@ -56,10 +61,10 @@ export const registrationFormSchema = z.object({
   }),
   expectedGraduationDate: z
     .string()
-    .date("Please enter your expected graduation date")
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Please enter your expected graduation month")
     .refine(
-      (date) => new Date(date) > new Date(),
-      "Expected graduation date must be in the future",
+      (month) => month > getCurrentMonth(),
+      "Expected graduation month must be in the future",
     ),
   emailReminder: z.boolean(),
   phoneReminder: z.boolean(),
