@@ -4,7 +4,7 @@ import { forbidden, notFound } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { clubs, memberships } from "@/db/schema";
+import { clubMemberships, clubs } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import type { ClubPermissionType } from "@/lib/auth/permissions";
 import { redirectToSignIn } from "@/lib/auth/sign-in-redirect";
@@ -54,13 +54,16 @@ async function buildClubContext(
     notFound();
   }
 
-  const membership =
-    (await db.query.memberships.findFirst({
-      where: and(
-        eq(memberships.clubId, club.id),
-        eq(memberships.userId, user.id),
+  const [membership] = await db
+    .select()
+    .from(clubMemberships)
+    .where(
+      and(
+        eq(clubMemberships.clubId, club.id),
+        eq(clubMemberships.userId, user.id),
       ),
-    })) ?? null;
+    )
+    .limit(1);
 
   if (!membership) {
     forbidden();
