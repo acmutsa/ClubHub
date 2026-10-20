@@ -1,11 +1,20 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db/index";
-import { clubMemberships, clubRoles, clubTitles, clubs } from "@/db/schema";
+import {
+  clubMemberships,
+  clubRoles,
+  clubs,
+  clubTitles,
+  userProfiles,
+} from "@/db/schema";
+
+import { MEMBER_ROLE_POSITION, OWNER_ROLE_POSITION } from "@/constants/role-positions";
+
 import { createAuthenticatedSafeAction } from "@/lib/actions/create-authenticated-safe-action";
 import { createClubMembershipSchema } from "@/lib/validators/club-membership";
 import { createClubFormSchema } from "@/lib/validators/club";
@@ -13,6 +22,68 @@ import { SYSTEM_CLUB_ROLES } from "@/constants/roles";
 import { ActionErrorCode } from "@/constants/action-error-code";
 import { actionError } from "@/lib/actions/create-safe-action";
 import { createClubSlug } from "./lib/create-club-slug";
+
+async function getOrCreateMemberRoleId(clubId: string) {
+  let [role] = await db
+    .select({ id: clubRoles.id })
+    .from(clubRoles)
+    .where(and(eq(clubRoles.clubId, clubId), eq(clubRoles.name, "MEMBER")))
+    .limit(1);
+
+  if (!role) {
+    await db
+      .insert(clubRoles)
+      .values({
+        clubId,
+        name: "MEMBER",
+        description: "Default role for club members",
+        permissions: [],
+        color: "#71717a",
+        position: MEMBER_ROLE_POSITION,
+        isSystem: true,
+      })
+      .onConflictDoNothing();
+
+    [role] = await db
+      .select({ id: clubRoles.id })
+      .from(clubRoles)
+      .where(and(eq(clubRoles.clubId, clubId), eq(clubRoles.name, "MEMBER")))
+      .limit(1);
+  }
+
+  if (!role) {
+    throw new Error(`Could not find or create the member role for club "${clubId}".`);
+  }
+
+  return role.id;
+}
+
+async function getOrCreateMemberTitleId(clubId: string) {
+  let [title] = await db
+    .select({ id: clubTitles.id })
+    .from(clubTitles)
+    .where(and(eq(clubTitles.clubId, clubId), eq(clubTitles.name, "Member")))
+    .limit(1);
+
+  if (!title) {
+    await db
+      .insert(clubTitles)
+      .values({ clubId, name: "Member" })
+      .onConflictDoNothing();
+
+    [title] = await db
+      .select({ id: clubTitles.id })
+      .from(clubTitles)
+      .where(and(eq(clubTitles.clubId, clubId), eq(clubTitles.name, "Member")))
+      .limit(1);
+  }
+
+  if (!title) {
+    throw new Error(`Could not find or create the member title for club "${clubId}".`);
+  }
+
+  return title.id;
+}
 
 export const leaveClubAction = createAuthenticatedSafeAction(
   { schema: createClubMembershipSchema },
@@ -39,6 +110,7 @@ export const leaveClubAction = createAuthenticatedSafeAction(
       );
     });
 
+    revalidatePath("/");
     revalidatePath("/clubs");
   },
 );
@@ -66,13 +138,30 @@ export const joinClubAction = createAuthenticatedSafeAction(
       await db.insert(clubMemberships).values({ userId: context.user.id, clubId, roleId: role.id, titleId: title.id }).onConflictDoNothing();
     }
 
+    revalidatePath("/");
     revalidatePath("/clubs");
+    return { joined: true as const };
   },
 );
 
 export const createClubAction = createAuthenticatedSafeAction(
   { schema: createClubFormSchema },
   async ({ name, description }, context) => {
+    const [profile] = await db
+      .select({ userId: userProfiles.userId })
+      .from(userProfiles)
+      .where(
+        and(
+          eq(userProfiles.userId, context.user.id),
+          isNull(userProfiles.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!profile) {
+      return { created: false as const, reason: "registration-required" as const };
+    }
+
     const clubId = randomUUID();
     const baseSlug = createClubSlug(name) || "club";
     const existingClub = await db.query.clubs.findFirst({
@@ -96,8 +185,9 @@ export const createClubAction = createAuthenticatedSafeAction(
       await transaction.insert(clubMemberships).values({ userId: context.user.id, clubId, roleId: owner.id, titleId: title.id });
     });
 
+    revalidatePath("/");
     revalidatePath("/clubs");
 
-    return { clubId, slug };
+    return { created: true as const, clubId, slug };
   },
 );
