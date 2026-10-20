@@ -7,6 +7,7 @@ import { hexColorSchema, idSchema, paginationSchema } from "@/lib/validators/com
 
 export const clubSchema = createSelectSchema(clubs);
 
+//TODO: Delete this validator after fixing the createClub Action.
 export const createClubFormSchema = z.object({
   name: z.string().trim().min(1, "Club name is required.").max(100),
   description: z.string().trim().min(1, "Description is required.").max(2000),
