@@ -33,11 +33,21 @@ import {
     ComboboxItem,
     ComboboxList,
 } from "@/components/ui/combobox";
-import { registrationFormSchema, type RegistrationFormValues } from "./registration-schema";
+import {
+    registrationDraftSchema,
+    registrationFormSchema,
+    type RegistrationFormValues,
+} from "./registration-schema";
 import { submitRegistrationAction } from "@/app/registration/actions";
 import { majorOptions } from "@/constants/majors";
 import { collegeDepartments, getDepartmentMajorOptions } from "@/constants/department-majors";
-import { raceOptions } from "@/constants/demographics";
+import {
+    ethnicityOptions,
+    genderOptions,
+    raceOptions,
+} from "@/constants/demographics";
+import { countries } from "@/constants/countries";
+import { shirtSizeOptions } from "@/constants/shirt-sizes";
 
 export default function RegistrationForm({
     callbackUrl,
@@ -48,17 +58,24 @@ export default function RegistrationForm({
     const [reviewValues, setReviewValues] = useState<RegistrationFormValues | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [majorQuery, setMajorQuery] = useState("");
+    const [draftLoadedForUser, setDraftLoadedForUser] = useState<string | null>(null);
     const router = useRouter();
     const { data: session } = authClient.useSession();
     const email = session?.user?.email;
+    const userId = session?.user?.id;
     const completeForm = useForm<RegistrationFormValues>({
         resolver: zodResolver(registrationFormSchema),
         mode: "onTouched",
         defaultValues: {
             classification: "Freshman",
-            gender: "Prefer Not to Say",
+            gender: "Prefer Not To Say",
             race: "Other",
-            ethnicity: "Non-Hispanic",
+            ethnicity: "Not Hispanic or Latino",
+            phoneNumber: "",
+            pronouns: "Prefer not to say",
+            birthDate: "",
+            country: "US",
+            shirtSize: "M",
             major: "",
             college: "",
             department: "",
@@ -102,12 +119,100 @@ export default function RegistrationForm({
         }
     }, [completeForm, email]);
 
+    useEffect(() => {
+        if (!userId) return;
+
+        try {
+            const savedDraft = window.localStorage.getItem(`registration-draft:${userId}`);
+            if (savedDraft) {
+                const parsedDraft = registrationDraftSchema.safeParse(JSON.parse(savedDraft));
+                if (parsedDraft.success) {
+                    const currentValues = completeForm.getValues();
+                    completeForm.reset({
+                        ...currentValues,
+                        ...parsedDraft.data.values,
+                        account: {
+                            ...currentValues.account,
+                            ...parsedDraft.data.values.account,
+                        },
+                    });
+                    setStep(parsedDraft.data.step);
+                }
+            }
+        } catch {
+            completeForm.setError("root", {
+                message: "Could not restore your saved registration progress.",
+            });
+        }
+
+        setDraftLoadedForUser(userId);
+    }, [completeForm, userId]);
+
+    useEffect(() => {
+        if (!userId || draftLoadedForUser !== userId) return;
+
+        const subscription = completeForm.watch((values) => {
+            try {
+                window.localStorage.setItem(
+                    `registration-draft:${userId}`,
+                    JSON.stringify({ step, values }),
+                );
+            } catch {
+                completeForm.setError("root", {
+                    message: "Could not save your progress in this browser.",
+                });
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [completeForm, draftLoadedForUser, step, userId]);
+
+    useEffect(() => {
+        if (!userId || draftLoadedForUser !== userId) return;
+
+        try {
+            window.localStorage.setItem(
+                `registration-draft:${userId}`,
+                JSON.stringify({ step, values: completeForm.getValues() }),
+            );
+        } catch {
+            completeForm.setError("root", {
+                message: "Could not save your progress in this browser.",
+            });
+        }
+    }, [completeForm, draftLoadedForUser, step, userId]);
+
+    function saveAndFinishLater() {
+        if (userId) {
+            try {
+                window.localStorage.setItem(
+                    `registration-draft:${userId}`,
+                    JSON.stringify({ step, values: completeForm.getValues() }),
+                );
+            } catch {
+                completeForm.setError("root", {
+                    message: "Could not save your progress in this browser.",
+                });
+                return;
+            }
+        }
+
+        router.push("/");
+    }
+
     async function onSubmit(values: RegistrationFormValues) {
         setIsSubmitting(true);
         completeForm.clearErrors("root");
         try {
             const result = await submitRegistrationAction(values);
             if (result?.data?.accepted) {
+                if (userId) {
+                    try {
+                        window.localStorage.removeItem(`registration-draft:${userId}`);
+                    } catch (error) {
+                        console.error("Could not remove the completed registration draft.", error);
+                    }
+                }
                 router.push(callbackUrl || "/clubs");
                 router.refresh();
                 return;
@@ -135,7 +240,16 @@ export default function RegistrationForm({
                 fields = ["account.email", "account.firstName", "account.lastName"];
                 break;
             case 2:
-                fields = ["gender", "race", "ethnicity"];
+                fields = [
+                    "gender",
+                    "race",
+                    "ethnicity",
+                    "phoneNumber",
+                    "pronouns",
+                    "birthDate",
+                    "country",
+                    "shirtSize",
+                ];
                 break;
             case 3:
                 fields = [
@@ -188,6 +302,17 @@ export default function RegistrationForm({
                         aria-label="Registration progress"
                         aria-valuetext={`Step ${step} of ${totalSteps}`}
                     />
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3 text-sm">
+                        <p className="text-muted-foreground">
+                            Your progress is saved in this browser. Finish later before joining clubs.
+                        </p>
+                        <Button type="button" variant="outline" size="sm" onClick={saveAndFinishLater}>
+                            Save and finish later
+                        </Button>
+                    </div>
+                    {completeForm.formState.errors.root && (
+                        <FieldError errors={[completeForm.formState.errors.root]} />
+                    )}
                 </div>
                 
                 {step === 1 && (
@@ -293,70 +418,62 @@ export default function RegistrationForm({
                             <Field data-invalid={!!completeForm.formState.errors.gender}>
                             <Label htmlFor="gender">Gender</Label>
                             <select id="gender" aria-invalid={!!completeForm.formState.errors.gender} aria-describedby={completeForm.formState.errors.gender ? "gender-error" : undefined} {...completeForm.register("gender")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.gender && "border-red-500 focus-visible:ring-red-500")}>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Non-Binary">Non-binary</option>
-                                <option value="Prefer Not To Say">Prefer not to say</option>
+                                {genderOptions.map((gender) => (
+                                    <option key={gender} value={gender}>{gender}</option>
+                                ))}
                             </select>
                             {completeForm.formState.errors.gender && <FieldError id="gender-error" errors={[completeForm.formState.errors.gender]} />}
                             </Field>
-                            <Controller
-                                name="race"
-                                control={completeForm.control}
-                                render={({ field,fieldState }) => (
-                               <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="race">Race</FieldLabel>
-                                <Combobox
-                                    items={raceOptions}
-                                    value={field.value || null}
-                                    onValueChange={(value) => {
-                                        const selectedRace = value ?? "";
-                                        field.onChange(selectedRace);
-                                        setMajorQuery(selectedRace);
-                                    }}
-                                    onInputValueChange={(value, details) => {
-                                        setMajorQuery(value);
-                                        if (details.reason === "input-change" || details.reason === "input-clear") {
-                                            field.onChange("");
-                                        }
-                                    }}
-                                    autoHighlight
-                                >
-                                    <ComboboxInput
-                                        id="race"
-                                        className="w-full"
-                                        placeholder="Type to search races..."
-                                        showTrigger
-                                        showClear
-                                        aria-invalid={fieldState.invalid}
-                                        aria-describedby={fieldState.error ? "race-error" : "race-hint"}
-                                    >
-                                        <ComboboxContent>
-                                            <ComboboxEmpty>No matches found.</ComboboxEmpty>
-                                            <ComboboxList>
-                                                {raceOptions.map((race) => (
-                                                    <ComboboxItem key={race} value={race}>
-                                                        {race}
-                                                    </ComboboxItem>
-                                                ))}
-                                            </ComboboxList>
-                                        </ComboboxContent>
-                                    </ComboboxInput>
-                                </Combobox>
-                                <p id="race-hint" className="text-muted-foreground text-sm">
-                                    Type to search, then select from the suggestions.
-                                </p>
+                            <Field data-invalid={!!completeForm.formState.errors.race}>
+                                <Label htmlFor="race">Race</Label>
+                                <select id="race" aria-invalid={!!completeForm.formState.errors.race} aria-describedby={completeForm.formState.errors.race ? "race-error" : undefined} {...completeForm.register("race")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.race && "border-red-500 focus-visible:ring-red-500")}>
+                                    {raceOptions.map((race) => (
+                                        <option key={race} value={race}>{race}</option>
+                                    ))}
+                                </select>
                                 {completeForm.formState.errors.race && <FieldError id="race-error" errors={[completeForm.formState.errors.race]} />}
-                                </Field> 
-                                )}
-                            />
+                            </Field>
                             <Field data-invalid={!!completeForm.formState.errors.ethnicity}>
                             <Label htmlFor="ethnicity">Ethnicity</Label>
                             <select id="ethnicity" aria-invalid={!!completeForm.formState.errors.ethnicity} aria-describedby={completeForm.formState.errors.ethnicity ? "ethnicity-error" : undefined} {...completeForm.register("ethnicity")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.ethnicity && "border-red-500 focus-visible:ring-red-500")}>
-                                <option value="Hispanic">Hispanic or Latino</option>
-                                <option value="Non-Hispanic">Not Hispanic or Latino</option>
+                                {ethnicityOptions.map((ethnicity) => (
+                                    <option key={ethnicity} value={ethnicity}>{ethnicity}</option>
+                                ))}
                             </select>
                             {completeForm.formState.errors.ethnicity && <FieldError id="ethnicity-error" errors={[completeForm.formState.errors.ethnicity]} />}
+                            </Field>
+                            <Field data-invalid={!!completeForm.formState.errors.phoneNumber}>
+                                <Label htmlFor="phoneNumber">Phone number</Label>
+                                <Input id="phoneNumber" type="tel" inputMode="numeric" autoComplete="tel" placeholder="10-digit phone number" aria-invalid={!!completeForm.formState.errors.phoneNumber} aria-describedby={completeForm.formState.errors.phoneNumber ? "phone-number-error" : undefined} {...completeForm.register("phoneNumber")} />
+                                {completeForm.formState.errors.phoneNumber && <FieldError id="phone-number-error" errors={[completeForm.formState.errors.phoneNumber]} />}
+                            </Field>
+                            <Field data-invalid={!!completeForm.formState.errors.pronouns}>
+                                <Label htmlFor="pronouns">Pronouns</Label>
+                                <Input id="pronouns" aria-invalid={!!completeForm.formState.errors.pronouns} aria-describedby={completeForm.formState.errors.pronouns ? "pronouns-error" : undefined} {...completeForm.register("pronouns")} />
+                                {completeForm.formState.errors.pronouns && <FieldError id="pronouns-error" errors={[completeForm.formState.errors.pronouns]} />}
+                            </Field>
+                            <Field data-invalid={!!completeForm.formState.errors.birthDate}>
+                                <Label htmlFor="birthDate">Date of birth</Label>
+                                <Input id="birthDate" type="date" aria-invalid={!!completeForm.formState.errors.birthDate} aria-describedby={completeForm.formState.errors.birthDate ? "birth-date-error" : undefined} {...completeForm.register("birthDate")} />
+                                {completeForm.formState.errors.birthDate && <FieldError id="birth-date-error" errors={[completeForm.formState.errors.birthDate]} />}
+                            </Field>
+                            <Field data-invalid={!!completeForm.formState.errors.country}>
+                                <Label htmlFor="country">Country</Label>
+                                <select id="country" aria-invalid={!!completeForm.formState.errors.country} aria-describedby={completeForm.formState.errors.country ? "country-error" : undefined} {...completeForm.register("country")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.country && "border-red-500 focus-visible:ring-red-500")}>
+                                    {countries.map((country) => (
+                                        <option key={country.code} value={country.code}>{country.name}</option>
+                                    ))}
+                                </select>
+                                {completeForm.formState.errors.country && <FieldError id="country-error" errors={[completeForm.formState.errors.country]} />}
+                            </Field>
+                            <Field data-invalid={!!completeForm.formState.errors.shirtSize}>
+                                <Label htmlFor="shirtSize">Shirt size</Label>
+                                <select id="shirtSize" aria-invalid={!!completeForm.formState.errors.shirtSize} aria-describedby={completeForm.formState.errors.shirtSize ? "shirt-size-error" : undefined} {...completeForm.register("shirtSize")} className={cn("registration-select w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", completeForm.formState.errors.shirtSize && "border-red-500 focus-visible:ring-red-500")}>
+                                    {shirtSizeOptions.map((size) => (
+                                        <option key={size} value={size}>{size}</option>
+                                    ))}
+                                </select>
+                                {completeForm.formState.errors.shirtSize && <FieldError id="shirt-size-error" errors={[completeForm.formState.errors.shirtSize]} />}
                             </Field>
                           </div>
                         </CardContent>
