@@ -1,5 +1,5 @@
 import { GalleryVerticalEnd } from "lucide-react";
-import PasswordResetForm from "@/components/password-reset-form";
+import RequestPasswordResetForm from "@/components/request-password-reset-form";
 
 export default function ForgotPasswordPage() {
 
@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
                     UTSA Clubs
                 </a>
             </div>
-            <PasswordResetForm />
+            <RequestPasswordResetForm />
         </div>
     );
 }

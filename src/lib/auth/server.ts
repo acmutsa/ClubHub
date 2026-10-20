@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { emailOTP } from "better-auth/plugins/email-otp";
 
 export const auth = betterAuth({
   user: {
@@ -19,6 +20,8 @@ export const auth = betterAuth({
       console.log(`Password for user ${user.email} has been reset.`);
     },
   },
+
+
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "mysql", "sqlite"
   }),
@@ -30,6 +33,18 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     "https://*.localhost:3000", "http://*.localhost:3000"
+  ],
+  plugins: [
+    emailOTP({
+        otpLength: 6,
+        expiresIn: 300,
+        allowedAttempts: 3,
+        async sendVerificationOTP({ email, otp, type }){
+          if( type === "forget-password"){
+          console.log(`User with email: ${email} requested reset \n'OTP is: ${otp}'`)
+          }
+      }
+    })
   ]
 });
 
