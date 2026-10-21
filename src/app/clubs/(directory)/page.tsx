@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { asc, eq } from "drizzle-orm";
 
 import { auth } from "@/lib/auth/server";
 import { db } from "@/db/index";
 import { clubMemberships, clubs } from "@/db/schema";
 import { OrgCard, type OrgCardData } from "../_components/org-card";
-import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "All Orgs · ClubHub",
 };
 
-function toOrgCard(
-  club: typeof clubs.$inferSelect,
-): OrgCardData {
+function toOrgCard(club: typeof clubs.$inferSelect): OrgCardData {
   return {
     id: club.id,
     name: club.name,
@@ -26,19 +24,23 @@ function toOrgCard(
 export default async function AllOrgsPage() {
   const session = await auth.api.getSession({ headers: await headers() });
 
-  const rows = await db.select().from(clubs).orderBy(asc(clubs.name));
-  const orgs = rows.map(toOrgCard);
+  const clubRows = await db.select().from(clubs).orderBy(asc(clubs.name));
+  const orgs = clubRows.map(toOrgCard);
 
-  const memberClubIds = session
-    ? new Set(
-        (
-          await db
-            .select({ clubId: clubMemberships.clubId })
-            .from(clubMemberships)
-            .where(eq(clubMemberships.userId, session.user.id))
-        ).map((m) => m.clubId),
-      )
-    : null;
+  // Memberships only drive the Join/Leave buttons, so if that lookup fails
+  // still render the org list.
+  let memberClubIds: Set<string> | null = null;
+  if (session) {
+    try {
+      const membershipRows = await db
+        .select({ clubId: clubMemberships.clubId })
+        .from(clubMemberships)
+        .where(eq(clubMemberships.userId, session.user.id));
+      memberClubIds = new Set(membershipRows.map((m) => m.clubId));
+    } catch (err) {
+      console.error("All Orgs: couldn't load memberships", err);
+    }
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10">
