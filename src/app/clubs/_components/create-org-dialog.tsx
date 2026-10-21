@@ -18,8 +18,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-// Navbar-styled trigger for creating an org. Reuses the existing createClub
-// server action; the label reads "Create Org" to match the navbar spec.
 export function CreateOrgDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -34,7 +32,13 @@ export function CreateOrgDialog() {
       const result = await createClubAction({ name, description });
 
       if (!result.ok) {
-        toast.error(result.error.message || "Couldn't create the org. Try again.");
+        const message =
+          result.error.fieldErrors &&
+          Object.values(result.error.fieldErrors).flat()[0]
+            ? String(Object.values(result.error.fieldErrors).flat()[0])
+            : (result.error.message ?? "Couldn't create the org.");
+        console.error("createClub failed:", result.error);
+        toast.error(message);
         return;
       }
 
