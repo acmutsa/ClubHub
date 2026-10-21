@@ -38,16 +38,20 @@ export default async function AllOrgsPage() {
   const rows: ClubRow[] = await db.select().from(clubs).orderBy(asc(clubs.name));
   const orgs = rows.map(toOrgCard);
 
-  const memberClubIds = session
-    ? new Set(
-        (
-          await db
-            .select({ clubId: membership.clubId })
-            .from(membership)
-            .where(eq(membership.userId, session.user.id))
-        ).map((m) => m.clubId)
-      )
-    : null;
+  // Memberships only drive the Join/Leave buttons, so if that lookup fails
+  // (e.g. the membership table is missing) still render the org list.
+  let memberClubIds: Set<string> | null = null;
+  if (session) {
+    try {
+      const rows = await db
+        .select({ clubId: membership.clubId })
+        .from(membership)
+        .where(eq(membership.userId, session.user.id));
+      memberClubIds = new Set(rows.map((m) => m.clubId));
+    } catch (err) {
+      console.error("All Orgs: couldn't load memberships", err);
+    }
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10">
