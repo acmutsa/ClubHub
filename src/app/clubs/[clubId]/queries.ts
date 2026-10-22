@@ -45,12 +45,3 @@ export async function getClubEventById(clubId: string, eventId: string) {
     with: { club: true, category: true, location: true, thumbnail: true },
   });
 }
-
-export async function getVisibleClubEventById(clubId: string, eventId: string) {
-  const context = await requireAuthContext();
-  if (!matchesClubRoute(context.club, clubId)) notFound();
-  return db.query.events.findFirst({
-    where: and(eq(events.clubId, context.clubId), eq(events.id, eventId), isNull(events.deletedAt)),
-    with: { club: true, category: true, location: true, thumbnail: true },
-  });
-}
