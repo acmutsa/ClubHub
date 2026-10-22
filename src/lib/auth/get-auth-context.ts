@@ -1,18 +1,11 @@
-import { redirectToSignIn } from "@/lib/auth/sign-in-redirect";
-import { getOptionalClubContext } from "@/lib/club-context/get-club-context";
+import { getOptionalClubContext, requireClubContext } from "@/lib/club-context/get-club-context";
 
 export async function getAuthContext() {
   return getOptionalClubContext();
 }
 
 export async function requireAuthContext() {
-  const context = await getAuthContext();
-
-  if (!context) {
-    return redirectToSignIn();
-  }
-
-  return context;
+  return requireClubContext();
 }
 
 export type AuthContext = NonNullable<

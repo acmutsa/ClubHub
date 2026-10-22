@@ -8,7 +8,7 @@ Next.js layouts stay mounted while their child routes change. Put shared shells 
 
 `src/app/clubs/[clubId]/layout.tsx` owns the club shell. It resolves the club context, checks that the URL matches the active club, and renders the club navbar and footer.
 
-`src/app/clubs/[clubId]/admin/layout.tsx` owns the admin shell. It rejects members without an admin role and renders the admin sidebar. Child admin pages should not repeat that sidebar or the same role check.
+`src/app/clubs/[clubId]/admin/layout.tsx` owns the admin shell. It rejects members without club permissions and renders the admin sidebar. Child pages still check the specific permission they need.
 
 Use the closest common layout. Putting a club-only provider in the root layout makes public pages pay for it. Repeating admin authorization in ten pages makes one of those pages easy to miss.
 
@@ -18,7 +18,7 @@ Suppose every event settings page needs the same permission and tabs:
 
 ```tsx
 import { forbidden } from "next/navigation"
-
+import { Permission } from "@/constants/permissions"
 import { requireAuthContext } from "@/lib/auth/get-auth-context"
 
 export default async function EventSettingsLayout({
@@ -28,9 +28,7 @@ export default async function EventSettingsLayout({
 }) {
   const context = await requireAuthContext()
 
-  const canManageEvents =
-    context.membership.role === "ADMIN" ||
-    context.membership.role === "SUPER_ADMIN"
+  const canManageEvents = context.hasPermission(Permission.EVENTS_EDIT)
 
   if (!canManageEvents) forbidden()
 
@@ -43,7 +41,7 @@ export default async function EventSettingsLayout({
 }
 ```
 
-When the permission model is wired into club context, replace the role check with the shared permission helper. Do not trust a hidden tab or button as authorization. The server layout or action still has to reject the request.
+Do not trust a hidden tab or button as authorization. The server layout or action still has to reject the request.
 
 ## What stays in a page
 
@@ -78,7 +76,7 @@ An admin page header contains the page title and relevant actions. Skip eyebrows
 <header className="flex items-center justify-between gap-4">
   <h1 className="text-2xl font-semibold">Events</h1>
   <Button asChild>
-    <Link href={`/clubs/${clubId}/admin/events/new`}>New event</Link>
+    <Link href="/admin/events/new">New event</Link>
   </Button>
 </header>
 ```

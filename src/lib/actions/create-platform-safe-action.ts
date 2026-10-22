@@ -5,8 +5,9 @@ import type {
   ActionFieldErrors,
   ActionResult,
 } from "@/lib/actions/create-safe-action";
-import type { PlatformPermissionType } from "@/lib/auth/permissions";
+import type { GlobalRoleName } from "@/constants/roles";
 import { requirePlatformContext } from "@/lib/platform-context/get-platform-context";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
 export class PlatformActionError extends Error {
   constructor(
@@ -28,7 +29,7 @@ export function platformActionError(
 }
 
 export function createPlatformSafeAction<TSchema extends z.ZodType, TResult>(
-  options: { schema: TSchema; permission: PlatformPermissionType },
+  options: { schema: TSchema; role: GlobalRoleName },
   handler: (
     input: z.infer<TSchema>,
     context: Awaited<ReturnType<typeof requirePlatformContext>>,
@@ -40,10 +41,10 @@ export function createPlatformSafeAction<TSchema extends z.ZodType, TResult>(
     let userId: string | undefined;
 
     try {
-      const context = await requirePlatformContext();
-      userId = context.user.id;
-
-      if (!context.hasPlatformPermission(options.permission)) {
+      const user = await getCurrentUser();
+      if (!user) return { ok: false, error: { code: ActionErrorCode.UNAUTHORIZED, message: "You must be signed in." } };
+      userId = user.id;
+      if (user.role !== options.role) {
         return {
           ok: false,
           error: {
@@ -52,6 +53,7 @@ export function createPlatformSafeAction<TSchema extends z.ZodType, TResult>(
           },
         };
       }
+      const context = await requirePlatformContext();
 
       const parsedInput = options.schema.safeParse(rawInput);
 
@@ -83,7 +85,7 @@ export function createPlatformSafeAction<TSchema extends z.ZodType, TResult>(
       console.error("Platform action failed.", {
         error,
         userId,
-        permission: options.permission,
+        role: options.role,
       });
 
       return {
