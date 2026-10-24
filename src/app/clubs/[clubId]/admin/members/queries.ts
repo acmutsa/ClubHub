@@ -19,11 +19,17 @@ export async function listClubMembers(clubId: string) {
       id: user.id,
       name: user.name,
       email: user.email,
+      // memberships store a roleId; the role's display name lives in club_roles
       role: clubRoles.name,
       clubId: clubMemberships.clubId,
     })
     .from(clubMemberships)
     .innerJoin(user, eq(user.id, clubMemberships.userId))
     .innerJoin(clubRoles, eq(clubRoles.id, clubMemberships.roleId))
-    .where(and(eq(clubMemberships.clubId, context.clubId), isNull(clubMemberships.deletedAt)));
+    .where(
+      and(
+        eq(clubMemberships.clubId, context.clubId),
+        isNull(clubMemberships.deletedAt),
+      ),
+    );
 }
