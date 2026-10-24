@@ -142,6 +142,7 @@ export const clubTitles = sqliteTable( "club_titles", {
 
   (table) => [
     unique("check_club_titles_unique").on(table.clubId, table.name),
+    unique("check_club_titles_club_id_unique").on(table.clubId, table.id), // add this
   ],
 );
 

@@ -4,7 +4,7 @@ import { forbidden, notFound } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { clubs, memberships } from "@/db/schema";
+import { clubs, clubMemberships } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import type { ClubPermissionType } from "@/lib/auth/permissions";
 import { redirectToSignIn } from "@/lib/auth/sign-in-redirect";
@@ -55,10 +55,10 @@ async function buildClubContext(
   }
 
   const membership =
-    (await db.query.memberships.findFirst({
+    (await db.query.clubMemberships.findFirst({
       where: and(
-        eq(memberships.clubId, club.id),
-        eq(memberships.userId, user.id),
+        eq(clubMemberships.clubId, club.id),
+        eq(clubMemberships.userId, user.id),
       ),
     })) ?? null;
 

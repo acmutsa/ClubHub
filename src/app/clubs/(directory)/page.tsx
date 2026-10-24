@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { auth } from "@/lib/auth/server";
 import { db } from "@/db/index";
@@ -17,14 +17,20 @@ function toOrgCard(club: typeof clubs.$inferSelect): OrgCardData {
     name: club.name,
     description: club.description,
     logoUrl: null,
-    types: club.category ? [club.category] : [],
+    // category is NOT NULL (defaults to "Other"), so there's always one badge
+    types: [club.category],
   };
 }
 
 export default async function AllOrgsPage() {
   const session = await auth.api.getSession({ headers: await headers() });
 
-  const clubRows = await db.select().from(clubs).orderBy(asc(clubs.name));
+  // clubs are soft-deleted, so hide rows with deletedAt set
+  const clubRows = await db
+    .select()
+    .from(clubs)
+    .where(isNull(clubs.deletedAt))
+    .orderBy(asc(clubs.name));
   const orgs = clubRows.map(toOrgCard);
 
   // Memberships only drive the Join/Leave buttons, so if that lookup fails
@@ -35,7 +41,12 @@ export default async function AllOrgsPage() {
       const membershipRows = await db
         .select({ clubId: clubMemberships.clubId })
         .from(clubMemberships)
-        .where(eq(clubMemberships.userId, session.user.id));
+        .where(
+          and(
+            eq(clubMemberships.userId, session.user.id),
+            isNull(clubMemberships.deletedAt),
+          ),
+        );
       memberClubIds = new Set(membershipRows.map((m) => m.clubId));
     } catch (err) {
       console.error("All Orgs: couldn't load memberships", err);
