@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 
-import { ActionErrorCode } from "@/lib/actions/action-error-code";
+import { ActionErrorCode } from "@/constants/action-error-code";
 import type {
   ActionFieldErrors,
   ActionResult,

@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { ActionErrorCode } from "@/lib/actions/action-error-code";
+import { ActionErrorCode } from "@/constants/action-error-code";
 import type { Permission } from "@/constants/permissions";
 import {
   getCurrentClub,
-  getOptionalClubContext,
+  getClubContext,
   type ClubContext,
 } from "@/lib/club-context/get-club-context";
 import { getCurrentUser } from "@/lib/auth/current-user";
@@ -54,10 +54,9 @@ export function actionError(
   return new SafeActionError(code, message, fieldErrors);
 }
 
-async function getActionContext(): Promise<ActionContext | null> {
-  if (!(await getCurrentUser())) return null;
+async function requireActionContext(): Promise<ActionContext> {
   if (!(await getCurrentClub())) throw actionError(ActionErrorCode.NOT_FOUND, "Club was not found.");
-  const context = await getOptionalClubContext();
+  const context = await getClubContext();
   if (!context) throw actionError(ActionErrorCode.FORBIDDEN, "Club membership required.");
   return context;
 }
@@ -72,9 +71,7 @@ export function createSafeAction<TSchema extends z.ZodType, TResult>(
     let context: ActionContext | null = null;
 
     try {
-      context = await getActionContext();
-
-      if (!context) {
+      if (!(await getCurrentUser())) {
         return {
           ok: false,
           error: {
@@ -83,6 +80,8 @@ export function createSafeAction<TSchema extends z.ZodType, TResult>(
           },
         };
       }
+
+      context = await requireActionContext();
 
       if (options.permission && !context.hasPermission(options.permission)) {
         throw actionError(ActionErrorCode.FORBIDDEN, "You do not have permission to do this.");

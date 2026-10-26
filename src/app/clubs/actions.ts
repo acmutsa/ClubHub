@@ -10,17 +10,9 @@ import { createAuthenticatedSafeAction } from "@/lib/actions/create-authenticate
 import { createClubMembershipSchema } from "@/lib/validators/club-membership";
 import { createClubFormSchema } from "@/lib/validators/club";
 import { SYSTEM_CLUB_ROLES } from "@/constants/roles";
-import { ActionErrorCode } from "@/lib/actions/action-error-code";
+import { ActionErrorCode } from "@/constants/action-error-code";
 import { actionError } from "@/lib/actions/create-safe-action";
-
-function createClubSlug(name: string) {
-  return name
-    .normalize("NFKD")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
-}
+import { createClubSlug } from "./lib/create-club-slug";
 
 export const leaveClubAction = createAuthenticatedSafeAction(
   { schema: createClubMembershipSchema },

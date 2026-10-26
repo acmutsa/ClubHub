@@ -7,7 +7,7 @@ import { events } from "@/db/schema";
 import { eventCategories, subOrgs } from "@/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { Permission } from "@/constants/permissions";
-import { ActionErrorCode } from "@/lib/actions/action-error-code";
+import { ActionErrorCode } from "@/constants/action-error-code";
 import { actionError, createSafeAction } from "@/lib/actions/create-safe-action";
 import { insertEventFormSchema } from "@/lib/validators/event";
 

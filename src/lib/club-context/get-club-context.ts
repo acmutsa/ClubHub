@@ -51,7 +51,7 @@ async function buildClubContext(
   const club = await getCurrentClub();
 
   if (!club) {
-    notFound();
+    return null;
   }
 
   const membership =
@@ -95,28 +95,19 @@ async function buildClubContext(
   };
 }
 
-export const getOptionalClubContext = cache(async () => {
+export const getClubContext = cache(async () => {
   const user = await getCurrentUser();
-
   if (!user) return null;
-
   return buildClubContext(user);
 });
 
-export const getClubContext = cache(async () => {
-  const user = await getCurrentUser();
+export async function requireClubContext() {
+  if (!(await getCurrentUser())) return redirectToSignIn();
+  if (!(await getCurrentClub())) notFound();
 
-  if (!user) {
-    return redirectToSignIn();
-  }
-
-  const context = await buildClubContext(user);
+  const context = await getClubContext();
   if (!context) forbidden();
   return context;
-});
-
-export async function requireClubContext() {
-  return getClubContext();
 }
 
-export type ClubContext = Awaited<ReturnType<typeof getClubContext>>;
+export type ClubContext = NonNullable<Awaited<ReturnType<typeof getClubContext>>>;

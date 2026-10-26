@@ -6,7 +6,7 @@
 
 | File | What it does | Use it when |
 | --- | --- | --- |
-| `actions/action-error-code.ts` | Defines the error codes returned by actions | Branching on expected failures in client code |
+| `@/constants/action-error-code` | Defines the error codes returned by actions | Branching on expected failures in client code |
 | `actions/create-safe-action.ts` | Validates a club-scoped mutation and supplies club context | Changing data that belongs to the active club |
 | `actions/create-authenticated-safe-action.ts` | Validates a mutation and supplies the signed-in user plus IP address | The operation is tied to a user but no active club |
 | `actions/create-platform-safe-action.ts` | Validates a platform mutation and enforces a global role | Platform-wide administration |

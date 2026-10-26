@@ -1,7 +1,7 @@
-import { getOptionalClubContext, requireClubContext } from "@/lib/club-context/get-club-context";
+import { getClubContext, requireClubContext } from "@/lib/club-context/get-club-context";
 
 export async function getAuthContext() {
-  return getOptionalClubContext();
+  return getClubContext();
 }
 
 export async function requireAuthContext() {

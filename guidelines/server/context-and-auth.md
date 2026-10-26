@@ -23,10 +23,10 @@ Do not read these headers throughout feature code. The context helpers interpret
 | --- | --- | --- |
 | Optional account UI | `getCurrentUser()` | Returns `null` |
 | Any signed-in user | `requireCurrentUser()` | Redirects to sign-in |
-| Optional signed-in club member | `getOptionalClubContext()` | Returns `null` |
-| Required club member | `getClubContext()` or `requireClubContext()` | Redirects to sign-in |
-| Club auth alias | `getAuthContext()` or `requireAuthContext()` | Optional or required club context |
-| Platform user | `getPlatformContext()` or `requirePlatformContext()` | Redirects to sign-in |
+| Optional signed-in club member | `getClubContext()` or `getAuthContext()` | Returns `null` |
+| Required club member | `requireClubContext()` or `requireAuthContext()` | Redirects to sign-in |
+| Optional platform user | `getPlatformContext()` | Returns `null` |
+| Required platform user | `requirePlatformContext()` | Redirects to sign-in |
 
 ## Current user helpers
 
@@ -67,11 +67,11 @@ Neither helper proves club membership. A user ID alone is not enough to query te
 
 `getCurrentClub()` uses the proxy headers to find a club by slug or ID. It returns `null` outside club scope or when the club does not exist.
 
-`getOptionalClubContext()` returns `null` when nobody is signed in or when the user lacks an active approved membership. Once a user exists, it requires a valid club. A missing club calls `notFound()`. A missing membership returns `null`.
+`getClubContext()` returns `null` when nobody is signed in, the current club is missing, or the user lacks an active approved membership. It does not redirect or call `notFound()` / `forbidden()`. Use it for optional club UI and safe actions that return structured failures.
 
 `getAuthContext()` exposes the optional club context. `requireAuthContext()` delegates to `requireClubContext()` for required club access.
 
-`getClubContext()` and `requireClubContext()` redirect signed-out users and forbid signed-in users without an active approved membership. The result contains:
+`requireClubContext()` redirects signed-out users, calls `notFound()` for a missing club, and calls `forbidden()` for users without an active approved membership. Use it for protected pages and layouts. The result contains:
 
 ```ts
 {
@@ -145,7 +145,7 @@ This stops a route parameter and the proxy-resolved club from drifting apart.
 
 ## Platform context
 
-`getPlatformContext()` and `requirePlatformContext()` require a signed-in user. They return `user` and `isAdmin`, where `isAdmin` reflects the user's global `ADMIN` role. Platform safe actions require a typed global role name through their `role` option. Platform roles do not alter club membership or permissions.
+`getPlatformContext()` returns `null` for signed-out users; `requirePlatformContext()` redirects them to sign-in. For signed-in users both return `user` and `isAdmin`, where `isAdmin` reflects the user's global `ADMIN` role. Platform safe actions require a typed global role name through their `role` option. Platform roles do not alter club membership or permissions.
 
 ```tsx
 const context = await requirePlatformContext()
