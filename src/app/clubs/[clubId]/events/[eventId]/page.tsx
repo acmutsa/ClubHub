@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getVisibleClubEventById } from "../../queries";
+import { getClubEventById } from "../../queries";
 import { EventDetailView } from "./components/event-detail-view";
 
 interface EventDetailsPageProps {
@@ -14,7 +14,7 @@ export default async function EventDetailsPage({
     notFound();
   }
 
-  const event = await getVisibleClubEventById(clubId, eventId);
+  const event = await getClubEventById(clubId, eventId);
 
   if (!event) {
     notFound();

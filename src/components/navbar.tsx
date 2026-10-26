@@ -11,13 +11,11 @@ import {
 } from "./ui/dropdown-menu";
 import { ThemeSwitcher } from "./theme-switcher";
 interface NavbarProps {
-  clubName: string;
   userType: string;
   //we will need to retieve image/logo eventually
 }
 
 export default async function Navbar({
-  clubName,
   userType,
 }: NavbarProps) {
   await requireCurrentUser();
@@ -25,10 +23,6 @@ export default async function Navbar({
   return (
     <header className="h-16 bg-background border-b border-border">
       <div className="h-full flex items-center justify-between px-4">
-        <Link href="/" className=" font-bold text-2xl">
-          {clubName}
-        </Link>
-
         <div className="h-full flex items-center gap-4">
           {userType === "admin" && (
             <Button variant="link" asChild>

@@ -19,7 +19,6 @@ export default async function Layout({
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar
-        clubName={context.club.name}
         userType={
           context.permissions.length > 0
             ? "admin"
@@ -27,7 +26,7 @@ export default async function Layout({
         }
       />
       <main className="flex-1">{children}</main>
-      <Footer clubName={context.club.name} />
+      <Footer />
     </div>
   );
 }

@@ -27,8 +27,6 @@ import {
 
 import type { AdminEvent } from "@/lib/types/event";
 
-type EventDetailViewProps = { event: AdminEvent };
-
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -50,7 +48,7 @@ function formatTimeRange(startAt: Date, endAt: Date): string {
   return `${formatTime(startAt)} - ${formatTime(endAt)}`;
 }
 
-export function EventDetailView({ event }: EventDetailViewProps) {
+export function EventDetailView({ event }: { event: AdminEvent }) {
   // Create calendar event object for the calendar-link library
   const calendarEvent = {
     title: event.title,
