@@ -1,12 +1,13 @@
 import { z } from "zod";
 
-import { ActionErrorCode } from "@/lib/actions/action-error-code";
-import type { ClubPermissionType } from "@/lib/auth/permissions";
+import { ActionErrorCode } from "@/constants/action-error-code";
+import type { Permission } from "@/constants/permissions";
 import {
   getCurrentClub,
-  getOptionalClubContext,
+  getClubContext,
   type ClubContext,
 } from "@/lib/club-context/get-club-context";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
 export type ActionFieldErrors = Partial<Record<string, string[]>>;
 
@@ -37,12 +38,12 @@ export class SafeActionError extends Error {
 
 export type ActionContext = Pick<
   ClubContext,
-  "user" | "club" | "clubId" | "membership" | "permissions" | "ipAddress"
+  "user" | "club" | "clubId" | "membership" | "permissions" | "ipAddress" | "hasPermission" | "requirePermission"
 >;
 
 type CreateSafeActionOptions<TSchema extends z.ZodType> = {
   schema: TSchema;
-  permission?: ClubPermissionType;
+  permission?: Permission;
 };
 
 export function actionError(
@@ -53,22 +54,10 @@ export function actionError(
   return new SafeActionError(code, message, fieldErrors);
 }
 
-async function getActionContext(): Promise<ActionContext | null> {
-  let context: Awaited<ReturnType<typeof getOptionalClubContext>>;
-
-  try {
-    context = await getOptionalClubContext();
-  } catch {
-    const club = await getCurrentClub();
-
-    throw actionError(
-      club ? ActionErrorCode.FORBIDDEN : ActionErrorCode.NOT_FOUND,
-      club ? "Club membership required." : "Club was not found.",
-    );
-  }
-
-  if (!context) return null;
-
+async function requireActionContext(): Promise<ActionContext> {
+  if (!(await getCurrentClub())) throw actionError(ActionErrorCode.NOT_FOUND, "Club was not found.");
+  const context = await getClubContext();
+  if (!context) throw actionError(ActionErrorCode.FORBIDDEN, "Club membership required.");
   return context;
 }
 
@@ -82,9 +71,7 @@ export function createSafeAction<TSchema extends z.ZodType, TResult>(
     let context: ActionContext | null = null;
 
     try {
-      context = await getActionContext();
-
-      if (!context) {
+      if (!(await getCurrentUser())) {
         return {
           ok: false,
           error: {
@@ -92,6 +79,12 @@ export function createSafeAction<TSchema extends z.ZodType, TResult>(
             message: "You must be signed in.",
           },
         };
+      }
+
+      context = await requireActionContext();
+
+      if (options.permission && !context.hasPermission(options.permission)) {
+        throw actionError(ActionErrorCode.FORBIDDEN, "You do not have permission to do this.");
       }
 
       const parsedInput = options.schema.safeParse(rawInput);
@@ -107,10 +100,6 @@ export function createSafeAction<TSchema extends z.ZodType, TResult>(
           },
         };
       }
-
-      // Accepted now so action call sites will not change when permissions land.
-      // Enforcement is intentionally deferred until the permission model exists.
-      void options.permission;
 
       const data = await handler(parsedInput.data, context);
 

@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 interface EventDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  eventTypes?: { id: number; name: string; color: string }[];
+  eventTypes?: { id: string; name: string; color: string }[];
 }
 
 export function EventDataTable<TData, TValue>({
@@ -63,20 +63,16 @@ export function EventDataTable<TData, TValue>({
     },
   });
 
-  const statusFilter = table.getColumn("hidden")?.getFilterValue() as
-    | string
-    | undefined;
-  const typeFilter = table.getColumn("eventTypes")?.getFilterValue() as
+  const typeFilter = table.getColumn("category")?.getFilterValue() as
     | string
     | undefined;
 
   const hasActiveFilters =
-    globalFilter || statusFilter !== undefined || typeFilter !== undefined;
+    globalFilter || typeFilter !== undefined;
 
   const clearAllFilters = () => {
     setGlobalFilter("");
-    table.getColumn("hidden")?.setFilterValue(undefined);
-    table.getColumn("eventTypes")?.setFilterValue(undefined);
+    table.getColumn("category")?.setFilterValue(undefined);
   };
 
   return (
@@ -96,32 +92,13 @@ export function EventDataTable<TData, TValue>({
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Status Filter */}
-          <Select
-            value={statusFilter ?? "all"}
-            onValueChange={(value) =>
-              table
-                .getColumn("hidden")
-                ?.setFilterValue(value === "all" ? undefined : value)
-            }
-          >
-            <SelectTrigger className="w-[130px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="visible">Visible</SelectItem>
-              <SelectItem value="hidden">Hidden</SelectItem>
-            </SelectContent>
-          </Select>
-
           {/* Event Type Filter */}
           {eventTypes.length > 0 && (
             <Select
               value={typeFilter ?? "all"}
               onValueChange={(value) =>
                 table
-                  .getColumn("eventTypes")
+                  .getColumn("category")
                   ?.setFilterValue(value === "all" ? undefined : value)
               }
             >
