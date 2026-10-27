@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2, KeyRound, Loader2, Mail, RotateCcw } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Circle,
+  KeyRound,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  RotateCcw,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,122 +27,187 @@ import {
 } from "@/components/ui/input-otp";
 import { cn } from "@/lib/utils";
 import {
+  getPasswordRequirements,
   requestResetSchema,
+  resetPasswordSchema,
   type RequestResetInput,
+  type ResetPasswordInput,
 } from "@/lib/validators/password-reset";
-import {
-  requestPasswordResetCodeAction,
-  verifyPasswordResetCodeAction,
-} from "@/app/password/actions";
 import { authClient } from "@/lib/auth/client";
-
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
+type Step = "email" | "otp" | "password";
+
 export default function RequestPasswordResetForm() {
   const router = useRouter();
-
-  // "email" -> user enters email
-  // "otp" -> user enters 6-digit code on the same page
-  const [step, setStep] = useState<"email" | "otp">("email");
-  const [submittedEmail, setSubmittedEmail] = useState<string>("");
-  const [otpCode, setOtpCode] = useState<string>("");
+  const [step, setStep] = useState<Step>("email");
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [otpError, setOtpError] = useState<string | null>(null);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState<boolean>(false);
-  const [isResending, setIsResending] = useState<boolean>(false);
-  const [resendCooldown, setResendCooldown] = useState<number>(0);
-  const [resendNotification, setResendNotification] = useState<string | null>(null);
-  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const otpInputRef = useRef<HTMLInputElement>(null);
+  const verificationInProgress = useRef(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
-  // Email step form
+
   const emailForm = useForm<RequestResetInput>({
     resolver: zodResolver(requestResetSchema),
     mode: "onTouched",
-    defaultValues: {
-      email: "",
-    },
+    defaultValues: { email: "" },
   });
 
-  // Countdown timer for resend button
+  const passwordForm = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: "onTouched",
+    defaultValues: { password: "", confirmPassword: "" },
+  });
+  const passwordRequirements = getPasswordRequirements(
+    passwordForm.watch("password") || ""
+  );
+  const passwordRequirementsMet = passwordRequirements.every(
+    (requirement) => requirement.satisfied
+  );
+
+  useEffect(() => {
+    if (isCompleted) {
+      const timer = setTimeout(() => {
+        router.replace("/sign-in");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isCompleted, router]);
+
   useEffect(() => {
     if (resendCooldown <= 0) return;
-    const timer = setInterval(() => {
-      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+
+    const timer = setTimeout(() => {
+      setResendCooldown((seconds) => seconds - 1);
     }, 1000);
-    return () => clearInterval(timer);
+
+    return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  // Handle Step 1: Submit email
-  async function handleEmailSubmit(values: RequestResetInput) {
-      emailForm.clearErrors();
-      const { error } = await authClient.emailOtp.sendVerificationOtp({ email: values.email, type: "forget-password"});
+  useEffect(() => {
+    if (step === "otp") {
+      otpInputRef.current?.focus();
+    }
+  }, [step]);
 
-      if ( error ) {
-        emailForm.setError("root", { message: error.message ?? "Something went wrong" });
+  async function handleEmailSubmit(values: RequestResetInput) {
+    const email = values.email.trim();
+    try {
+      const { error } = await authClient.emailOtp.sendVerificationOtp({
+        email,
+        type: "forget-password",
+      });
+
+      if (error) {
+        emailForm.setError("root", {
+          message: error.message || "Unable to send a verification code. Please try again.",
+        });
         return;
       }
 
-      setSubmittedEmail(values.email);
-      setStep("otp");
+      setSubmittedEmail(email);
       setOtpCode("");
       setOtpError(null);
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
-      setResendNotification(null);
-    }
-  // Handle Step 2: Verify 6-digit code
-  async function handleVerifyOtp(codeToVerify?: string) {
-    const code = (codeToVerify ?? otpCode).trim();
-    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
-      setOtpError("Please enter the full 6-digit verification code.");
-      return;
-    }
-
-    try {
-      setIsVerifyingOtp(true);
-      setOtpError(null);
-      setResendNotification(null);
-
-      const res = await verifyPasswordResetCodeAction({
-        email: submittedEmail,
-        code,
+      setStep("otp");
+    } catch (error) {
+      emailForm.setError("root", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to send a verification code. Please try again.",
       });
-
-      if (!res.ok) {
-        setOtpError(res.message);
-        return;
-      }
-
-      setIsRedirecting(true);
-      // Redirect to the tokenized reset password page
-      router.push(`/password/reset?token=${encodeURIComponent(res.token)}`);
-    } catch {
-      setOtpError("Failed to verify code. Please try again.");
-    } finally {
-      setIsVerifyingOtp(false);
     }
   }
 
-  // Handle resending the verification code
-  async function handleResendCode() {
-    if (resendCooldown > 0 || isResending || !submittedEmail) return;
+  async function handleVerifyOtp(code: string) {
+    if (code.length !== 6 || verificationInProgress.current) return;
+
+    verificationInProgress.current = true;
+    setIsVerifyingOtp(true);
+    setOtpError(null);
 
     try {
-      setIsResending(true);
-      setOtpError(null);
-      setResendNotification(null);
+      const { error } = await authClient.emailOtp.checkVerificationOtp({
+        email: submittedEmail,
+        otp: code,
+        type: "forget-password",
+      });
 
-      const res = await requestPasswordResetCodeAction({ email: submittedEmail });
-      if (res.ok) {
-        setResendCooldown(RESEND_COOLDOWN_SECONDS);
-        setResendNotification("A new verification code has been dispatched.");
+      if (error) {
+        setOtpError("Your code is invalid or has expired.");
         setOtpCode("");
-      } else {
-        setOtpError(res.error.message);
+        return;
       }
-    } catch {
-      setOtpError("Failed to resend code. Please try again.");
+
+      setStep("password");
+    } catch (error) {
+      setOtpError(
+        error instanceof Error ? error.message : "Unable to verify your code. Please try again."
+      );
+    } finally {
+      setIsVerifyingOtp(false);
+      verificationInProgress.current = false;
+    }
+  }
+
+  async function handleResendCode() {
+    if (resendCooldown > 0 || isResending) return;
+
+    setIsResending(true);
+    setOtpError(null);
+
+    try {
+      const { error } = await authClient.emailOtp.sendVerificationOtp({
+        email: submittedEmail,
+        type: "forget-password",
+      });
+
+      if (error) {
+        setOtpError(error.message || "Unable to resend the code. Please try again.");
+        return;
+      }
+
+      setOtpCode("");
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    } catch (error) {
+      setOtpError(
+        error instanceof Error ? error.message : "Unable to resend the code. Please try again."
+      );
     } finally {
       setIsResending(false);
+    }
+  }
+
+  async function handlePasswordSubmit(values: ResetPasswordInput) {
+    try {
+      const { error } = await authClient.emailOtp.resetPassword({
+        email: submittedEmail,
+        otp: otpCode,
+        password: values.password,
+      });
+
+      if (error) {
+        passwordForm.setError("root", {
+          message: error.message || "Unable to reset your password. Please try again.",
+        });
+        return;
+      }
+
+      setIsCompleted(true);
+    } catch (error) {
+      passwordForm.setError("root", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to reset your password. Please try again.",
+      });
     }
   }
 
@@ -141,16 +215,15 @@ export default function RequestPasswordResetForm() {
     <div className="flex flex-1 items-center justify-center">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-6 text-center">
-          {step === "email" ? (
-            /* STEP 1: Enter Email */
-            <div className="w-full grid gap-6">
+          {step === "email" && (
+            <div className="grid w-full gap-6">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <KeyRound className="size-6" />
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight">Forgot Password</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                  Enter your email address and we will send you a 6-digit verification code to reset your password.
+                  Enter your email address and we will send you a 6-digit verification code.
                 </p>
               </div>
 
@@ -178,9 +251,9 @@ export default function RequestPasswordResetForm() {
                   </div>
 
                   {emailForm.formState.errors.root && (
-                    <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-destructive text-sm">
+                    <p className="text-destructive text-sm">
                       {emailForm.formState.errors.root.message}
-                    </div>
+                    </p>
                   )}
 
                   <Button
@@ -200,40 +273,33 @@ export default function RequestPasswordResetForm() {
                 </div>
               </form>
 
-              <div className="text-center text-sm">
-                <Link
-                  href="/sign-in"
-                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <ArrowLeft className="size-3.5" />
-                  Back to Sign In
-                </Link>
-              </div>
+              <Link
+                href="/sign-in"
+                className="text-muted-foreground hover:text-foreground inline-flex items-center justify-center gap-1.5 text-sm transition-colors"
+              >
+                <ArrowLeft className="size-3.5" />
+                Back to Sign In
+              </Link>
             </div>
-          ) : (
-            /* STEP 2: Enter 6-digit OTP code (On the same page) */
-            <div className="w-full grid gap-6">
+          )}
+
+          {step === "otp" && (
+            <div className="grid w-full gap-6">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Mail className="size-6" />
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">Enter Verification Code</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Verify Your Email</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                  If an account exists for <span className="font-semibold text-foreground">{submittedEmail}</span>, a 6-digit verification code has been sent.
+                  Enter the 6-digit code sent to{" "}
+                  <span className="font-semibold text-foreground">{submittedEmail}</span>.
                 </p>
               </div>
 
-              {resendNotification && (
-                <div className="flex items-center gap-2 rounded-md border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-xs text-emerald-600 dark:text-emerald-400 text-left">
-                  <CheckCircle2 className="size-4 shrink-0" />
-                  <span>{resendNotification}</span>
-                </div>
-              )}
-
               {otpError && (
-                <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-destructive text-sm text-left">
+                <p className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-left text-destructive text-sm">
                   {otpError}
-                </div>
+                </p>
               )}
 
               <div className="grid gap-4">
@@ -242,17 +308,17 @@ export default function RequestPasswordResetForm() {
                     6-digit verification code
                   </Label>
                   <InputOTP
+                    ref={otpInputRef}
                     id="otp-input"
                     maxLength={6}
                     value={otpCode}
-                    onChange={(val) => {
-                      setOtpCode(val);
+                    onChange={(value) => {
+                      setOtpCode(value);
                       setOtpError(null);
-                      if (val.length === 6) {
-                        handleVerifyOtp(val);
-                      }
+                      if (value.length === 6) handleVerifyOtp(value);
                     }}
-                    disabled={isVerifyingOtp || isRedirecting}
+
+                    disabled={isVerifyingOtp || isResending}
                     autoFocus
                   >
                     <InputOTPGroup>
@@ -267,25 +333,14 @@ export default function RequestPasswordResetForm() {
                       <InputOTPSlot index={5} />
                     </InputOTPGroup>
                   </InputOTP>
+                  {isVerifyingOtp && (
+                    <span className="text-muted-foreground inline-flex items-center gap-2 text-sm">
+                      <Loader2 className="size-4 animate-spin" />
+                      Verifying code...
+                    </span>
+                  )}
                 </div>
 
-                <Button
-                  type="button"
-                  onClick={() => handleVerifyOtp()}
-                  className="w-full"
-                  disabled={otpCode.length !== 6 || isVerifyingOtp || isRedirecting}
-                >
-                  {isVerifyingOtp || isRedirecting ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      {isRedirecting ? "Verified! Redirecting..." : "Verifying code..."}
-                    </>
-                  ) : (
-                    "Verify Code"
-                  )}
-                </Button>
-
-                {/* Resend Code Section */}
                 <div className="flex flex-col items-center gap-2 pt-2 text-sm">
                   <div className="text-muted-foreground flex items-center gap-1.5">
                     <span>Didn&apos;t receive the code?</span>
@@ -297,8 +352,8 @@ export default function RequestPasswordResetForm() {
                       <button
                         type="button"
                         onClick={handleResendCode}
-                        disabled={isResending || isVerifyingOtp || isRedirecting}
-                        className="text-primary hover:underline font-medium inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        disabled={isResending || isVerifyingOtp}
+                        className="text-primary hover:underline inline-flex cursor-pointer items-center gap-1 font-medium disabled:opacity-50"
                       >
                         {isResending && <RotateCcw className="size-3 animate-spin" />}
                         Resend code
@@ -308,13 +363,13 @@ export default function RequestPasswordResetForm() {
 
                   <button
                     type="button"
+                    disabled={isResending || isVerifyingOtp}
                     onClick={() => {
                       setStep("email");
                       setOtpCode("");
                       setOtpError(null);
-                      setResendNotification(null);
                     }}
-                    className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline cursor-pointer transition-colors"
+                    className="text-muted-foreground hover:text-foreground cursor-pointer text-xs underline-offset-4 transition-colors hover:underline"
                   >
                     Use a different email address
                   </button>
@@ -322,9 +377,137 @@ export default function RequestPasswordResetForm() {
               </div>
             </div>
           )}
+
+          {step === "password" && (
+            isCompleted ? (
+              <div
+                role="status"
+                aria-live="polite"
+                className="flex w-full flex-col items-center gap-3 text-center"
+              >
+                <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <Check className="size-6" />
+                </div>
+                <h1 className="text-2xl font-bold tracking-tight">
+                  Password Updated
+                </h1>
+                <p className="text-muted-foreground text-sm text-balance">
+                  Your password was successfully updated. You&apos;ll be redirected
+                  to the sign-in page shortly.
+                </p>
+              </div>
+            ) : (
+              <div className="grid w-full gap-6">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <LockKeyhole className="size-6" />
+                  </div>
+                  <h1 className="text-2xl font-bold tracking-tight">Set New Password</h1>
+                  <p className="text-muted-foreground text-sm text-balance">
+                    Choose a new password for {submittedEmail}.
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}
+                  noValidate
+                  className="text-left"
+                >
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="password">New Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        autoComplete="new-password"
+                        disabled={passwordForm.formState.isSubmitting}
+                        {...passwordForm.register("password")}
+                        className={cn(
+                          passwordForm.formState.errors.password &&
+                            "border-destructive focus-visible:ring-destructive"
+                        )}
+                      />
+                      {passwordForm.formState.errors.password && (
+                        <p className="text-destructive text-xs">
+                          {passwordForm.formState.errors.password.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        autoComplete="new-password"
+                        disabled={passwordForm.formState.isSubmitting}
+                        {...passwordForm.register("confirmPassword")}
+                        className={cn(
+                          passwordForm.formState.errors.confirmPassword &&
+                            "border-destructive focus-visible:ring-destructive"
+                        )}
+                      />
+                      {passwordForm.formState.errors.confirmPassword && (
+                        <p className="text-destructive text-xs">
+                          {passwordForm.formState.errors.confirmPassword.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <ul
+                      aria-label="Password requirements"
+                      className="grid gap-1.5 text-xs"
+                    >
+                      {passwordRequirements.map((requirement) => (
+                        <li
+                          key={requirement.id}
+                          className={cn(
+                            "flex items-center gap-2 transition-colors",
+                            requirement.satisfied
+                              ? "font-medium text-emerald-600 dark:text-emerald-400"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          {requirement.satisfied ? (
+                            <Check className="size-3.5 shrink-0 stroke-[2.5]" />
+                          ) : (
+                            <Circle className="size-3 shrink-0 opacity-40" />
+                          )}
+                          <span>{requirement.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {passwordForm.formState.errors.root && (
+                      <p className="text-destructive text-sm">
+                        {passwordForm.formState.errors.root.message}
+                      </p>
+                    )}
+
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={
+                        passwordForm.formState.isSubmitting ||
+                        !passwordRequirementsMet
+                      }
+                    >
+                      {passwordForm.formState.isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 size-4 animate-spin" />
+                          Resetting password...
+                        </>
+                      ) : (
+                        "Reset Password"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>
   );
 }
-

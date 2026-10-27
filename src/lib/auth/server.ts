@@ -1,7 +1,9 @@
 import { db } from "@/db";
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP } from "better-auth/plugins/email-otp";
+import { passwordSchema } from "@/lib/validators/password-reset";
 
 export const auth = betterAuth({
   user: {
@@ -12,6 +14,8 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
     async sendResetPassword({ url }) {
       // Send an email to the user with a link to reset their password=
       console.log("Password reset link: \n", url);
@@ -20,7 +24,25 @@ export const auth = betterAuth({
       console.log(`Password for user ${user.email} has been reset.`);
     },
   },
+  hooks: {
+    before: createAuthMiddleware(async (context) => {
+      const password =
+        context.path === "/email-otp/reset-password"
+          ? context.body.password
+          : context.path === "/reset-password"
+            ? context.body.newPassword
+            : undefined;
 
+      if (password === undefined) return;
+
+      const result = passwordSchema.safeParse(password);
+      if (!result.success) {
+        throw new APIError("BAD_REQUEST", {
+          message: result.error.issues[0]?.message ?? "Password does not meet the requirements.",
+        });
+      }
+    }),
+  },
 
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "mysql", "sqlite"
@@ -47,4 +69,3 @@ export const auth = betterAuth({
     })
   ]
 });
-
