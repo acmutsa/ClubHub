@@ -71,6 +71,13 @@
       "when": 1791300766821,
       "tag": "0009_club_schema_overhaul",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1791348682668,
+      "tag": "0010_event_passes",
+      "breakpoints": true
     }
   ]
 }

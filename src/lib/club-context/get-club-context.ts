@@ -1,12 +1,12 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { headers } from "next/headers";
 import { forbidden, notFound } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { clubs, memberships } from "@/db/schema";
+import { clubMemberships, clubs } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import type { ClubPermissionType } from "@/lib/auth/permissions";
+import { Permission } from "@/constants/permissions";
 import { redirectToSignIn } from "@/lib/auth/sign-in-redirect";
 
 export type AppSurface = "club" | "platform" | "landing";
@@ -32,7 +32,7 @@ export const getCurrentClub = cache(async () => {
 
   return (
     (await db.query.clubs.findFirst({
-      where: clubSlug ? eq(clubs.slug, clubSlug) : eq(clubs.id, clubId!),
+      where: and(clubSlug ? eq(clubs.slug, clubSlug) : eq(clubs.id, clubId!), isNull(clubs.deletedAt)),
     })) ?? null
   );
 });
@@ -51,19 +51,23 @@ async function buildClubContext(
   const club = await getCurrentClub();
 
   if (!club) {
-    notFound();
+    return null;
   }
 
   const membership =
-    (await db.query.memberships.findFirst({
+    (await db.query.clubMemberships.findFirst({
       where: and(
-        eq(memberships.clubId, club.id),
-        eq(memberships.userId, user.id),
+        eq(clubMemberships.clubId, club.id),
+        eq(clubMemberships.userId, user.id),
+        eq(clubMemberships.applicationStatus, "approved"),
+        eq(clubMemberships.status, "active"),
+        isNull(clubMemberships.deletedAt),
       ),
+      with: { role: true },
     })) ?? null;
 
   if (!membership) {
-    forbidden();
+    return null;
   }
 
   const forwardedFor = requestHeaders.get("x-forwarded-for");
@@ -71,7 +75,9 @@ async function buildClubContext(
     forwardedFor?.split(",")[0]?.trim() ||
     requestHeaders.get("x-real-ip") ||
     null;
-  const permissions: ClubPermissionType[] = [];
+  const permissions: Permission[] = (Array.isArray(membership.role.permissions) ? membership.role.permissions : []).filter(
+    (permission): permission is Permission => Object.values(Permission).includes(permission),
+  );
 
   return {
     user,
@@ -80,29 +86,28 @@ async function buildClubContext(
     membership,
     permissions,
     ipAddress,
+    hasPermission(permission: Permission) {
+      return permissions.includes(permission);
+    },
+    requirePermission(permission: Permission) {
+      if (!permissions.includes(permission)) forbidden();
+    },
   };
 }
 
-export const getOptionalClubContext = cache(async () => {
-  const user = await getCurrentUser();
-
-  if (!user) return null;
-
-  return buildClubContext(user);
-});
-
 export const getClubContext = cache(async () => {
   const user = await getCurrentUser();
-
-  if (!user) {
-    return redirectToSignIn();
-  }
-
+  if (!user) return null;
   return buildClubContext(user);
 });
 
 export async function requireClubContext() {
-  return getClubContext();
+  if (!(await getCurrentUser())) return redirectToSignIn();
+  if (!(await getCurrentClub())) notFound();
+
+  const context = await getClubContext();
+  if (!context) forbidden();
+  return context;
 }
 
-export type ClubContext = Awaited<ReturnType<typeof getClubContext>>;
+export type ClubContext = NonNullable<Awaited<ReturnType<typeof getClubContext>>>;

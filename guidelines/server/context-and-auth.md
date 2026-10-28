@@ -23,10 +23,10 @@ Do not read these headers throughout feature code. The context helpers interpret
 | --- | --- | --- |
 | Optional account UI | `getCurrentUser()` | Returns `null` |
 | Any signed-in user | `requireCurrentUser()` | Redirects to sign-in |
-| Optional signed-in club member | `getOptionalClubContext()` | Returns `null` |
-| Required club member | `getClubContext()` or `requireClubContext()` | Redirects to sign-in |
-| Existing club code using the auth alias | `getAuthContext()` or `requireAuthContext()` | Optional or redirecting |
-| Platform administrator | `getPlatformContext()` or `requirePlatformContext()` | Redirects or forbids |
+| Optional signed-in club member | `getClubContext()` or `getAuthContext()` | Returns `null` |
+| Required club member | `requireClubContext()` or `requireAuthContext()` | Redirects to sign-in |
+| Optional platform user | `getPlatformContext()` | Returns `null` |
+| Required platform user | `requirePlatformContext()` | Redirects to sign-in |
 
 ## Current user helpers
 
@@ -67,9 +67,11 @@ Neither helper proves club membership. A user ID alone is not enough to query te
 
 `getCurrentClub()` uses the proxy headers to find a club by slug or ID. It returns `null` outside club scope or when the club does not exist.
 
-`getOptionalClubContext()` returns `null` when nobody is signed in. Once a user exists, it requires a valid club and membership. A missing club calls `notFound()`. A missing membership calls `forbidden()`.
+`getClubContext()` returns `null` when nobody is signed in, the current club is missing, or the user lacks an active approved membership. It does not redirect or call `notFound()` / `forbidden()`. Use it for optional club UI and safe actions that return structured failures.
 
-`getClubContext()` and `requireClubContext()` redirect signed-out users, then apply the same club and membership rules. The result contains:
+`getAuthContext()` exposes the optional club context. `requireAuthContext()` delegates to `requireClubContext()` for required club access.
+
+`requireClubContext()` redirects signed-out users, calls `notFound()` for a missing club, and calls `forbidden()` for users without an active approved membership. Use it for protected pages and layouts. The result contains:
 
 ```ts
 {
@@ -82,7 +84,7 @@ Neither helper proves club membership. A user ID alone is not enough to query te
 }
 ```
 
-The `permissions` array is empty in the current implementation. Club permission helpers described in older project notes do not exist yet. Use an explicit server-side membership role check until that model lands.
+The `permissions` array comes from the member's assigned club role. Use `context.hasPermission(Permission.EVENTS_CREATE)` or `context.requirePermission(...)` for club authorization. A platform `ADMIN` role does not grant club permissions.
 
 ### A club page
 
@@ -141,58 +143,14 @@ if (!matchesClubRoute(context.club, clubId)) {
 
 This stops a route parameter and the proxy-resolved club from drifting apart.
 
-## `getAuthContext` is club context
-
-`getAuthContext()` forwards to `getOptionalClubContext()`. `requireAuthContext()` redirects when it receives `null`. Both are club-scoped despite their broad names.
-
-Use them in existing club layouts. For new code, `getClubContext()` or `requireClubContext()` makes the scope clearer.
-
 ## Platform context
 
-`getPlatformContext()` requires a signed-in user, requires `x-app-scope` to be `platform`, loads the user's non-deleted platform role, and rejects anyone without that role.
-
-The result has three permission helpers:
-
-```ts
-context.hasPlatformPermission("clubs.review")
-
-context.hasPlatformPermissions([
-  "clubs.review",
-  "clubs.publish",
-])
-
-context.requirePlatformPermission("clubs.publish")
-```
-
-The first two return booleans. The last calls `forbidden()` when the permission is missing and returns the user on success.
-
-### Requiring a platform permission in a page
-
-```tsx
-import { requirePlatformContext } from "@/lib/platform-context/get-platform-context"
-
-export default async function ClubReviewPage() {
-  const context = await requirePlatformContext()
-
-  context.requirePlatformPermission("clubs.review")
-
-  const pendingClubs = await listPendingClubs()
-  return <ClubReviewTable clubs={pendingClubs} />
-}
-```
-
-### Hiding an optional control
+`getPlatformContext()` returns `null` for signed-out users; `requirePlatformContext()` redirects them to sign-in. For signed-in users both return `user` and `isAdmin`, where `isAdmin` reflects the user's global `ADMIN` role. Platform safe actions require a typed global role name through their `role` option. Platform roles do not alter club membership or permissions.
 
 ```tsx
 const context = await requirePlatformContext()
-const canPublish = context.hasPlatformPermission("clubs.publish")
-
-return <ClubReviewDetails showPublishAction={canPublish} />
+if (!context.isAdmin) forbidden()
 ```
-
-The action that publishes the club still checks the permission. Conditional UI prevents a dead-end click, but it is not authorization.
-
-`requirePlatformContext()` currently aliases `getPlatformContext()`. Both redirect a signed-out person and reject the wrong surface or role.
 
 ## Safe sign-in callbacks
 
