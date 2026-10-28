@@ -4,9 +4,12 @@ import { eventColumns } from "./event-columns";
 import { Plus } from "lucide-react";
 import { listClubEvents, listClubEventTypes } from "../../queries";
 import Link from "next/link";
+import { requireAuthContext } from "@/lib/auth/get-auth-context";
+import { Permission } from "@/constants/permissions";
 
-export default async function Page({ params }: { params: { clubId: string } }) {
+export default async function Page({ params }: { params: Promise<{ clubId: string }> }) {
   const { clubId } = await params;
+  const context = await requireAuthContext();
   const [clubEvents, eventTypes] = await Promise.all([
     listClubEvents(clubId),
     listClubEventTypes(clubId),
@@ -25,12 +28,12 @@ export default async function Page({ params }: { params: { clubId: string } }) {
                 Manage and monitor your club&apos;s events
               </p>
             </div>
-            <Link href={`/admin/events/new`}>
+            {context.hasPermission(Permission.EVENTS_CREATE) && <Link href="/admin/events/new">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Event
               </Button>
-            </Link>
+            </Link>}
           </div>
         </div>
       </div>

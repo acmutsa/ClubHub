@@ -12,7 +12,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -120,12 +119,12 @@ export default function MemberDataTable<TData, TValue>({
                     roleColumn.setFilterValue(undefined)
                   }
 
-                  if (value === "admins") {
-                    roleColumn.setFilterValue(["admin", "super_admin"])
+                  if (value === "owners") {
+                    roleColumn.setFilterValue("OWNER")
                   }
 
                   if (value === "members") {
-                    roleColumn.setFilterValue("member")
+                    roleColumn.setFilterValue("MEMBER")
                   }
                 }}
               >
@@ -136,7 +135,7 @@ export default function MemberDataTable<TData, TValue>({
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="all">All Members</SelectItem>
-                        <SelectItem value="admins">Admins Only</SelectItem>
+                        <SelectItem value="owners">Owners Only</SelectItem>
                         <SelectItem value="members">Members Only</SelectItem>
                       </SelectGroup>
                     </SelectContent>

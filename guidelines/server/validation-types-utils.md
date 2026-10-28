@@ -155,7 +155,7 @@ When the same role rule appears in several server files, move it to a clearly na
 
 ## Permission types
 
-Club permissions are the `Permission` enum in `src/constants/permissions.ts`, and `ClubPermissionType` is an alias for it. Always reference a member such as `Permission.EVENTS_CREATE`; a string literal like `"events.create"` does not type-check, so a misspelling such as `event.create` cannot slip through. The `clubRoles.permissions` column is typed as `Permission[]`, and `createClubRoleSchema` rejects any value outside the enum.
+Club permissions are the `Permission` enum in `src/constants/permissions.ts`. Always reference a member such as `Permission.EVENTS_CREATE`; a string literal like `"events.create"` does not type-check, so a misspelling such as `event.create` cannot slip through. The `clubRoles.permissions` column is typed as `Permission[]`, and `createClubRoleSchema` rejects any value outside the enum.
 
 `PERMISSION_META` holds the label, description, and category of each permission for the roles page. It `satisfies Record<Permission, PermissionMeta>`, so adding an enum member without its metadata is a type error:
 
@@ -167,17 +167,7 @@ PERMISSION_META[Permission.EVENTS_CREATE].label // "Create events"
 
 Name new permissions `area.action`, matching the existing values.
 
-`PlatformPermissionType` is still a string alias. A future platform catalog can follow the same pattern:
-
-```ts
-export enum PlatformPermission {
-  CLUBS_REVIEW = "clubs.review",
-  CLUBS_APPROVE = "clubs.approve",
-  CLUBS_REJECT = "clubs.reject",
-}
-```
-
-Do this when the permission names settle. A partial catalog that omits active permissions causes more confusion than the current string type.
+Platform actions use the typed global role names from `src/constants/roles.ts`. There is no platform permission catalog.
 
 ## The `cn` helper
 

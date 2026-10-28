@@ -7,10 +7,10 @@ A safe action is a server boundary with a stable result shape. It checks identit
 | Step | Club action | Authenticated action | Platform action |
 | --- | --- | --- | --- |
 | Resolve identity | Yes | Yes | Yes |
-| Resolve tenant or platform role | Club and membership | No tenant | Platform role |
-| Enforce option permission | Not yet | No permission option | Yes |
+| Resolve tenant or platform role | Club and active membership | No tenant | Global `ADMIN` role |
+| Enforce option access | Club permission | No permission option | Global role |
 | Validate with Zod | Yes | Yes | Yes |
-| Typed expected errors | `actionError()` | Not available | `platformActionError()` |
+| Typed expected errors | `actionError()` | `actionError()` | `platformActionError()` |
 | Catch unexpected errors | Returns `SERVER_ERROR` | Returns `SERVER_ERROR` | Returns `SERVER_ERROR` |
 
 The wrappers validate on the server even when a form already ran the same schema in the browser.
@@ -115,7 +115,7 @@ The `throw` matters. Returning `actionError(...)` would count as successful acti
 
 `SafeActionError` accepts `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `EXPIRED`, and `SERVER_ERROR`. Validation and missing authentication belong to the wrapper, so TypeScript excludes those codes from `actionError()`.
 
-Platform actions use `platformActionError()`. The authenticated action wrapper has no expected-error helper today.
+Platform actions use `platformActionError()`. The authenticated wrapper also converts `SafeActionError` from `actionError()` into an action result.
 
 ## Business validation tied to a field
 
@@ -141,49 +141,25 @@ The form shows the general conflict and places the fix beside `title`.
 "use server"
 
 import { revalidatePath } from "next/cache"
-
+import { Permission } from "@/constants/permissions"
 import { db } from "@/db"
 import { events } from "@/db/schema"
-import { ActionErrorCode } from "@/lib/actions/action-error-code"
-import {
-  actionError,
-  createSafeAction,
-} from "@/lib/actions/create-safe-action"
-import { createEventSchema } from "./validators"
+import { createSafeAction } from "@/lib/actions/create-safe-action"
+import { insertEventFormSchema } from "@/lib/validators/event"
 
 export const createEventAction = createSafeAction(
   {
-    schema: createEventSchema,
-    permission: "events.create",
+    schema: insertEventFormSchema,
+    permission: Permission.EVENTS_CREATE,
   },
   async (input, context) => {
-    const isAdmin =
-      context.membership.role === "ADMIN" ||
-      context.membership.role === "SUPER_ADMIN"
-
-    if (!isAdmin) {
-      throw actionError(
-        ActionErrorCode.FORBIDDEN,
-        "You cannot create events for this club.",
-      )
-    }
-
-    const [event] = await db
-      .insert(events)
-      .values({
-        ...input,
-        clubId: context.clubId,
-        createdBy: context.user.id,
-        updatedBy: context.user.id,
-      })
-      .returning()
-
-    if (!event) {
-      throw actionError(
-        ActionErrorCode.SERVER_ERROR,
-        "The event could not be created.",
-      )
-    }
+    // Check that referenced category and sub-org IDs belong to context.clubId.
+    const [event] = await db.insert(events).values({
+      ...input,
+      clubId: context.clubId,
+      createdById: context.user.id,
+      updatedById: context.user.id,
+    }).returning()
 
     revalidatePath(`/clubs/${context.clubId}/admin/events`)
     return { event }
@@ -191,29 +167,21 @@ export const createEventAction = createSafeAction(
 )
 ```
 
-The tenant ID comes from context. The role check remains necessary because the club `permission` option is not enforced yet.
+The wrapper checks the assigned club role's permissions. Platform roles do not grant club permissions. Database lookups must still verify that submitted record IDs belong to `context.clubId`.
 
 ## A delete action with tenant filtering
 
 ```ts
 const deleteEventSchema = z.object({
-  eventId: z.string().min(1),
+  eventId: z.uuid(),
 })
 
 export const deleteEventAction = createSafeAction(
   {
     schema: deleteEventSchema,
-    permission: "events.delete",
+    permission: Permission.EVENTS_DELETE,
   },
   async ({ eventId }, context) => {
-    const canDelete =
-      context.membership.role === "ADMIN" ||
-      context.membership.role === "SUPER_ADMIN"
-
-    if (!canDelete) {
-      throw actionError(ActionErrorCode.FORBIDDEN, "Permission denied.")
-    }
-
     const [deleted] = await db
       .delete(events)
       .where(
@@ -241,15 +209,15 @@ The confirmation dialog belongs in the client. The authorization and tenant filt
 ```ts
 export const leaveClubAction = createAuthenticatedSafeAction(
   {
-    schema: z.object({ clubId: z.string().min(1) }),
+    schema: createClubMembershipSchema,
   },
   async ({ clubId }, context) => {
     await db
-      .delete(memberships)
+      .delete(clubMemberships)
       .where(
         and(
-          eq(memberships.clubId, clubId),
-          eq(memberships.userId, context.user.id),
+          eq(clubMemberships.clubId, clubId),
+          eq(clubMemberships.userId, context.user.id),
         ),
       )
 
@@ -267,10 +235,10 @@ This action can use the request IP from `context.ipAddress` for rate limiting on
 export const rejectClubAction = createPlatformSafeAction(
   {
     schema: z.object({
-      clubId: z.string().min(1),
+      clubId: z.uuid(),
       reason: z.string().trim().min(10),
     }),
-    permission: "clubs.reject",
+    role: "ADMIN",
   },
   async ({ clubId, reason }, context) => {
     const club = await findClub(clubId)
@@ -294,7 +262,7 @@ export const rejectClubAction = createPlatformSafeAction(
 )
 ```
 
-Platform permission enforcement is active inside this wrapper. The handler can rely on `clubs.reject` having passed.
+The platform wrapper checks the requested global role. It does not use club permissions.
 
 ## Unexpected failures
 
@@ -309,9 +277,7 @@ Call `revalidatePath()` for server-rendered paths whose cached data changed. Nav
 ```ts
 const result = await createClubAction(values)
 
-if (result.ok) {
-  router.push(`/clubs/${result.data.slug}`)
-}
+if (result.ok) router.refresh()
 ```
 
 Avoid redirecting from deep domain code because it makes the mutation harder to reuse and test.
@@ -319,4 +285,3 @@ Avoid redirecting from deep domain code because it makes the mutation harder to 
 ## Logging status
 
 The wrappers currently log unexpected failures with `console.error` and include user, club, or permission context where available. A shared logger adapter is not present in `src/lib` yet.
-

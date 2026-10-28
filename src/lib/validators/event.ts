@@ -20,9 +20,9 @@ export const createEventFormSchema = z.object({
   .refine((event) => event.checkinEndsAt > event.checkinStartsAt, { message: "Check-in end must be after check-in start", path: ["checkinEndsAt"] });
 
 export const insertEventFormSchema = createEventFormSchema.safeExtend({
-  locationId: idSchema.nullable(),
-  addressId: idSchema.nullable(),
-  thumbnailFileId: idSchema.nullable(),
+  locationId: idSchema.nullable().default(null),
+  addressId: idSchema.nullable().default(null),
+  thumbnailFileId: idSchema.nullable().default(null),
 });
 
 export const updateEventSchema = insertEventFormSchema
@@ -40,4 +40,3 @@ export const eventFiltersSchema = paginationSchema.extend({
     to: z.coerce.date().optional(),
   })
   .refine((filters) => !filters.from || !filters.to || filters.to >= filters.from, { message: "End of the range must be after the start", path: ["to"]});
-

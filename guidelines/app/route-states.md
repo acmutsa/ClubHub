@@ -61,7 +61,7 @@ if (events.length === 0) {
         Create the first event for this club.
       </p>
       <Button className="mt-4" asChild>
-        <Link href={`/clubs/${clubId}/admin/events/new`}>New event</Link>
+        <Link href="/admin/events/new">New event</Link>
       </Button>
     </div>
   )

@@ -11,7 +11,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    async sendResetPassword(data, request) {
+    async sendResetPassword() {
 
             // Send an email to the user with a link to reset their password
 
@@ -30,4 +30,3 @@ export const auth = betterAuth({
     "https://*.localhost:3000","http://*.localhost:3000"
   ]
 });
-

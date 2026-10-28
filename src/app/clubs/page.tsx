@@ -1,13 +1,10 @@
-import { Button } from "@/components/ui/button";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import SignOutButton from "@/components/sign-out-button";
 
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
