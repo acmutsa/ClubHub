@@ -2,26 +2,13 @@
 
 import { and, count, eq, isNull, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { OWNER_ROLE_NAME } from "@/constants/role-positions";
 import { db } from "@/db/index";
 import { clubMemberships, clubRoles } from "@/db/schema";
 import { createAuthenticatedSafeAction } from "@/lib/actions/create-authenticated-safe-action";
-import { auth } from "@/lib/auth/server";
 import { idSchema } from "@/lib/validators/common";
-
-// Ends the current session. Used when the session belongs to a soft-deleted user.
-export async function signOutDeletedAccountAction() {
-  try {
-    await auth.api.signOut({ headers: await headers() });
-  } catch {
-    // Session is already gone; nothing left to end
-  }
-  redirect("/sign-in");
-}
 
 const leaveClubFromProfileSchema = z.object({
   clubId: idSchema,

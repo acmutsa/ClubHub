@@ -19,7 +19,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { ProfileLeaveClubButton } from "./components/profile-leave-club-button";
-import { DeletedAccountSignOut } from "./deleted-account-sign-out";
 import { getProfilePageData } from "./queries";
 
 const CAMPUS_TIME_ZONE = "America/Chicago";
@@ -105,12 +104,7 @@ function EmptyClubs() {
 }
 
 export default async function ProfilePage() {
-  const data = await getProfilePageData();
-
-  // The session belongs to a soft-deleted account: sign it out
-  if (!data) return <DeletedAccountSignOut />;
-
-  const { profile, clubs: myClubs } = data;
+  const { profile, clubs: myClubs } = await getProfilePageData();
 
   // null when the user hasn't finished registration (no profile row)
   const graduationDate = profile.expectedGraduationDate;
