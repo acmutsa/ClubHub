@@ -1,103 +1,87 @@
 import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className= "min-h-screen bg-orange-50">
+      <nav className="border-b border-black-500 bg-gray-100">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-[2cqw] py-[2cqw]">
+          <Link
+            href="/"
+            className="flex text-align:center text-xl font-bold"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <Image 
+              src="/assets/logo.png" 
+              alt="ACM Logo" 
+              className="max-w-auto h-auto" 
+              height={40} 
+              width={40} 
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            ClubHub
+          </Link>
+
+          <div className="hidden gap-6 md:flex">
+            <Link href="/students" className="rounded-full bg-gray-200 px-[1vw] py-[1vw] hover:text-black transition hover:-translate-y-1 hover:shadow-xl">
+              Students
+            </Link>
+            <Link href="/organizations" className="rounded-full bg-gray-200 px-[1vw] py-[1vw] hover:text-black transition hover:-translate-y-1 hover:shadow-xl">
+              Organizations
+            </Link>
+            <Link href="/about" className="rounded-full bg-gray-200 px-[1vw] py-[1vw] hover:text-black transition hover:-translate-y-1 hover:shadow-xl">
+              About
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link href="sign-in" className="rounded-full bg-green-500 px-[1vw] py-[1vw] text-sm font-semibold text-white hover:bg-green-700 transition hover:-translate-y-1 hover:shadow-xl">
+              Sign-In
+            </Link>
+            <Link href="sign-up" className="rounded-full bg-green-500 px-[1vw] py-[1vw] text-sm font-semibold text-white hover:bg-green-700 transition hover:-translate-y-1 hover:shadow-xl">
+              Sign-Up
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </nav>
+
+      <section className="mx-auto max-w-7xl px-[2vw] py-[3vw] text-center sm:py-28">
+        <span className="inline-block rounded-full bg-blue-200 px-[1vw] py-[1vw] text-sm font-semibold">
+          Welcom to ClubHub
+        </span>
+        <h1 className="mx-auto mt-[2vw] max-w-4xl text-4xl font-semibold leading-tight sm:text-6xl">
+          Club management made simple.
+        </h1>
+        <p className="mx-auto mt-[2vw] max-w-2xl text-xl leading-tight">
+          ClubHub connects students and organizations in one place to discover clubs, manage club memberships, and participate in campus events.
+        </p>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-[2cqw] px-[1vw] py-[3vw] md:grid-cols-2">
+        <Link href="/students" className="group rounded-3xl border-1 border-gray-400 bg-gray-200 p-5 transition hover:-translate-y-1 hover:shadow-xl">
+          <h2 className="text-2xl font-bold">
+            Students
+          </h2>
+          <p className="mt-[1vw] leading-tight font-semibold">
+            Learn more about student resources
+          </p>
+          <span className="mt-[1vw] inline-block font-semibold text-blue-300">
+            -Learn more-
+          </span>
+        </Link>
+
+        <Link href="/organizations" className="group rounded-3xl border-1 border-gray-400 bg-gray-200 p-5 transition hover:-translate-y-1 hover:shadow-xl">
+          <h2 className="text-2xl font-bold">
+            Oragnizations
+          </h2>
+          <p className="mt-[1vw] leading-tight font-semibold">
+            Learn more about organization resources
+          </p>
+          <span className="mt-[1vw] inline-block font-semibold text-blue-300">
+            -Learn more-
+          </span>
+        </Link>
+      </section>
+    </main>
+
   );
 }
