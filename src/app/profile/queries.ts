@@ -20,8 +20,7 @@ function getFileUrl(storageKey: string | null) {
 }
 
 // Everything the /profile page shows, for the signed-in user only.
-// The user id comes from the session.
-// Returns null when the session belongs to a soft-deleted user.
+// The user id comes from the session; requireCurrentUser already rejects soft-deleted users.
 export async function getProfilePageData() {
   const currentUser = await requireCurrentUser();
 
@@ -44,7 +43,7 @@ export async function getProfilePageData() {
         userProfiles,
         and(eq(userProfiles.userId, user.id), isNull(userProfiles.deletedAt)),
       )
-      .where(and(eq(user.id, currentUser.id), isNull(user.deletedAt)))
+      .where(eq(user.id, currentUser.id))
       .limit(1),
 
     db
@@ -80,8 +79,6 @@ export async function getProfilePageData() {
       // "active" sorts before "inactive", so active clubs come first
       .orderBy(asc(clubMemberships.status), asc(clubs.name)),
   ]);
-
-  if (!profile) return null;
 
   return {
     profile,
