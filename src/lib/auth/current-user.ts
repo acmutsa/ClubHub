@@ -9,7 +9,10 @@ export const getCurrentUser = cache(async () => {
     headers: await headers(),
   });
 
-  return session?.user ?? null;
+  // A soft-deleted account counts as signed out everywhere
+  if (!session || session.user.deletedAt) return null;
+
+  return session.user;
 });
 
 export async function requireCurrentUser() {
