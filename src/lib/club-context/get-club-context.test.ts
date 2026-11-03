@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getCurrentUser: vi.fn(),
   findClub: vi.fn(),
   findMembership: vi.fn(),
+  findRole: vi.fn(),
   headers: vi.fn(),
 }));
 
@@ -22,6 +23,7 @@ vi.mock("@/db", () => ({
   db: { query: {
     clubs: { findFirst: mocks.findClub },
     clubMemberships: { findFirst: mocks.findMembership },
+    clubRoles: { findFirst: mocks.findRole },
   } },
 }));
 
@@ -33,10 +35,11 @@ import { getClubContext, requireClubContext } from "./get-club-context";
 
 beforeEach(() => {
   vi.resetAllMocks();
-  mocks.headers.mockResolvedValue(new Headers({ "x-app-scope": "club", "x-club-id": "club-1" }));
+  mocks.headers.mockResolvedValue(new Headers({ "x-app-scope": "club", "x-club-slug": "acm" }));
   mocks.getCurrentUser.mockResolvedValue({ id: "user-1" });
   mocks.findClub.mockResolvedValue({ id: "club-1", slug: "acm" });
-  mocks.findMembership.mockResolvedValue({ role: { permissions: [Permission.EVENTS_VIEW] } });
+  mocks.findMembership.mockResolvedValue({ id: "membership-1", roleId: "role-1" });
+  mocks.findRole.mockResolvedValue({ id: "role-1", name: "MEMBER", permissions: [Permission.EVENTS_VIEW] });
 });
 
 describe("club context access", () => {
@@ -60,6 +63,31 @@ describe("club context access", () => {
     expect(mocks.findClub).not.toHaveBeenCalled();
   });
 
+  it("looks up a subdomain club by its slug, skipping deleted clubs", async () => {
+    await getClubContext();
+    const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
+    const query = new SQLiteSyncDialect().sqlToQuery(mocks.findClub.mock.calls[0][0].where);
+    expect(query.params).toEqual(["acm"]);
+    expect(query.sql).toContain('"slug" = ?');
+    expect(query.sql).toContain('"deleted_at" is null');
+  });
+
+  it("looks up a path club by its id, skipping deleted clubs", async () => {
+    mocks.headers.mockResolvedValue(new Headers({ "x-app-scope": "club", "x-club-id": "club-1" }));
+    await getClubContext();
+    const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
+    const query = new SQLiteSyncDialect().sqlToQuery(mocks.findClub.mock.calls[0][0].where);
+    expect(query.params).toEqual(["club-1"]);
+    expect(query.sql).toContain('"id" = ?');
+    expect(query.sql).toContain('"deleted_at" is null');
+  });
+
+  it("returns null in club scope when no club id or slug header is present", async () => {
+    mocks.headers.mockResolvedValue(new Headers({ "x-app-scope": "club" }));
+    expect(await getClubContext()).toBeNull();
+    expect(mocks.findClub).not.toHaveBeenCalled();
+  });
+
   it("returns null for a missing club, while required access returns not found", async () => {
     mocks.findClub.mockResolvedValue(undefined);
     expect(await getClubContext()).toBeNull();
@@ -71,6 +99,20 @@ describe("club context access", () => {
     mocks.findMembership.mockResolvedValue(undefined);
     expect(await getClubContext()).toBeNull();
     await expect(requireClubContext()).rejects.toThrow("FORBIDDEN");
+    expect(mocks.findRole).not.toHaveBeenCalled();
+  });
+
+  it("returns null for a missing role, while required access is forbidden", async () => {
+    mocks.findRole.mockResolvedValue(undefined);
+    expect(await getClubContext()).toBeNull();
+    await expect(requireClubContext()).rejects.toThrow("FORBIDDEN");
+  });
+
+  it("looks up the membership role only within the current club", async () => {
+    await getClubContext();
+    const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
+    const query = new SQLiteSyncDialect().sqlToQuery(mocks.findRole.mock.calls[0][0].where);
+    expect(query.params).toEqual(["role-1", "club-1"]);
   });
 
   it("retains the active, approved, non-deleted membership filters for this tenant and user", async () => {
@@ -82,9 +124,16 @@ describe("club context access", () => {
   });
 
   it("returns member context and enforces permissions only when required", async () => {
-    mocks.findMembership.mockResolvedValue({ role: { permissions: [Permission.EVENTS_VIEW, "invalid"] } });
+    mocks.findRole.mockResolvedValue({ id: "role-1", name: "MEMBER", permissions: [Permission.EVENTS_VIEW, "invalid"] });
+    mocks.headers.mockResolvedValue(new Headers({
+      "x-app-scope": "club",
+      "x-club-slug": "acm",
+      "x-forwarded-for": "203.0.113.5, 10.0.0.1",
+    }));
     const context = await requireClubContext();
     expect(context.clubId).toBe("club-1");
+    expect(context.role.name).toBe("MEMBER");
+    expect(context.ipAddress).toBe("203.0.113.5");
     expect(context.permissions).toEqual([Permission.EVENTS_VIEW]);
     expect(context.hasPermission(Permission.EVENTS_CREATE)).toBe(false);
     expect(() => context.requirePermission(Permission.EVENTS_CREATE)).toThrow("FORBIDDEN");
@@ -100,12 +149,14 @@ describe("club safe action failures", () => {
     ["signed out", ActionErrorCode.UNAUTHORIZED],
     ["missing club", ActionErrorCode.NOT_FOUND],
     ["missing membership", ActionErrorCode.FORBIDDEN],
+    ["missing role", ActionErrorCode.FORBIDDEN],
     ["missing permission", ActionErrorCode.FORBIDDEN],
   ])("returns a structured error for %s without invoking the handler", async (scenario, code) => {
     if (scenario === "signed out") mocks.getCurrentUser.mockResolvedValue(null);
     if (scenario === "missing club") mocks.findClub.mockResolvedValue(undefined);
     if (scenario === "missing membership") mocks.findMembership.mockResolvedValue(undefined);
-    if (scenario === "missing permission") mocks.findMembership.mockResolvedValue({ role: { permissions: [] } });
+    if (scenario === "missing role") mocks.findRole.mockResolvedValue(undefined);
+    if (scenario === "missing permission") mocks.findRole.mockResolvedValue({ id: "role-1", name: "MEMBER", permissions: [] });
     expect(await action({})).toMatchObject({ ok: false, error: { code } });
     expect(handler).not.toHaveBeenCalled();
   });

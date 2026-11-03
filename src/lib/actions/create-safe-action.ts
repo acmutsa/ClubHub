@@ -5,8 +5,8 @@ import type { Permission } from "@/constants/permissions";
 import {
   getCurrentClub,
   getClubContext,
-  type ClubContext,
 } from "@/lib/club-context/get-club-context";
+import { ClubContext } from "@/lib/types/club-context";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
 export type ActionFieldErrors = Partial<Record<string, string[]>>;
