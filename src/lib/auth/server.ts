@@ -3,7 +3,7 @@ import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP } from "better-auth/plugins/email-otp";
-import { passwordSchema } from "@/lib/validators/password-reset";
+import { passwordSchema } from "@/lib/types/password-reset";
 
 export const auth = betterAuth({
   user: {

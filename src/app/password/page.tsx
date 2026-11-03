@@ -1,5 +1,5 @@
 import { GalleryVerticalEnd } from "lucide-react";
-import RequestPasswordResetForm from "@/components/request-password-reset-form";
+import RequestPasswordResetForm from "./components/request-password-reset-form";
 
 export default function ForgotPasswordPage() {
 
