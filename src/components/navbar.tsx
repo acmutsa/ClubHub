@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { requireCurrentUser } from "@/lib/auth/current-user";
+import Image from "next/image";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { Button } from "./ui/button";
 import { UserIcon } from "lucide-react";
 import SignOutButton from "./sign-out-button";
@@ -10,40 +11,55 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { ThemeSwitcher } from "./theme-switcher";
-interface NavbarProps {
-  userType: string;
-  //we will need to retieve image/logo eventually
-}
 
-export default async function Navbar({
-  userType,
-}: NavbarProps) {
-  await requireCurrentUser();
+
+export default async function Navbar(){
+   const user = await getCurrentUser();
 
   return (
-    <header className="h-16 bg-background border-b border-border">
+    <header className="h-16 border-b border-border bg-blue-200">
       <div className="h-full flex items-center justify-between px-4">
         <div className="h-full flex items-center gap-4">
-          {userType === "admin" && (
+          <Link href="/" className="flex font-bold text-xl items-center">
+            <Image
+              src="/assets/logo.png"
+              alt="ACM Logo"
+              className="h-10 w-10 shrink-0 sm:h-10 sm:w-10 md:h-15 md:w-15"
+              height={50}
+              width={50}
+            />
+          </Link>
+        </div>
+
+        <div className="h-full flex items-center gap-4">
+          {user?.role === "admin" && (
             <Button variant="link" asChild>
               <Link className="font-semibold" href="/admin">
                 Admin
               </Link>
             </Button>
           )}
+          {user && (
+            <>
+              <Button variant="link" asChild>
+                <Link className="font-semibold" href="/events">
+                  Events
+                </Link>
+              </Button>
 
-          <Button variant="link" asChild>
-            <Link className="font-semibold" href="/events">
-              Events
-            </Link>
-          </Button>
+              <Button variant="link" asChild>
+                <Link className="font-semibold" href="/members">
+                  Members
+                </Link>
+              </Button>
+            </>
+          )}
 
-          <Button variant="link" asChild>
-            <Link className="font-semibold" href="/members">
-              Members
-            </Link>
-          </Button>
-
+          {!user ? (
+            <Button asChild>
+              <Link className="transition hover:-translate-y-1 hover:shadow-xl" href="/sign-in"> Sign In</Link>
+            </Button>
+          ) : (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <div className="h-full flex items-center cursor-pointer">
@@ -67,6 +83,7 @@ export default async function Navbar({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
       </div>
     </header>
