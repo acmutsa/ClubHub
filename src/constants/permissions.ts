@@ -5,6 +5,7 @@ export enum Permission {
   EVENTS_CREATE = "events.create",
   EVENTS_EDIT = "events.edit",
   EVENTS_DELETE = "events.delete",
+  EVENTS_CHECK_IN = "events.checkIn",
   EVENT_CATEGORIES_MANAGE = "eventCategories.manage",
   GALLERY_VIEW = "gallery.view",
   MEMBERS_VIEW = "members.view",
@@ -61,6 +62,11 @@ export const PERMISSION_META = {
   [Permission.EVENTS_DELETE]: {
     label: "Delete events",
     description: "Delete club events.",
+    category: "Events",
+  },
+  [Permission.EVENTS_CHECK_IN]: {
+    label: "Check in to events",
+    description: "Check in to events",
     category: "Events",
   },
   [Permission.EVENT_CATEGORIES_MANAGE]: {
