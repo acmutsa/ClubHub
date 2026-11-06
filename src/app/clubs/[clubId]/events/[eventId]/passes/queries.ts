@@ -13,3 +13,14 @@ export async function findEventPass(userId: string, eventId: string) {
     })) ?? null
   )
 }
+
+export async function findEventPassByToken(clubId: string, token: string) {
+  return (
+    (await db.query.eventPasses.findFirst({
+      where: and(
+        eq(eventPasses.clubId, clubId),
+        eq(eventPasses.token, token)
+      ),
+    })) ?? null
+  )
+}

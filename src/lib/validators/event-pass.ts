@@ -9,6 +9,11 @@ export const createEventPassSchema = z.object({
   eventId: idSchema,
 });
 
+export const scanEventPassSchema = z.object({
+  eventId: idSchema,
+  token: z.string().trim().min(1).max(512),
+});
+
 export const insertEventPassSchema = createEventPassSchema.safeExtend({
   id: idSchema,
   token: idSchema,
@@ -16,3 +21,5 @@ export const insertEventPassSchema = createEventPassSchema.safeExtend({
   clubId: idSchema,
   expiryDate: z.date(),
 });
+
+export const updateEventPassSchema = insertEventPassSchema.partial();
