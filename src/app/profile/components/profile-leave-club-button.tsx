@@ -16,10 +16,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { ActionErrorCode } from "@/constants/action-error-code";
 import { leaveClubFromProfileAction } from "../actions";
 
-// Profile-only Leave button: a quiet trigger in the club card footer that opens a
-// confirm dialog naming the club. The shared LeaveClubButton on /clubs is untouched.
+// The membership changed since the page loaded, so the card is out of date
+const STALE_MEMBERSHIP_ERRORS = new Set([ActionErrorCode.NOT_FOUND, ActionErrorCode.FORBIDDEN]);
+
 export function ProfileLeaveClubButton({
   clubId,
   clubName,
@@ -34,31 +36,11 @@ export function ProfileLeaveClubButton({
   function leaveClub() {
     startTransition(async () => {
       const result = await leaveClubFromProfileAction({ clubId });
+      setOpen(false);
 
       if (!result.ok) {
         toast.error(result.error.message);
-        return;
-      }
-
-      setOpen(false);
-
-      if (result.data.status === "sole_owner") {
-        // Nothing changed, so there's nothing to refresh
-        toast.error(`You're the only owner of ${clubName}. Transfer ownership before leaving.`);
-        return;
-      }
-
-      if (result.data.status === "suspended") {
-        // Nothing changed, but refresh so the page reflects the suspension
-        toast.error(`Your membership in ${clubName} is suspended. Contact a club officer.`);
-        router.refresh();
-        return;
-      }
-
-      if (result.data.status === "not_member") {
-        // Already left (e.g. in another tab): refresh so the card disappears
-        toast.info(`You're no longer a member of ${clubName}.`);
-        router.refresh();
+        if (STALE_MEMBERSHIP_ERRORS.has(result.error.code)) router.refresh();
         return;
       }
 
@@ -70,7 +52,6 @@ export function ProfileLeaveClubButton({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        // Keep the dialog open while the request is in flight
         if (!isPending) setOpen(nextOpen);
       }}
     >

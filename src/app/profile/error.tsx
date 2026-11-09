@@ -1,11 +1,8 @@
 "use client";
 
 import { RotateCw } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 
-// Shown when /profile fails to load. Never renders the raw error: the details stay
-// in the server logs.
 export default function ProfileError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:px-8">

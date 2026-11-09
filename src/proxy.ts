@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getRootHost, isGlobalPath } from "@/lib/global-paths";
 
 const AUTH_PATHS = ["/sign-in", "/sign-up"];
 const LOCAL_ROOT_HOST = "localhost:3000";
@@ -51,6 +52,12 @@ export function proxy(request: NextRequest) {
   } else {
     requestHeaders.delete("x-club-id");
     requestHeaders.delete("x-club-slug");
+  }
+
+  if (subdomain && isGlobalPath(url.pathname)) {
+    const rootUrl = url.clone();
+    rootUrl.host = getRootHost(host, LOCAL_ROOT_HOST);
+    return NextResponse.redirect(rootUrl);
   }
 
   if (subdomain && !isAuthPath) {
