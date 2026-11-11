@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { TimeZoneCookie } from "@/components/time-zone-cookie";
+import TimeZoneCookie from "@/components/time-zone-cookie";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cookies } from "next/headers";

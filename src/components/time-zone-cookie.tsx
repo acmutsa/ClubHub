@@ -2,12 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-
 import { TIME_ZONE_COOKIE } from "@/constants/time-zone";
 
 const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
 
-export function TimeZoneCookie() {
+function useTimeZone() {
   const router = useRouter();
 
   useEffect(() => {
@@ -22,6 +21,9 @@ export function TimeZoneCookie() {
     document.cookie = `${TIME_ZONE_COOKIE}=${encodeURIComponent(timeZone)}; path=/; max-age=${ONE_YEAR_IN_SECONDS}; samesite=lax`;
     router.refresh();
   }, [router]);
+}
 
+export default function TimeZoneCookie(){
+  useTimeZone();
   return null;
 }

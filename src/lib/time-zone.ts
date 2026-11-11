@@ -2,8 +2,6 @@ import { cookies } from "next/headers";
 
 import { DEFAULT_TIME_ZONE, TIME_ZONE_COOKIE } from "@/constants/time-zone";
 
-export { DEFAULT_TIME_ZONE, TIME_ZONE_COOKIE };
-
 export function isValidTimeZone(timeZone: string) {
   try {
     new Intl.DateTimeFormat("en-US", { timeZone });
