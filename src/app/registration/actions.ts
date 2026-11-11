@@ -1,53 +1,34 @@
 "use server";
 
-import { createSafeActionClient } from "next-safe-action";
 import { db } from "@/db";
 import { userProfiles } from "@/db/schema";
 
-import { getCurrentUser } from "@/lib/auth/current-user";
-import { registrationFormSchema } from "@/components/registration/registration-schema";
+import { createAuthenticatedSafeAction } from "@/lib/actions/create-authenticated-safe-action";
+import { createUserProfileSchema } from "@/lib/validators/user-profile";
 
-const actionClient = createSafeActionClient({
-  handleServerError(error) {
-    console.error("Registration submission failed.", error);
-    return "Could not complete registration. Please try again.";
-  },
-});
-
-export const submitRegistrationAction = actionClient
-  .inputSchema(registrationFormSchema)
-  .action(async ({ parsedInput }) => {
-    const user = await getCurrentUser();
+export const submitRegistrationAction = createAuthenticatedSafeAction(
+  { schema: createUserProfileSchema },
+  async (parsedInput, { user }) => {
     if (!user) {
       throw new Error("You must be signed in to submit registration.");
     }
 
-    if (
-      user.email &&
-      parsedInput.account.email.toLocaleLowerCase() !== user.email.toLocaleLowerCase()
-    ) {
-      throw new Error("Registration email must match your signed-in account.");
-    }
-
     const profileValues = {
-      firstName: parsedInput.account.firstName,
-      lastName: parsedInput.account.lastName,
+      firstName: parsedInput.firstName,
+      lastName: parsedInput.lastName,
       phoneNumber: parsedInput.phoneNumber,
       pronouns: parsedInput.pronouns,
-      birthDate: new Date(`${parsedInput.birthDate}T00:00:00.000Z`),
-      school: "The University of Texas at San Antonio",
-      expectedGraduationDate: new Date(
-        `${parsedInput.expectedGraduationDate}-01T00:00:00.000Z`,
-      ),
+      birthDate: parsedInput.birthDate,
+      school: parsedInput.school,
+      expectedGraduationDate: parsedInput.expectedGraduationDate,
       major: parsedInput.major,
       country: parsedInput.country,
-      race: [parsedInput.race],
+      race: parsedInput.race,
       gender: parsedInput.gender,
       ethnicity: parsedInput.ethnicity,
       shirtSize: parsedInput.shirtSize,
-      eventAnnouncementEmail: parsedInput.emailReminder,
-      eventAnnouncementPhone:
-        parsedInput.phoneReminder || parsedInput.smsReminder,
+      eventAnnouncementEmail: parsedInput.eventAnnouncementEmail,
+      eventAnnouncementPhone: parsedInput.eventAnnouncementPhone,
       updatedAt: new Date(),
       deletedAt: null,
     };
@@ -61,4 +42,5 @@ export const submitRegistrationAction = actionClient
       });
 
     return { accepted: true };
-  });
+  },
+);

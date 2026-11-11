@@ -1,12 +1,11 @@
 import RegistrationForm from "@/components/registration/registration-form";
 import { redirect } from "next/navigation";
-import { and, eq, isNull } from "drizzle-orm";
 
-import { db } from "@/db";
-import { userProfiles } from "@/db/schema";
 import { requireCurrentUser } from "@/lib/auth/current-user";
 import { getSafeCallbackUrl } from "@/lib/auth/sign-in-redirect";
 import { getAppSurface } from "@/lib/club-context/get-club-context";
+import { hasActiveRegistrationProfile } from "./queries";
+import { getUserNames } from "./queries";
 
 export default async function RegistrationPage({
   searchParams,
@@ -26,20 +25,11 @@ export default async function RegistrationPage({
     safeCallbackUrl.startsWith("/registration")
       ? "/"
       : safeCallbackUrl;
-  const [existingProfile] = await db
-    .select({ userId: userProfiles.userId })
-    .from(userProfiles)
-    .where(
-      and(
-        eq(userProfiles.userId, user.id),
-        isNull(userProfiles.deletedAt),
-      ),
-    )
-    .limit(1);
-
-  if (existingProfile) {
+  if (await hasActiveRegistrationProfile(user.id)) {
     redirect(returnUrl);
   }
+
+  const profile = await getUserNames(user.id);
 
   return (
     <main className="mx-auto max-w-3xl p-4 sm:p-6">
@@ -51,7 +41,9 @@ export default async function RegistrationPage({
         Tell us a little about yourself.
       </p>
 
-      <RegistrationForm />
+      <RegistrationForm
+      profile={profile}
+      />
     </main>
   );
 }

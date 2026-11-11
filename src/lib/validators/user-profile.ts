@@ -45,3 +45,5 @@ export const userProfileFiltersSchema = paginationSchema.extend({
   school: z.enum(schoolOptions).optional(),
   major: z.enum(majorOptions).optional(),
 });
+
+export type createUserProfileValues = z.infer<typeof createUserProfileSchema>;

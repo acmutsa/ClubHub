@@ -121,15 +121,3 @@
   }
 }
 
-.registration-select {
-  color-scheme: light;
-}
-
-.dark .registration-select {
-  color-scheme: dark;
-}
-
-.registration-select option {
-  background-color: var(--background);
-  color: var(--foreground);
-}
