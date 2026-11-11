@@ -1,10 +1,11 @@
+import { env } from "@/env";
 import {
   createHmac,
   timingSafeEqual
 } from "node:crypto";
 
 function getSecret() {
-  const secret = process.env.EVENT_PASS_SECRET;
+  const secret = env.EVENT_PASS_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error("EVENT_PASS_SECRET must be set to at least 32 characters.");
   }
