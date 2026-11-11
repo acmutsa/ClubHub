@@ -50,6 +50,10 @@ vi.mock("@/db", () => ({
   },
 }));
 
+vi.hoisted(() => {
+  process.env.EVENT_PASS_SECRET = "test-secret-test-secret-changeme";
+});
+
 import { Permission } from "@/constants/permissions";
 import { ActionErrorCode } from "@/constants/action-error-code";
 import { createEventPassAction, scanEventPassAction } from "./actions";
