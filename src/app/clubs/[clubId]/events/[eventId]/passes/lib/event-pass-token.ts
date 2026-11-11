@@ -4,17 +4,8 @@ import {
   timingSafeEqual
 } from "node:crypto";
 
-function getSecret() {
-  const secret = env.EVENT_PASS_SECRET;
-  if (!secret || secret.length < 32) {
-    throw new Error("EVENT_PASS_SECRET must be set to at least 32 characters.");
-  }
-
-  return secret;
-}
-
 function sign(rawToken: string) {
-  return createHmac("sha256", getSecret()).update(rawToken).digest("base64url");
+  return createHmac("sha256", env.EVENT_PASS_SECRET).update(rawToken).digest("base64url");
 }
 
 export function signEventPassToken(rawToken: string) {
