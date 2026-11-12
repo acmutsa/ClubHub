@@ -8,7 +8,7 @@ import { z } from "zod";
 import { db } from "@/db/index";
 import { clubMemberships, clubRoles, clubTitles, clubs } from "@/db/schema";
 import { actionError } from "@/lib/actions/create-safe-action";
-import { ActionErrorCode } from "@/lib/actions/action-error-code";
+import { ActionErrorCode } from "@/constants/action-error-code";
 import { createAuthenticatedSafeAction } from "@/lib/actions/create-authenticated-safe-action";
 
 // Every club gets these on creation. The schema treats MEMBER and OWNER as
