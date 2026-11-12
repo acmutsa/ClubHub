@@ -89,7 +89,7 @@ async function buildClubContext(user: CurrentUser): Promise<ClubContext | null> 
     permissions,
     ipAddress,
     hasPermission: (permission) => permissions.includes(permission),
-    requirePermission: (permission) => {if (!permissions.includes(permission)) forbidden();},
+    requirePermission: (permission) => { if (!permissions.includes(permission)) forbidden(); },
   };
 }
 
