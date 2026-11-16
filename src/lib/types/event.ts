@@ -18,6 +18,12 @@ import {
   insertCheckInSchema,
 } from "@/lib/validators/check-in";
 import {
+  eventPassSchema,
+  createEventPassSchema,
+  scanEventPassSchema,
+  insertEventPassSchema,
+} from "@/lib/validators/event-pass";
+import {
   createNotificationLogSchema,
   insertNotificationLogSchema,
   notificationLogFiltersSchema,
@@ -42,6 +48,12 @@ export type UpdateEventCategoryInput = z.infer<typeof updateEventCategorySchema>
 export type CheckIn = z.infer<typeof checkInSchema>;
 export type CreateCheckInInput = z.infer<typeof createCheckInSchema>;
 export type InsertCheckInInput = z.infer<typeof insertCheckInSchema>;
+
+// Event pass
+export type EventPass = z.infer<typeof eventPassSchema>;
+export type CreateEventPassInput = z.infer<typeof createEventPassSchema>;
+export type ScanEventPassInput = z.infer<typeof scanEventPassSchema>;
+export type InsertEventPassInput = z.infer<typeof insertEventPassSchema>;
 
 // Event notification log
 export type NotificationLog = z.infer<typeof notificationLogSchema>;

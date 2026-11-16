@@ -10,6 +10,10 @@ export const createClubMembershipSchema = z.object({
   clubId: idSchema,
 });
 
+export const deleteClubMembershipSchema = z.object({
+  clubId: idSchema,
+});
+
 export const insertClubMembershipSchema = createClubMembershipSchema.extend({
   userId: idSchema,
   roleId: idSchema,
