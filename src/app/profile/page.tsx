@@ -49,10 +49,11 @@ export default async function ProfilePage() {
                 {profile.pronouns && <p className="text-muted-foreground text-sm">{profile.pronouns}</p>}
                 <p className="text-muted-foreground text-sm break-all">{profile.email}</p>
               </div>
-              {/* TODO: enable once /settings exists */}
-              <Button variant="outline" className="w-full" disabled>
-                <Pencil />
-                Edit profile
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/settings">
+                  <Pencil />
+                  Edit profile
+                </Link>
               </Button>
             </div>
 

@@ -38,7 +38,7 @@ function MultiSelectBox({
   invalid,
   children,
   ...props
-}: Pick<MultiSelectProps, "value" | "onChange" | "invalid"> & ComponentProps<"div">) {
+}: Pick<MultiSelectProps, "value" | "onChange" | "invalid"> & Omit<ComponentProps<"div">, "onChange">) {
   return (
     <div
       {...props}
@@ -65,7 +65,13 @@ function MultiSelectBox({
   );
 }
 
-function MultiSelectList({ label, options, value, onChange }: Pick<MultiSelectProps, "label" | "options" | "value" | "onChange">) {
+function MultiSelectList({
+  id,
+  label,
+  options,
+  value,
+  onChange,
+}: Pick<MultiSelectProps, "id" | "label" | "options" | "value" | "onChange">) {
   const [query, setQuery] = useState("");
   const matches = toFieldOptions(options).filter((option) => matchesQuery(option, query));
 
@@ -74,7 +80,7 @@ function MultiSelectList({ label, options, value, onChange }: Pick<MultiSelectPr
   }
 
   return (
-    <div className="flex min-h-0 flex-col">
+    <div id={id} className="flex min-h-0 flex-col">
       <div className="border-b p-2">
         <Input type="search" placeholder="Search…" aria-label={`Search ${label}`} value={query} onChange={(event) => setQuery(event.target.value)} />
       </div>
@@ -99,13 +105,16 @@ function MultiSelectInput({ id, label, options, value, onChange, invalid }: Mult
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const box = { value, onChange, invalid };
-  const list = <MultiSelectList label={label} options={options} value={value} onChange={onChange} />;
+  const listId = `${id}-list`;
+  const list = <MultiSelectList id={listId} label={label} options={options} value={value} onChange={onChange} />;
   const trigger = (
     <button
       id={id}
       type="button"
       role="combobox"
       aria-expanded={open}
+      aria-controls={listId}
+      aria-haspopup="listbox"
       aria-invalid={invalid}
       className="text-muted-foreground flex min-h-7 flex-1 basis-24 items-center justify-between gap-2 text-left text-sm focus-visible:outline-none"
     >
