@@ -1,29 +1,34 @@
 import { and, eq, isNull } from "drizzle-orm";
-
 import { db } from "@/db/index";
-import { user } from "@/db/auth-schema";
 import { userProfiles } from "@/db/schema";
 import { requireCurrentUser } from "@/lib/auth/current-user";
-import type { UpdateSettingsInput } from "./validators";
 
-export async function getSettingsPageData() {
+export async function getCurrentUserSettingsProfile() {
   const currentUser = await requireCurrentUser();
 
-  const [row] = await db
+  const [profile] = await db
     .select({
-      name: user.name,
-      email: user.email,
-      image: user.image,
-      profile: userProfiles,
+      firstName: userProfiles.firstName,
+      lastName: userProfiles.lastName,
+      phoneNumber: userProfiles.phoneNumber,
+      pronouns: userProfiles.pronouns,
+      birthDate: userProfiles.birthDate,
+      school: userProfiles.school,
+      expectedGraduationDate: userProfiles.expectedGraduationDate,
+      major: userProfiles.major,
+      country: userProfiles.country,
+      race: userProfiles.race,
+      gender: userProfiles.gender,
+      ethnicity: userProfiles.ethnicity,
+      shirtSize: userProfiles.shirtSize,
+      eventAnnouncementEmail: userProfiles.eventAnnouncementEmail,
+      eventAnnouncementPhone: userProfiles.eventAnnouncementPhone,
     })
-    .from(user)
-    .leftJoin(
-      userProfiles,
-      and(eq(userProfiles.userId, user.id), isNull(userProfiles.deletedAt)),
-    )
-    .where(and(eq(user.id, currentUser.id), isNull(user.deletedAt)))
+    .from(userProfiles)
+    .where(and(eq(userProfiles.userId, currentUser.id), isNull(userProfiles.deletedAt)))
     .limit(1);
 
-  if (!row) return null;
-  return { ...row, profile: row.profile as UpdateSettingsInput | null };
+  return profile ?? null;
 }
+
+export type SettingsProfile = NonNullable<Awaited<ReturnType<typeof getCurrentUserSettingsProfile>>>;
