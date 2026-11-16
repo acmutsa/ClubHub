@@ -55,7 +55,7 @@ export default async function Navbar({
 
             <DropdownMenuContent side="bottom" align="end">
               <DropdownMenuItem asChild>
-                <Link href="/profile" className="w-full">
+                <Link href="/settings" className="w-full">
                   Settings
                 </Link>
               </DropdownMenuItem>
