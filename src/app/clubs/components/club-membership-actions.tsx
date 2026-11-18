@@ -39,6 +39,12 @@ export function JoinClubButton({ clubId }: { clubId: string }) {
         return;
       }
 
+      if (!result.data.joined) {
+        toast.info("Complete registration before joining a club.");
+        router.push("/registration");
+        return;
+      }
+
       router.refresh();
     });
   }
@@ -99,6 +105,12 @@ export function CreateClubButton() {
 
       if (!result.ok) {
         showActionError(result.error.message);
+        return;
+      }
+
+      if (!result.data.created) {
+        toast.info("Complete registration before creating a club.");
+        router.push("/registration");
         return;
       }
 
