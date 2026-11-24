@@ -3,24 +3,27 @@ import { cn } from "@/lib/utils"
 import { InfoArt } from "./info-art"
 import { audiences } from "./info-data"
 import { InfoIntro } from "./info-intro"
+import { ScrollPop } from "@/components/scroll-pop"
 
 export default function Info() {
   return (
     <>
       <InfoIntro />
-      <section className="border-y-2 border-foreground py-16 sm:py-24">
+      <section className="w-11/12 mx-auto border-y-2 border-foreground py-16 sm:py-24">
         <div className="mx-auto flex max-w-6xl flex-col gap-24 px-4 sm:px-6 lg:px-8">
           {audiences.map((a, i) => (
             <div key={a.id} id={a.id} className="grid items-center gap-12 md:grid-cols-2">
               <div className={cn("mx-auto w-full max-w-sm", i % 2 === 1 && "md:order-2")}>
-                <div
-                  className={cn(
-                    "aspect-square rounded-3xl border-4 border-black bg-white p-6 shadow-[0.4rem_0.4rem_0_var(--color-black)]",
-                    i % 2 === 0 ? "-rotate-2" : "rotate-2"
-                  )}
-                >
-                  <InfoArt kind={a.id} />
-                </div>
+                <ScrollPop>
+                  <div
+                    className={cn(
+                      "aspect-square rounded-3xl border-4 border-black bg-white p-6 shadow-[0.4rem_0.4rem_0_var(--color-black)]",
+                      i % 2 === 0 ? "-rotate-2" : "rotate-2"
+                    )}
+                  >
+                    <InfoArt kind={a.id} />
+                  </div>
+                </ScrollPop>
               </div>
 
               <Card className="gap-6 rounded-3xl border-4 border-black bg-black py-8 text-white">

@@ -4,14 +4,12 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <header className="grid items-center gap-10 py-12 lg:grid-cols-[1.05fr_.95fr]">
+    <header className="w-11/12 mx-auto grid items-center gap-10 py-12 lg:grid-cols-[1.05fr_.95fr]">
       <div>
-        <h1 className="mb-5 text-5xl md:text-9xl leading-[.92] font-extrabold tracking-[-.045em]">
+        <h1 className="mb-5 text-5xl md:text-9xl leading:[.94] font-extrabold tracking-[-.045em]">
           Explore
           <br />
-          <span className="mt-8 -ml-5 inline-block -rotate-2 bg-background px-4.5 pr-5.5 pb-2">
-            Join
-          </span>
+          Join
           <br />
           Manage
         </h1>
@@ -45,10 +43,10 @@ export default function Hero() {
           />
         </div>
 
-        <div className="absolute -top-7 -left-10 size-28 animate-spin-slow rounded-full motion-reduce:animate-none" aria-hidden="true">
+        <div className="absolute -top-7 -left-10 size-28 rounded-full animate-badge-spin ... motion-reduce:animate-none" aria-hidden="true">
           <svg viewBox="0 0 120 120" className="size-full">
             <defs><path id="circ" d="M60 60 m-42 0 a42 42 0 1 1 84 0 a42 42 0 1 1 -84 0" /></defs>
-            <text className="text-xs font-semibold tracking-[.18em]">
+            <text className="fill-foreground text-xs font-semibold tracking-[.18em]">
               <textPath href="#circ">CLUBS • EVENTS • PEOPLE • </textPath>
             </text>
           </svg>

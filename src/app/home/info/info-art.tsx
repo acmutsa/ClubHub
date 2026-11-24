@@ -1,7 +1,6 @@
 import type { AudienceId } from "./info-data"
 
 // Original inline illustrations (swap for <Image> photos any time).
-// Fixed black / white / blue so light and dark themes don't change them.
 const svg = {
   viewBox: "0 0 200 200",
   fill: "none",
@@ -18,10 +17,10 @@ function StudentsArt() {
       <rect x="30" y="20" width="140" height="44" rx="18" fill="#000" />
       <rect x="30" y="44" width="140" height="20" fill="#000" />
       <circle cx="100" cy="42" r="6" fill="#fff" />
-      <circle cx="100" cy="98" r="19" fill="#1a9ad7" stroke="#000" strokeWidth="5" />
-      <path d="M66 148c4-20 17-30 34-30s30 10 34 30z" fill="#1a9ad7" stroke="#000" strokeWidth="5" />
+      <circle cx="100" cy="98" r="19" style={{ fill: 'var(--fillColor)' }} stroke="#000" strokeWidth="5" />
+      <path d="M66 148c4-20 17-30 34-30s30 10 34 30z" style={{ fill: 'var(--fillColor)' }} stroke="#000" strokeWidth="5" />
       <path d="M48 158v14M56 158v14M64 158v14M76 158v14M84 158v14M96 158v14M106 158v14" stroke="#000" strokeWidth="4" />
-      <circle cx="158" cy="152" r="20" fill="#1a9ad7" stroke="#000" strokeWidth="5" />
+      <circle cx="158" cy="152" r="20" style={{ fill: 'var(--fillColor)' }} stroke="#000" strokeWidth="5" />
       <path d="M149 152l7 7 13-14" stroke="#fff" strokeWidth="5" />
     </svg>
   )
@@ -29,8 +28,8 @@ function StudentsArt() {
 
 function OrganizationsArt() {
   const rows = [
-    { y: 82, avatar: "#1a9ad7", pill: "#000" },
-    { y: 112, avatar: "#fff", pill: "#1a9ad7" },
+    { y: 82, avatar: 'var(--fillColor)', pill: "#fff" },
+    { y: 112, avatar: "#fff", pill: 'var(--fillColor)' },
     { y: 142, avatar: "#000", pill: "#fff" },
   ]
   return (

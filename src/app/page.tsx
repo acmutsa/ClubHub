@@ -8,9 +8,9 @@ import { Marquee } from "./home/marquee";
 export default async function Home() {
 
   return (
-    <main className= "min-h-screen overflow-x-hidden bg-background">
-      <Navbar/>
-      <Hero/>
+    <main className= "min-h-screen mx-auto overflow-x-hidden bg-background">
+      <Navbar />
+      <Hero/> 
       <Marquee/>
       <Info/>
       <Lineup/>
