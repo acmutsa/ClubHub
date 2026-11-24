@@ -47,6 +47,7 @@
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --fillColor: oklch(84.275% 0.0888 232.684);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -110,6 +111,24 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse{
+  from { transform: translateX(-50%) }
+  to { translate: translateX(0) }
+}
+@keyframes badge-spin {
+  to { transform: rotate(360deg); }
+}
+
+@theme {
+  --animate-marquee: marquee 400s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 400s linear infinite;
+  --animate-badge-spin: badge-spin 24s linear infinite;
 }
 
 @layer base {

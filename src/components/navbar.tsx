@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCurrentUser } from "@/lib/auth/current-user";
+import { getPlatformContext } from "@/lib/platform-context/get-platform-context";
 import { Button } from "./ui/button";
 import { UserIcon } from "lucide-react";
 import SignOutButton from "./sign-out-button";
@@ -10,40 +10,50 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { ThemeSwitcher } from "./theme-switcher";
-interface NavbarProps {
-  userType: string;
-  //we will need to retieve image/logo eventually
-}
 
-export default async function Navbar({
-  userType,
-}: NavbarProps) {
-  await requireCurrentUser();
+
+export default async function Navbar(){
+   const platformContext = await getPlatformContext();
+   const user = platformContext?.user ?? null;
+   const isAdmin = platformContext?.isAdmin ?? false;
 
   return (
-    <header className="h-16 bg-background border-b border-border">
+    <header className="h-16 border-b border-border bg-background">
       <div className="h-full flex items-center justify-between px-4">
+        <div className="h-full flex items-center font-bold gap-4">
+          <Link href="/">
+          ClubHub
+          </Link>   
+        </div>
         <div className="h-full flex items-center gap-4">
-          {userType === "admin" && (
+          {isAdmin && (
             <Button variant="link" asChild>
               <Link className="font-semibold" href="/admin">
                 Admin
               </Link>
             </Button>
           )}
+          {user && (
+            <>
+              <Button variant="link" asChild>
+                <Link className="font-semibold" href="https://acmutsa.org/events">
+                  Events
+                </Link>
+              </Button>
 
-          <Button variant="link" asChild>
-            <Link className="font-semibold" href="/events">
-              Events
-            </Link>
-          </Button>
+              <Button variant="link" asChild>
+                <Link className="font-semibold" href="https://rowdylink.utsa.edu/organization/acm/roster">
+                  Members
+                </Link>
+              </Button>
+            </>
+          )}
 
-          <Button variant="link" asChild>
-            <Link className="font-semibold" href="/members">
-              Members
-            </Link>
-          </Button>
-
+          {!user ? (
+            <Button asChild>
+              <Link className="transition hover:-translate-y-1 hover:shadow-xl" href="/sign-in"> Sign In</Link>
+            </Button>
+          ) : ( 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <div className="h-full flex items-center cursor-pointer">
@@ -67,6 +77,7 @@ export default async function Navbar({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
       </div>
     </header>
